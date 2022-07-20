@@ -1,0 +1,49 @@
+include = m_mid_1 , m_mid_2 ,m_small_1 ,m_XL_1
+
+m_mid_1_part
+{
+hp=7,
+act=2,
+def=3,
+atk=3,
+shield=0,
+skill=m_attack,
+race=enemy,
+dropItem= money 100
+}
+
+m_mid_2_part
+{
+hp=5,
+act=2,
+def=2,
+atk=5,
+shield=0,
+skill=m_attack,
+race=enemy,
+dropItem= money 100
+}
+
+m_small_1_part
+{
+hp=1,
+act=3,
+def=2,
+atk=2,
+shield=0,
+skill=m_attack,
+race=enemy,
+dropItem= money 100
+}
+
+m_XL_1_part
+{
+hp=12,
+act=2,
+def=2,
+atk=4,
+shield=0,
+skill=m_attack,
+race=enemy,
+dropItem= money 100
+}

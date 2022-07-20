@@ -1,0 +1,13 @@
+include = poison
+
+poison_part
+{
+id     = poison
+card_type = melee ,range
+type   = debuff
+round  = 3
+when   = round_start
+effect = select_target ,get state ,add_buff poison
+}
+
+

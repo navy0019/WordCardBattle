@@ -1,0 +1,37 @@
+include = throw_axe , poison_arrow ,poison , attack , defense ,attack2
+
+--throw_axe_part --
+{
+name  =  擲斧
+info  =  #black# 丟一張牌,對目標造成 %atk% 傷害
+}
+
+
+--poison_arrow_part --
+{
+name  =  毒箭
+info  =  #black# 對目標造成 %atk% 傷害,施加 3 層中毒
+}
+
+--poison_part --
+{
+name  =  中毒
+info  =  #black# 每回合開始對目標造成等同層數的傷害,每回合結束層數-1
+}
+
+--attack_part --
+{
+name  =  攻擊
+info  =  #black# 對目標造成 %atk% 傷害
+}
+
+defense_part
+{
+name  =  防禦
+info  =  #black# 對目標造成 %def% 傷害
+}
+--attack2_part --
+{
+name  =  攻擊2
+info  =  #black# 對目標造成 %atk% 傷害
+}

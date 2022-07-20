@@ -1,0 +1,12 @@
+include = poison
+
+--poison_part--
+{
+id     = poison
+type   = debuff
+round  = 3
+when   = round_start
+effect = target , get hp , self , get round , sub , target ,set hp , self , get round , sub 1 , self , get round , set round
+}
+
+

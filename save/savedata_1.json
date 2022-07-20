@@ -1,0 +1,11 @@
+{
+"CurrentTeamData":[{"hp":12,"shield":0,"state":{"before":[],"after":[],"always":[]},"teamPos":1,"atk":2,"act":2,"def":4},{"hp":11,"shield":0,"state":{"before":[],"after":[],"always":[]},"teamPos":2,"atk":6,"act":3,"def":0},{"hp":10,"shield":0,"state":{"before":[],"after":[],"always":[]},"teamPos":3,"atk":5,"act":5,"def":0},{"hp":12,"shield":0,"state":{"before":[],"after":[],"always":[]},"teamPos":4,"atk":1,"act":4,"def":3}],
+"CurrentTeam":["hero1","hero2","hero3","hero4"],
+"DefaultTeam":[["hero1","hero2","hero3","hero4"],[],[]],
+"ItemList":[],
+"CurrentScene":1,
+"FileName":"savedata_1",
+"MapData":{"stepFromDoor":1,"dropItem":1,"money":0,"sceneList":[{"name":1,"events":{"door":[],"isBattle":true,"event":["campfire"],"story":[],"ranSeed":1656132267}}],"passedRoom":0},
+"CurrentDeafault":1,
+"Backpack":[]
+}

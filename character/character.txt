@@ -1,0 +1,67 @@
+include = hero1 , hero2 ,hero3 ,hero4 ,hero5 ,hero6
+
+hero1_part
+{
+hp=12,
+act=2,
+def=4,
+atk=2,
+skill= attack, attack2 ,
+advancedSkill= attack,
+race='hero'
+}
+
+hero2_part
+{
+hp=11,
+act=3,
+def=0,
+atk=6,
+skill=attack, attack2 ,
+advancedSkill=attack, attack ,
+race='hero'
+}
+
+hero3_part
+{
+hp=10,
+act=5,
+def=0,
+atk=5,
+skill=attack, attack ,
+advancedSkill=attack, attack ,
+race='hero'
+}
+
+hero4_part
+{
+hp=12,
+act=4,
+def=3,
+atk=1,
+skill=attack, attack ,
+advancedSkill=attack, attack ,
+race='hero'
+}
+
+hero5_part
+{
+hp=12,
+act=3,
+def=0,
+atk=5,
+skill=attack, attack ,
+advancedSkill=attack, attack ,
+race='hero'
+}
+
+hero6_part
+{
+hp=10,
+act=3,
+def=0,
+atk=7,
+skill=attack, attack ,
+advancedSkill=attack, attack ,
+race='hero'
+}
