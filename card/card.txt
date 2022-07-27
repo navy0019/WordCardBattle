@@ -81,7 +81,7 @@ attack2_part
 cost          =  2
 type          =  melee
 drop_to       =  grave
-use_condition =  input 1~3 card ,
+use_condition =  select 1 enemy ,input 1~3 card ,
 atk           =  master.atk
 def           =  0
 effect        =  select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp

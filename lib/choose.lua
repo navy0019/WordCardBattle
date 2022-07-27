@@ -101,6 +101,7 @@ local function InitUse_condition(self)
 
 	for k,v in pairs(card.use_condition) do
 		--table.insert(self.target_table, {})
+		--TableFunc.Dump(card.use_condition)
 		local choose_type=v[1]
 		local num =v[2]
 		local race=v[3]
@@ -136,12 +137,12 @@ function Choose.new(option)
 	local CheckCost = State.new("CheckCost")
 	local CheckSelect = State.new("CheckSelect")
 	local CheckInput = State.new("CheckInput")
-	--local InputWait = State.new("InputWait")
+	local InputWait = State.new("InputWait")
 	local PrepareToUse = State.new("PrepareToUse")
 	local machine = Machine.new({
 		initial=Wait,
 		states={
-			Wait  ,CheckCost ,CheckSelect ,CheckInput  ,PrepareToUse --,InputWait
+			Wait  ,CheckCost ,CheckSelect ,CheckInput  ,PrepareToUse ,InputWait
 		},
 		events={
 			--[[ 	Wait(global)					
@@ -159,9 +160,9 @@ function Choose.new(option)
 
 			{state=CheckSelect,to='CheckInput'},
 			{state=CheckSelect,to='PrepareToUse'},
-			--{state=CheckInput,to='InputWait'},
+			{state=CheckInput,to='InputWait'},
 			{state=CheckInput,to='PrepareToUse'},
-			--{state=InputWait,to='CheckInput'},
+			{state=InputWait,to='CheckInput'},
 
 
 		}
@@ -191,9 +192,9 @@ function Choose.new(option)
 		else
 			machine.toUse.card = machine.card
 			InitUse_condition(machine)
-
-			if TableFunc.Find(card.use_condition,'input')	and not TableFunc.Find(card.use_condition,'select')	then
-				--print('view TransitionTo ExtraInput')
+			--print('find select',TableFunc.Find(card.use_condition,'select'))
+			if not TableFunc.Find(card.use_condition,'select') and TableFunc.Find(card.use_condition,'input') then
+				print('cost TransitionTo ExtraInput')
 				local o= {toViewScene={command={key='TransitionTo' ,arg={'ExtraInput'}} }}
 				TableFunc.Push(machine.queue , o)
 				
@@ -207,7 +208,7 @@ function Choose.new(option)
 	end
 	CheckCost.Do=function(self,battle,...)
 		if machine.select_table and #machine.select_table >0 then
-			print('TransitionTo Select')
+			print('cost TransitionTo Select')
 			machine:TransitionTo('CheckSelect',battle)
 		end
 	end
@@ -302,7 +303,7 @@ function Choose.new(option)
 
 		--製作target
 		if machine.select_table then
-			--print('prepare select_table')	
+			machine.toUse.select_table={}	
 			local obj = machine.select_table[1]
 			local race_table = obj.race =='hero' and heroData or monData
 			local index = TableFunc.Find(race_table,obj)	
@@ -328,22 +329,26 @@ function Choose.new(option)
 					reverse = index+diff - #race_table
 					local start_index =index+1
 					for i=start_index ,#race_table do
-						table.insert(machine.select_table ,race_table[i])
+						table.insert(machine.toUse.select_table ,race_table[i])
 					end
 					for i=1,reverse do
-						table.insert(machine.select_table ,race_table[index-i])
+						table.insert(machine.toUse.select_table ,race_table[index-i])
 					end
 				else
 					for i=1,diff do
-						table.insert(machine.select_table ,race_table[index+i])
+						table.insert(machine.toUse.select_table ,race_table[index+i])
 					end
 				end
+			else
+				table.insert(machine.toUse.select_table ,race_table[index])
 			end
-			print('PrepareToUse select done')
+			--print('PrepareToUse select done')
 			
 		end
-		local o ={toPending={command={key='ReadyToUse' ,arg={ machine.toUse }} }}
+		local o ={toPending={key='ReadyToUse' ,arg={ machine.toUse ,battle },actName='toUse' }}
+		TableFunc.Push(machine.queue , o)
 		print('PrepareToUse done')
+		--TableFunc.Dump(machine.toUse )
 
 	end
 	machine.Update=function(self,...)

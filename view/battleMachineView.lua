@@ -7,8 +7,9 @@ local BattlePrint = require('battle.battlePrint')
 
 local BattleViewScenes={}
 local drawCommand = {
-	TransitionTo=function(scene,viewState,nextState,...)
-		print('viewState,nextState ',viewState,nextState)
+	TransitionTo=function(scene, nextState ,...)
+		local viewState =...
+		--print('viewState,nextState ',viewState,nextState)
 		local machine = scene.BattleMachineView
 		--print('machine view current ',machine.current.name)
 		--assert(machine.current.name == viewState ,'can\'t transition to '..nextState..' , current ~= '..viewState)
@@ -22,25 +23,27 @@ local drawCommand = {
 		return false
 	end,
 	--ErrorMsg=function(scene,machine,viewState,...) print(...) scene.Event:Emit('WaitIoRead') return true end,
-	UpdateState=function(scene,viewState,...)
+	UpdateState=function(scene,...)
 		print('更新狀態')
 		return true
 	end,
-	WaitIoRead=function(scene,viewState,...)
+	WaitIoRead=function(scene,...)
 		local str = ...
 		if str then
 			local s=''
 			if type(str)=='table' then
 				for i=2,#str,2 do
 				 	s=s..str[i]
-				end 
+				end
+			else
+				s=str 
 			end
 			print('waitIO msg ',s)
 		end
 		scene.Event:Emit('WaitIoRead')
 		return true
 	end,
-	ExtraInput=function(scene,viewState,...)
+	ExtraInput=function(scene,...)
 		local machine = scene.BattleMachineView
 		assert(machine.current.name=='PlayerAct' ,'not PlayerAct '..machine.current.name)
 		machine:TransitionTo('ExtraInput')

@@ -5,8 +5,9 @@ local stringRead =require("lib.stringRead")
 local CardLogic={}
 
 
-local function UseCard( battle,choose )
-	local result = stringRead.ReadEffect(choose)--card:Effect(battle,cardTab.target ,extraInput)
+local function UseCard( battle,toUse )
+	TableFunc.Dump(toUse)
+	--local result = stringRead.ReadEffect(choose)
 
 	--table.insert(result,1,{toPending={func=battle.DropCard,arg={battle ,battle.battleData.hand ,card} ,actName='dropCard'}})
 	--local funcTab = battle.machine.funcTab
@@ -32,6 +33,7 @@ CardLogic.default={Update=Update,UseCard=UseCard}
 CardLogic.metatable={}
 function CardLogic.new()
 	local o = {pending={}}
+	--o.={}
 	setmetatable(o,CardLogic.metatable)
 	return o
 end

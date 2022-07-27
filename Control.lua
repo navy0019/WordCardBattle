@@ -49,7 +49,7 @@ function Control.MakeBasicEvent(ViewScenesMgr,LogicScenesMgr)
 					function(...)
 							if funcName then
 								--print('control press 1')
-								table.insert(LogicScenesMgr.CurrentScene.pending,{name=funcName,arg={...}})
+								table.insert(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
 							end
 						end)
 				CurrentViewScenesMgrButton:Attach(Control.ButtonEvent,buttonName,
@@ -61,7 +61,7 @@ function Control.MakeBasicEvent(ViewScenesMgr,LogicScenesMgr)
 					function(...)
 							if funcName then
 								--print('control press 2')
-								table.insert(LogicScenesMgr.CurrentScene.pending,{name=funcName,arg={...}})
+								table.insert(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
 							end
 					end)
 			end

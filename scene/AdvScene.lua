@@ -58,39 +58,11 @@ function AdvScene.NewDataScene(name,events,AdvGenerator)
 	scene.Update=function()
 		--scene.Machine:Update()
 		scene.AdvGenerator.Check()
-		scene:FromCtrl()
+		scene:FromCtrl() 
 		if scene.battle then
-			scene.battle:Update()
-						
+			scene.battle:Update()						
 		end
 
-		--[[if #scene.pending > 0 then
-			for i=1, #scene.pending do
-				local v = scene.pending[1]
-				if scene.battle then
-					local battle = scene.battle
-					local machine = scene.battle.machine
-					--讓machine 自行安排解讀
-					table.insert(machine.pending,{func=machine.funcTab[v.name],arg={battle,table.unpack(v.arg)},actName=v.name})
-					table.remove(scene.pending,1)
-				else
-					funcTab[v.name](scene ,scene.AdvGenerator ,table.unpack(v.arg))
-					table.remove(scene.pending,1)
-				end
-			end
-		end
-
-		--有需要ViewScenes抓取的內容 只存在一個update 下個update移除
-		if #scene.toViewScene > 0 then
-			for k= #scene.toViewScene , 1,-1  do
-				local v = scene.toViewScene[k]
-				if v.alreadySent then
-					table.remove(scene.toViewScene,k)
-				else
-					v.alreadySent=true
-				end
-			end
-		end]]
 	end
 
 	scene.Exit=function()

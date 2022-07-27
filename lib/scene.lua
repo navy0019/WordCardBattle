@@ -95,15 +95,15 @@ local function PlayAltas( self,dt )
 	end
 end]]
 local function InsertResult(s , result )
-	
+	--TableFunc.Dump(result)
 	if type(result)~='boolean' and result.toViewScene then
 		--TableFunc.Dump(result.toViewScene)
 		--print('Unshift',result.toViewScene.command.key)
 		TableFunc.Unshift(s.toViewScene , result.toViewScene)
 	end
-	if type(result)~='boolean' and result.pending then
-		--print('Push')
-		TableFunc.Push(s.pending , result.pending)
+	if type(result)~='boolean' and result.toPending then
+		print('Push toPending')
+		TableFunc.Push(s.pending , result.toPending)
 	end
 	return true
 end
@@ -121,11 +121,14 @@ local function FromCtrl(scene)
 		end
 	end
 	if #self_pending > 0 then
-		--print('command num',#self_pending)
 		local command = TableFunc.Shift(self_pending)	
-		--print('command ' , command.name)
+		--print('command ',command.key)
+		if command.key==nil then 
+			TableFunc.Dump(command)
+		end
 
-		local result = funcTab[command.name](table.unpack(command.arg))
+		local result = funcTab[command.key](table.unpack(command.arg))
+		--local result = funcTab[command.key](table.unpack(command.arg))
 		--assert( result,command.name..' failed ')
 
 		if result then
@@ -164,7 +167,7 @@ local function FromLogic(scene, dataScene)--view scene使用
 		assert(funcTab[key],'don\'t have drawCommand '..key)
 
 		--print('viewState ',key,viewState,table.unpack(arg))
-		local result =funcTab[key](scene,viewState,table.unpack(arg))--注意drawCommand 是否有return true
+		local result =funcTab[key](scene,table.unpack(arg))--注意drawCommand 是否有return true
 			
 		if result then
 			

@@ -53,14 +53,16 @@ local function CheckInput(battle, ...)
 	choose:TransitionTo('CheckInput',...)
 end
 local function ReadyToUse(choose, battle)
-	choose:ReadyToUse(battle)
-	table.insert(battle.machine.cardLogic.pending  ,choose)
+	--print('Ready To Use')
+	local choose = battle.machine.choose
+	local cardLogic = battle.machine.cardLogic
+	table.insert(cardLogic.pending  ,choose.toUse)
 	return true
 end
 local function ReDraw( battle,choose )
 	return {toViewScene={command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='PlayerAct'} }}
 end
-local function InsertResult(machine , result)
+--[[local function InsertResult(machine , result)
 	if type(result)~='boolean' and result.toViewScene then
 		TableFunc.Unshift(machine.toViewScene , result.toViewScene)
 	end
@@ -70,7 +72,7 @@ local function InsertResult(machine , result)
 
 	--table.insert(machine.record , 'pending '..command.actName)
 	TableFunc.Shift(machine.pending)
-end
+end]]
 local function ClearDeath(battle)
 	battle.ClearDeath(battle)
 	return true
@@ -158,7 +160,7 @@ function BattleMachine.new(battle , scene)
 	})
 	machine.toViewScene={}
 	machine.choose=Choose.new()
-	machine.cardLogic=cardLogic.new()
+	machine.cardLogic=cardLogic.new()-- print('machine logic',machine.cardLogic)
 	machine.pending={}	
 	machine.funcTab={
 		AddSomthing=AddSomthing,
@@ -195,7 +197,7 @@ function BattleMachine.new(battle , scene)
 	end
 	StartRound.DoOnEnter=function(...)
 		--print('StartRound Data')		
-		table.insert(machine.pending,{name='ClearDeath',arg={battle},actName='updateTeam'})
+		table.insert(machine.pending,{key='ClearDeath',arg={battle},actName='updateTeam'})
 	end
 	StartRound.Do=function(...)
 		--print('StartRound Data Up')
@@ -205,7 +207,7 @@ function BattleMachine.new(battle , scene)
 	Statusbefore.DoOnEnter=function(...)   
 		--print('Statusbefore Data')
 		--{name=funcName,arg={...}
-		table.insert(machine.pending,{name='UpdateState',arg={battle},actName='UpdateState'})
+		table.insert(machine.pending,{key='UpdateState',arg={battle},actName='UpdateState'})
 	end
 	Statusbefore.Do=function(...)
 		--print('Statusbefore Data Up')
@@ -216,7 +218,7 @@ function BattleMachine.new(battle , scene)
 	PlayerAct.DoOnEnter=function(...)
 		--print('PlayerAct Data')
 	
-		table.insert(machine.pending,{name='InitPlayerRounde',arg={battle},actName='InitPlayerRounde'})
+		table.insert(machine.pending,{key='InitPlayerRounde',arg={battle},actName='InitPlayerRounde'})
 
 
 	end
@@ -359,8 +361,13 @@ function BattleMachine.new(battle , scene)
 	end
 
 	machine.Update=function(self,battle,...)
-
 		self.current:Do(...)
+
+		if #machine.cardLogic.pending > 0 then
+			print('cardLogic update')
+			local logic_retsult = machine.cardLogic:Update(battle)
+		end
+
 		local choose_result=machine.choose:Update(battle,...)
 		if choose_result then
 			--print('choose update',choose_result)
