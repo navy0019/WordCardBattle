@@ -27,7 +27,7 @@ function AdvScene.NewDataScene(name,events,AdvGenerator)
 		--print('Data SwitchScene ',presskey ,name ,scene ,AdvGenerator ,#{...})
 		local pressKey , name = ...
 		if name == 'previous' then
-			scene.AdvGenerator:ResetMap()
+			scene.AdvGenerator:ResetMap() 
 			scene.switchingScene = 'Main'
 		else
 			scene.switchingScene=scene[name]
@@ -59,9 +59,7 @@ function AdvScene.NewDataScene(name,events,AdvGenerator)
 		--scene.Machine:Update()
 		scene.AdvGenerator.Check()
 		scene:FromCtrl() 
-		if scene.battle then
-			scene.battle:Update()						
-		end
+		scene:DataPending()
 
 	end
 

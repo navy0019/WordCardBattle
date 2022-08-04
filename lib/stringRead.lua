@@ -76,14 +76,14 @@ function StringRead.StrFormat(str,...)
 	local t ={}
 	local head,tail
 	local arg={...}
-	for v in string.gmatch(str, '([%%%a+%%]+)') do
+	for v in string.gmatch(str, '((%%)%a+(%%))') do
 		table.insert(t,v)
 	end
 
 	local s =str
 	for k,v in pairs(t) do
 		local pattern = type(arg[k])=='number' and'%%d' or '%%s'
-		--print(arg[k],pattern)
+		print(arg[k],pattern)
 		s=s:gsub('%'..v..'%',pattern)
 	end
 
@@ -124,8 +124,9 @@ function StringRead.StrColor(str)
 	end
 	return t
 end
-function StringRead.StrPrintf(str,obj,...)
+function StringRead.StrPrintf(str,...)
 	local Resource =require('resource.Resource')
+	local obj = ...
 	local s =str
 	if s:find('%%%a+%%') then
 		if type(obj)== 'table' then
@@ -136,7 +137,7 @@ function StringRead.StrPrintf(str,obj,...)
 			local v =StringRead.StrToValue(w,obj)	
 			s=s:gsub('%%'..w..'%%'	,v)
 		else
-			s=StringRead.StrFormat(s,obj)
+			s=StringRead.StrFormat(s,...)
 		end
 	end
 

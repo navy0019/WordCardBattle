@@ -32,7 +32,6 @@ local function AddSomthing(battle ,input ,table_type, ...)
 
 	--print('AddSomthing',machine.choose)
 	machine.choose:Add(obj,table_type)
-	return true
 end
 local function LoopAdd(battle ,input)
 	local machine = battle.machine
@@ -41,12 +40,11 @@ local function LoopAdd(battle ,input)
 	local card = hand[num]
 
 	machine.choose:LoopAdd(card)
-	return true
 end
 local function CancelInput(battle,...)
 	local choose = battle.machine.choose
 	choose:Clear()
-	return {toViewScene={command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='ExtraInput'} }}
+	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='ExtraInput'} }
 end
 local function CheckInput(battle, ...)
 	local choose = battle.machine.choose
@@ -57,10 +55,9 @@ local function ReadyToUse(choose, battle)
 	local choose = battle.machine.choose
 	local cardLogic = battle.machine.cardLogic
 	table.insert(cardLogic.pending  ,choose.toUse)
-	return true
 end
 local function ReDraw( battle,choose )
-	return {toViewScene={command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='PlayerAct'} }}
+	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='PlayerAct'} }
 end
 --[[local function InsertResult(machine , result)
 	if type(result)~='boolean' and result.toViewScene then
@@ -75,7 +72,6 @@ end
 end]]
 local function ClearDeath(battle)
 	battle.ClearDeath(battle)
-	return true
 end
 local function UpdateState(battle)
 	for i=1,4 do
@@ -97,7 +93,7 @@ local function UpdateState(battle)
 		end
 	end
 	--print('!!update Team!!')
-	return {toViewScene={command={key='UpdateState',arg={}, viewState='Statusbefore'}}}
+	return {toViewScene={key='UpdateState',arg={}, viewState='Statusbefore'}}
 end
 function InitPlayerRounde(battle)
 	--print("InitPlayerRounde")
@@ -108,7 +104,7 @@ function InitPlayerRounde(battle)
 	--battle.choose.tempActPoint = battle.battleData.actPoint
 	battle:DealProcess()
 	--table.insert(machine.toViewScene,1,{alreadySent=false,command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'}})
-	return {toViewScene={command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'} }}
+	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'} }
 end	
 function BattleMachine.new(battle , scene)
 	local PreState = State.new("PreState")
@@ -188,11 +184,11 @@ function BattleMachine.new(battle , scene)
 
 			machine:TransitionTo('WaitEnding')
 			--viewState: 要將這指令發給battleViewScenes的哪個狀態
-			table.insert(machine.toViewScene,1,{command={key='TransitionTo' ,arg={'WaitEnding'}, viewState='Empty'}}) 
+			table.insert(machine.toViewScene,1,{key='TransitionTo' ,arg={'WaitEnding'}, viewState='Empty'}) 
 		else 
 			machine:TransitionTo('StartRound')
 			--print('data insert ')
-			table.insert(machine.toViewScene,1,{command={key='TransitionTo' ,arg={'StartRound'}, viewState='Empty'}}) 
+			table.insert(machine.toViewScene,1,{key='TransitionTo' ,arg={'StartRound'}, viewState='Empty'}) 
 		end
 	end
 	StartRound.DoOnEnter=function(...)
@@ -202,7 +198,7 @@ function BattleMachine.new(battle , scene)
 	StartRound.Do=function(...)
 		--print('StartRound Data Up')
 		machine:TransitionTo('Statusbefore')
-		table.insert(machine.toViewScene,1,{command={key='TransitionTo' ,arg={'Statusbefore'}, viewState='StartRound'}}) 		
+		table.insert(machine.toViewScene,1,{key='TransitionTo' ,arg={'Statusbefore'}, viewState='StartRound'}) 		
 	end
 	Statusbefore.DoOnEnter=function(...)   
 		--print('Statusbefore Data')

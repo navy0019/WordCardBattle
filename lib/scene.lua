@@ -93,26 +93,50 @@ local function PlayAltas( self,dt )
 				v.sprite.animations[ v.sprite.currentAnim ].h )
 		end
 	end
-end]]
+end
+local function Clear(scene)
+	scene.Drawable={}
+	scene.AllLabels={}
+	scene.CheckRange={}
+	scene.Altas={}
+end
+
+]]
+
 local function InsertResult(s , result )
 	--TableFunc.Dump(result)
 	if type(result)~='boolean' and result.toViewScene then
 		--TableFunc.Dump(result.toViewScene)
-		--print('Unshift',result.toViewScene.command.key)
+		--print('Unshift',TableFunc.Dump(result.toViewScene))
 		TableFunc.Unshift(s.toViewScene , result.toViewScene)
 	end
 	if type(result)~='boolean' and result.toPending then
-		print('Push toPending')
+		--print('Push toPending')
 		TableFunc.Push(s.pending , result.toPending)
 	end
 	return true
 end
-local function FromCtrl(scene)
-	local have_battle = scene.battle and 'machine' or 'scene'
+local function DataPending(scene)
 	local funcTab = scene.battle and scene.battle.machine.funcTab or scene.funcTab
-	local to_view= scene.battle and scene.battle.machine.toViewScene or scene.toViewScene
 	local self_pending = scene.battle and scene.battle.machine.pending or scene.pending
-	--執行button的function
+
+	if #self_pending > 0 then
+		local command = TableFunc.Shift(self_pending)	
+		local result = funcTab[command.key](table.unpack(command.arg))
+
+		if result then
+			local s = scene.battle and scene.battle.machine or scene
+			InsertResult(s , result)
+		end
+	end
+	if scene.battle then
+		scene.battle:Update()						
+	end
+end
+local function FromCtrl(scene)--執行button
+	local self_pending = scene.battle and scene.battle.machine.pending or scene.pending
+
+	--有battle的話 轉交至battle內處理
 	if #scene.pending >0 and scene.battle then
 		for i=#scene.pending,1,-1 do
 			local command = TableFunc.Shift(scene.pending)
@@ -120,44 +144,13 @@ local function FromCtrl(scene)
 			TableFunc.Push(self_pending,command) 
 		end
 	end
-	if #self_pending > 0 then
-		local command = TableFunc.Shift(self_pending)	
-		--print('command ',command.key)
-		if command.key==nil then 
-			TableFunc.Dump(command)
-		end
 
-		local result = funcTab[command.key](table.unpack(command.arg))
-		--local result = funcTab[command.key](table.unpack(command.arg))
-		--assert( result,command.name..' failed ')
-
-		if result then
-			--print('have result to do',result)
-			local s = scene.battle and scene.battle.machine or scene
-			InsertResult(s , result)
-
-		end
-
-	end
 
 end
-local function FromLogic(scene, dataScene)--view scene使用
-	
-	if scene.battle then
-		--print('ViewScenes ',scene.BattleMachineView.current.name ,dataScene.battle.machine.current.name)
-	end
-	local machine 
+
+local function ViewPending(scene)
 	local funcTab = scene.battle and scene.BattleMachineView.drawCommand or scene.drawCommand
-	local from_data= scene.battle and dataScene.battle.machine.toViewScene or dataScene.toViewScene
 	local self_pending = scene.battle and scene.BattleMachineView.pending or scene.pending
-	if #from_data > 0 then
-		for i=#from_data ,1 ,-1  do
-			local v = TableFunc.Pop(from_data)	
-			TableFunc.Unshift(self_pending ,v.command)
-		end
-
-	end
-
 	for i=#self_pending, 1 ,-1 do
 		local v = self_pending[i]
 		assert(v ,'error '..i..'  '..#self_pending..'   '..tostring(v))
@@ -169,22 +162,28 @@ local function FromLogic(scene, dataScene)--view scene使用
 		--print('viewState ',key,viewState,table.unpack(arg))
 		local result =funcTab[key](scene,table.unpack(arg))--注意drawCommand 是否有return true
 			
-		if result then
-			
+		if result then			
 			TableFunc.Pop(self_pending)			
 		end			
 	end
 end
-local function Clear(scene)
-	scene.Drawable={}
-	scene.AllLabels={}
-	scene.CheckRange={}
-	scene.Altas={}
+local function FromLogic(scene, dataScene)--view scene使用
+	local from_data= scene.battle and dataScene.battle.machine.toViewScene or dataScene.toViewScene
+	local self_pending = scene.battle and scene.BattleMachineView.pending or scene.pending
+	if #from_data > 0 then
+		for i=#from_data ,1 ,-1  do
+			local v = TableFunc.Pop(from_data)	
+			TableFunc.Unshift(self_pending ,v)--.command
+		end
+
+	end
 end
+
 
 local Scene={}
 Scene.default={events={door={},eventImg={},eventButton={},isBattle=false,ranState=nil,ranSeed=nil},
-				FromLogic=FromLogic,FromCtrl=FromCtrl,InsertResult=InsertResult,Enter=Enter,Update=Update,Exit=Exit,Clear=Clear,PlayAltas=PlayAltas}--,MouseAct=MouseAct.new()
+				ViewPending=ViewPending,DataPending=DataPending,FromLogic=FromLogic,FromCtrl=FromCtrl,InsertResult=InsertResult,
+				Enter=Enter,Update=Update,Exit=Exit}--,MouseAct=MouseAct.new()
 
 
 

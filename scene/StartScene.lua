@@ -44,7 +44,8 @@ function scene.Exit()
 
 end
 function scene.Update(dt)
-	scene:FromCtrl(funcTab)
+	scene:FromCtrl()
+	scene:DataPending()
 end
 function scene.debugDraw()
 end

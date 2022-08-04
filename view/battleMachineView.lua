@@ -24,7 +24,7 @@ local drawCommand = {
 	end,
 	--ErrorMsg=function(scene,machine,viewState,...) print(...) scene.Event:Emit('WaitIoRead') return true end,
 	UpdateState=function(scene,...)
-		print('更新狀態')
+		print('view 更新狀態')
 		return true
 	end,
 	WaitIoRead=function(scene,...)
@@ -113,7 +113,7 @@ function BattleViewScenes.new(battle , scene)
 		--machine:TransitionTo('StartRound')
 	end
 	StartRound.DoOnEnter=function(...)
-		print('回合開始')
+		--print('回合開始')
 		--machine:TransitionTo('Statusbefore')
 	end
 	Statusbefore.DoOnEnter=function(...)	
@@ -142,6 +142,8 @@ function BattleViewScenes.new(battle , scene)
 			--scene.Event:Emit('AddButton',v.key..'_'..k, 'm'..k ,'CheckChoose')
 		end
 
+		scene.ButtonEvent:Register('CancelChooseButton',function(...) end)
+		scene.Event:Emit('AddButton','CancelChooseButton', 2 ,'CancelInput')
 		--[[scene.ButtonEvent:Register('endRoundButton',function(...) end)
 		scene.Event:Emit('AddButton','endRoundButton', 2 ,'endRound')]]
 		--[[for k,v in pairs(scene.ButtonEvent) do
@@ -149,7 +151,7 @@ function BattleViewScenes.new(battle , scene)
 		end]]
 		BattlePrint.PrintCharacter(battle)
 		BattlePrint.PrintCard(battle)
-		print('ViewScenes: 玩家回合')		
+		--print('ViewScenes: 玩家回合')		
 		scene.Event:Emit('WaitIoRead')
 	end
 	PlayerAct.DoOnLeave=function(...)
@@ -172,10 +174,10 @@ function BattleViewScenes.new(battle , scene)
 			end
 		end
 		scene.ButtonEvent:Register('CheckChooseButton',function(...) end)
-		scene.Event:Emit('AddButton','CheckChooseButton', 0 ,'CheckInput','enforce',battle)
+		scene.Event:Emit('AddButton','CheckChooseButton', 1 ,'CheckInput','enforce',battle)
 
 		scene.ButtonEvent:Register('CancelChooseButton',function(...) end)
-		scene.Event:Emit('AddButton','CancelChooseButton', 1 ,'CancelInput')
+		scene.Event:Emit('AddButton','CancelChooseButton', 2 ,'CancelInput')
 	end
 	ExtraInput.DoOnLeave=function(...)
 		local remove = {}

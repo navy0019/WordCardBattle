@@ -29,6 +29,7 @@ function scene.Exit()
 end
 function scene.Update(dt)
 	scene:FromCtrl()
+	scene:DataPending()
 end
 function scene.debugDraw()
 end

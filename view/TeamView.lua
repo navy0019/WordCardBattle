@@ -10,7 +10,22 @@ local Show = require('show')
 local scene = Scene.new('Team')
 
 scene.drawCommand={
-	errorMsg=function(scene,machine,viewState,...) print(...) scene.Event:Emit('WaitIoRead') return true end
+	WaitIoRead=function(scene,...)
+		local str = ...
+		if str then
+			local s=''
+			if type(str)=='table' then
+				for i=2,#str,2 do
+				 	s=s..str[i]
+				end
+			else
+				s=str 
+			end
+			print('waitIO msg ',s)
+		end
+		scene.Event:Emit('WaitIoRead')
+		return true
+	end
 }
 local function PrintTeamData(TeamData)
 
@@ -150,7 +165,7 @@ end
 function scene.Update(dt)
 	local dataScene = LogicScenesMgr.CurrentScene
 	scene:FromLogic(dataScene)
-
+	scene:ViewPending()
 	scene.Machine:Update()
 
 end

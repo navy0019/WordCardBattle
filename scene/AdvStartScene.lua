@@ -42,6 +42,7 @@ function scene.Update(dt)
 	--print('AdvStart Data Update')
 	AdvGenerator.Check()
 	scene:FromCtrl()
+	scene:DataPending()
 end
 function scene.debugDraw()
 

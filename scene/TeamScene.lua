@@ -23,7 +23,7 @@ local function saveTeamToDefault(...)
 		SaveMgr.Save(SaveMgr.CurrentSave ,TeamData.SaveTeam)
 	else
 		local s =Msg.msg('team_need_save')
-		return {toViewScene={alreadySent=false,command={key='errorMsg' ,arg={s}} }}
+		return {toViewScene={key='WaitIoRead' ,arg={s}} }
 	end
 	return true
 end
@@ -40,7 +40,8 @@ local function back(...)
 	else
 		scene.switchingScene = nil
 		local s =Msg.msg('team_need')
-		return {toViewScene={alreadySent=false,command={key='errorMsg' ,arg={s}} }}
+		print('s',s)
+		return {toViewScene={key='WaitIoRead' ,arg={s}} }
 		--table.insert(scene.toViewScene,errorMsg('隊伍須滿四人才能退出'))
 	end
 	return true
@@ -68,6 +69,7 @@ end
 
 function scene.Update(dt)
 	scene:FromCtrl()
+	scene:DataPending()
 end
 
 function scene.debugDraw()

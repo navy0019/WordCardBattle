@@ -39,20 +39,56 @@ function GetUtf8Len(str)
 	local currentIndex = 1 
 	while currentIndex <= #str do 
 		local char = string.byte(str,currentIndex) 
-		currentIndex = currentIndex + GetCharSize(char) 
+		currentIndex = currentIndex + GetCharSize(char)	
 		len = len + 1 
 	end 
 	return len 
 end
-function StrToTab( s )
+function StrToTab( s ,num)
 	local t={}
+	local num=num or 1
+	local w=''
+	local width=0
 	local currentIndex = 1 
 	while currentIndex <= #s do 
 		local char = string.byte(s,currentIndex) 
 		table.insert(t,s:sub(currentIndex , currentIndex+GetCharSize(char)-1 ))
 		currentIndex = currentIndex + GetCharSize(char) 		
-	end 
-	return t
+	end
+	local final_tab={}
+	if num > 1 then
+		local times =  #t / num
+		
+		for i=1,times do
+			for j=1,num do
+				local temp =TableFunc.Shift(t)
+				width=width+ math.min(2, GetCharSize(string.byte(temp,1))) 
+				w=w..temp
+			end
+			table.insert(final_tab,{})
+			local len = #final_tab
+			final_tab[len].word=w
+			final_tab[len].width=width
+			w=''
+			width=0		
+		end
+	end
+
+	if #t>0 then 
+		table.insert(final_tab,{})
+		for i=1,#t do
+			local temp =TableFunc.Shift(t)
+			width=width+ math.min(2, GetCharSize(string.byte(temp,1))) 
+			w=w..temp
+		end
+		local len = #final_tab
+		final_tab[len].word=w
+		final_tab[len].width=width  
+	end
+
+	--table.insert(final_tab,w)
+
+	return final_tab
 end
 function BattlePrint.PrintCharacter(battle)
 	local monsterData = battle.characterData.monsterData
@@ -106,6 +142,7 @@ function BattlePrint.PrintCharacter(battle)
 		print(stateStr[i])
 	end
 end
+
 function BattlePrint.PrintCard( battle )
 	local hand = battle.battleData.hand
 	local strWidth = 54
@@ -113,12 +150,12 @@ function BattlePrint.PrintCard( battle )
 	local roundStr = '回合'..battle.battleData.round..'  '..roundSate
 	local tab = ''
 	local num = strWidth-string.len(roundStr)
-	tab=FillEmpty(math.floor(num/2))
+	tab=FillEmpty(math.floor(num/1.5))
 	print('\n'..tab..roundStr)
 	
 	local battleData = '行動點數: '..battle.battleData.actPoint..'  牌堆: '..#battle.battleData.deck..'  棄牌堆: '..#battle.battleData.drop..'  消失牌堆: '..#battle.battleData.disappear
 	num = math.abs(strWidth-string.len(battleData)) *3
-	tab=FillEmpty(math.floor(num/2))
+	tab=FillEmpty(math.floor(num/1.5))
 	print(tab..battleData)
 
 	local hand = '  '
@@ -126,28 +163,67 @@ function BattlePrint.PrintCard( battle )
 	local currentCard = choose[1]
 
 	for k,card in pairs(battle.battleData.hand) do
-		hand=hand..k..' '
+		hand=hand..'c'..k..' '
 		if card == currentCard then
 			hand=hand..card.name..'(cost:'..card.data.cost..')(已選擇)'
 		else
 			hand=hand..card.name..'(cost:'..card.data.cost..')'
 		end
 		if k < #battle.battleData.hand then
-			hand=hand..'\t'
+			hand=hand..'   '
 		end
 	end
+
+	print('\tc1 ~ c'..#battle.battleData.hand..' 選擇卡片 , 2 取消選取\n')
 	print(hand)
+	
+	--定位數字作為info的錨點
+	local hand_num_pos={}
+	local temp_index=1
+	for v in string.gmatch(hand, '%d+') do
+    	table.insert(hand_num_pos,v)
+	end
+
+	for k,v in pairs(hand_num_pos) do
+		local p = hand:find(v,temp_index)
+		hand_num_pos[k]=p
+		temp_index=p+1
+	end
+
+	for i=#hand_num_pos,1,-1 do
+		if i%2 == 0 then
+			table.remove(hand_num_pos,i)
+		end
+	end
 
 	--Make Info
+	local info ={}
 	for k,card in pairs(battle.battleData.hand) do
-		local info_tab = StringRead.StrPrintf(card.info,card)
-		--print('info_tab ',card.info,#info_tab)
+		info[k] = StringRead.StrPrintf(card.info,card)
 		local temp = ''
-		for i=2,#info_tab,2 do
-			temp=temp..info_tab[i]
+		for index=2,#info[k],2 do
+			temp=temp..info[k][index]
 		end
-		print(k..'  '..temp,card.master.key)
+		info[k]=StrToTab(temp,4)--temp
 	end
 
+	local len = 1
+	for k,v in pairs(info) do
+		len = math.max(len,#v)
+	end
+
+
+	for i=1,len  do
+		local w =''
+		local width=0
+		for k,v in pairs(info) do
+			local num =  hand_num_pos[k]-k-width
+			--print('num',hand_num_pos[k]-k ,width ,num)
+			local empty = FillEmpty(math.max(num,0))
+			w=w..empty..info[k][i].word
+			width =width+info[k][i].width+num
+		end
+		print(w)
+	end
 end
 return BattlePrint

@@ -70,6 +70,7 @@ function scene.Update(dt)
 	--print('AdvStart ViewScenes Update')
 	local dataScene = LogicScenesMgr.CurrentScene
 	scene:FromLogic(dataScene)
+	scene:ViewPending()
 	scene.Machine:Update()
 
 end

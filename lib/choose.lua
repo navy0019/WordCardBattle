@@ -10,14 +10,14 @@ local function MakeDiff( self,current_condition)
 		if current_condition.max ~= current_condition.min then
 			local min = #self.input_table >=current_condition.min and 0 or current_condition.min
 			local num = current_condition.min<diff and min..'~'..diff or diff
-			local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('can_need',num)}} }}
+			local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('can_need',num)} }}
 			TableFunc.Push(self.queue , o)
 		else
-			local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('need',diff)}} }}
+			local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('need',diff)} }}
 			TableFunc.Push(self.queue , o)
 		end
 	else
-		local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('can_need',diff)}} }}
+		local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('can_need',diff)} }}
 		TableFunc.Push(self.queue , o)
 	end
 end
@@ -27,7 +27,7 @@ local function LoopAdd(self,card)
 	local diff
 
 	if not isCard then
-		local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('error_target')}} }}
+		local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')} }}
 		TableFunc.Push(self.queue , o)
 		return
 	end
@@ -62,7 +62,7 @@ local function Add(self,obj,table_type)
 	--print('try add ',self , obj ,table_type)
 	if self.card then
 		if table_type == 'card' and not TableFunc.Find(self.card.use_condition ,'input') then
-			local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('error_target')}} }}
+			local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')}}}
 			TableFunc.Push(self.queue , o)
 			self:Clear()
 			self:TransitionTo('Wait')
@@ -76,12 +76,10 @@ local function Add(self,obj,table_type)
 		end
 
 	elseif not self.card and getmetatable(obj)~= Card.metatable then
-		local o = {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('error_target')} } } }
+		local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')}  } }
 		TableFunc.Push(self.queue , o)
 	elseif not self.card then
 		self.card = obj
-		--print('add card')
-		--print('add card',self.card)
 	end
 end
 local function InitUse_condition(self)
@@ -187,7 +185,7 @@ function Choose.new(option)
 		local card =machine.card
 		if card.data.cost > battle.battleData.actPoint then
 			machine.card=nil
-			local o= {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('actpoint_not_enough')}} }}
+			local o= {toViewScene={key='WaitIoRead' ,arg={Msg.msg('actpoint_not_enough')} }}
 			TableFunc.Push(machine.queue , o)
 		else
 			machine.toUse.card = machine.card
@@ -195,13 +193,15 @@ function Choose.new(option)
 			--print('find select',TableFunc.Find(card.use_condition,'select'))
 			if not TableFunc.Find(card.use_condition,'select') and TableFunc.Find(card.use_condition,'input') then
 				print('cost TransitionTo ExtraInput')
-				local o= {toViewScene={command={key='TransitionTo' ,arg={'ExtraInput'}} }}
+				local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 				TableFunc.Push(machine.queue , o)
 				
 				local current_condition = machine.input_check[1]
 				MakeDiff(machine , current_condition )
-			else	
-				local o= {toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('need_target')} } } }
+			else
+				local monsterData = battle.characterData.monsterData
+				local heroData = battle.characterData.heroData	
+				local o= {toViewScene={key='WaitIoRead' ,arg={Msg.msg('need_target',#heroData ,#monsterData)} } }
 				TableFunc.Push(machine.queue , o)
 			end
 		end
@@ -221,7 +221,7 @@ function Choose.new(option)
 				if target.race == t.race then
 					if machine.input_table then
 						print('Select TransitionTo Input')
-						local o= {toViewScene={command={key='TransitionTo' ,arg={'ExtraInput'}} }}
+						local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 						TableFunc.Push(machine.queue , o)
 						machine:TransitionTo('CheckInput',battle)
 						return
@@ -233,8 +233,11 @@ function Choose.new(option)
 			end
 		end
 		machine:Clear()
+		local monsterData = battle.characterData.monsterData
+		local heroData = battle.characterData.heroData	
 		local msg = #machine.select_table>0 and 'error_target'  or 'need_target'
-		local o={toViewScene={command={key='WaitIoRead' ,arg={Msg.msg(msg)}} }}
+		local arg = msg =='need_target' and {#heroData ,#monsterData} or nil
+		local o={toViewScene={key='WaitIoRead' ,arg={Msg.msg(msg , table.unpack(arg)) } }}
 		TableFunc.Push(machine.queue , o)
 		machine:TransitionTo('Wait')
 	end
@@ -251,7 +254,7 @@ function Choose.new(option)
 				for i,target in pairs(machine.input_table) do
 					if getmetatable(target)~= Card.metatable then
 						machine:Clear()
-						local o={toViewScene={command={key='WaitIoRead' ,arg={Msg.msg('error_target')}} }}
+						local o={toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')} }}
 						TableFunc.Push(machine.queue , o)
 						machine:TransitionTo('Wait')
 						return

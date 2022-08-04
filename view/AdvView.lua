@@ -103,6 +103,7 @@ function AdvView.NewViewScene( name,dataEvent )
 		--print(scene.name..' ViewScenes Update',scene.switchScene)
 		local dataScene = LogicScenesMgr.CurrentScene
 		scene:FromLogic(dataScene)
+		scene:ViewPending()
 		scene.Machine:Update()
 
 	end

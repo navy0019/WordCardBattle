@@ -2,15 +2,10 @@ local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 local CallBack = require("lib.callback")
 
---local MapData = require('lib.MapData')
---local SaveMgr=require('lib.saveManager')
 local TableFunc = require("lib.TableFunc")
 local Choose = require('lib.choose')
 
 local CardAssets = require("resource.cardAssets")
-
---local BattleUIMachine = require("battle.battleUIMachine")
---local StatusMachine=require("battle.statusMachine")
 
 local MonsterGenerator = require("battle.monsterGenerator")
 local BattleMachine = require('battle.battleMachine')
@@ -26,12 +21,8 @@ local function InitBattleData(battle,AdvGenerator)
 	
 	battle.characterData.heroData=AdvGenerator.heroData
 
-	--print('init battleData ')
 	for k,hero in pairs(battle.characterData.heroData) do
-		--print(hero.name)
-		--battle.battleData.actPoint = battle.battleData.actPoint+hero.data.act
 	 	for i,name in pairs(hero.skill) do
-	 		--print('hero skill ',name)
 	 		local card = CardAssets.instance( name,hero )--CardAssets.instance( name,0,0,hero ,battle )
 	 		table.insert(battle.battleData.deck,card)
 	 	end
@@ -39,8 +30,6 @@ local function InitBattleData(battle,AdvGenerator)
 
 	TableFunc.Upset(battle.battleData.deck)
 	battle.battleData.deckSize= #battle.battleData.deck
-
-
 
 end
 local function CardWordUpdate(self)--InfoUpdate
@@ -100,15 +89,9 @@ local function CheckLife(battle)
 	local monsters = check(battle.characterData.monsterData)
 
 	if heros then
-		--lose
-		battle.machine:TransitionTo('WaitEnding',battle,'Lose')
-		--battle.keyCtrl.keyboard:TransitionTo('stopRead')
-		--print('wait to Lose')		
-
+		battle.machine:TransitionTo('WaitEnding',battle,'Lose')	
 	elseif monsters then
 		battle.machine:TransitionTo('WaitEnding',battle,'Victory')
-		--battle.keyCtrl.keyboard:TransitionTo('stopRead')
-		--print('wait to win')
 
 	end
 end
@@ -183,7 +166,6 @@ local function DealProcess(battle)
 	end
 end
 local function Update( self,dt  )
-
 	self.machine:Update(self,dt)
 end 
 Battle.default={DealProcess=DealProcess,ClearDeath=ClearDeath,DropItem=DropItem,RemoveDeathCard=RemoveDeathCard,CheckLife=CheckLife,Reset=Reset,Update=Update, InitBattleData=InitBattleData,DropCard=DropCard ,CardWordUpdate=CardWordUpdate}

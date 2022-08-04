@@ -5,9 +5,9 @@ function Msg.msg(key,...)
 	local Resource = require('resource.Resource')
 	local translate = Resource.translate
 	local s  = translate[key]
-	--print('s ',s)
+	--print('mag arg ',...)
 	if s:find('%%%a+%%') or s:find('%#%a+%#') then --s:find('%p') ([%#%a+%#]+)
-		print('msg find %p')
+		--print('msg find %p')
 		local ns = StringRead.StrPrintf(s,...)
 		--print('ns ',ns)
 		return ns

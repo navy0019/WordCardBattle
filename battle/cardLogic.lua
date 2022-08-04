@@ -6,7 +6,7 @@ local CardLogic={}
 
 
 local function UseCard( battle,toUse )
-	TableFunc.Dump(toUse)
+	--TableFunc.Dump(toUse)
 	--local result = stringRead.ReadEffect(choose)
 
 	--table.insert(result,1,{toPending={func=battle.DropCard,arg={battle ,battle.battleData.hand ,card} ,actName='dropCard'}})
