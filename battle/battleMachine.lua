@@ -50,11 +50,10 @@ local function CheckInput(battle, ...)
 	local choose = battle.machine.choose
 	choose:TransitionTo('CheckInput',...)
 end
-local function ReadyToUse(choose, battle)
+local function ReadyToUse(toUse, battle)
 	--print('Ready To Use')
-	local choose = battle.machine.choose
 	local cardLogic = battle.machine.cardLogic
-	table.insert(cardLogic.pending  ,choose.toUse)
+	TableFunc.Push(cardLogic.pending  ,toUse)
 end
 local function ReDraw( battle,choose )
 	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='PlayerAct'} }
@@ -93,7 +92,7 @@ local function UpdateState(battle)
 		end
 	end
 	--print('!!update Team!!')
-	return {toViewScene={key='UpdateState',arg={}, viewState='Statusbefore'}}
+	return {toViewScene={key='UpdateState',arg={}}}
 end
 function InitPlayerRounde(battle)
 	--print("InitPlayerRounde")
@@ -104,7 +103,7 @@ function InitPlayerRounde(battle)
 	--battle.choose.tempActPoint = battle.battleData.actPoint
 	battle:DealProcess()
 	--table.insert(machine.toViewScene,1,{alreadySent=false,command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'}})
-	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'} }
+	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'},} }
 end	
 function BattleMachine.new(battle , scene)
 	local PreState = State.new("PreState")
@@ -359,15 +358,13 @@ function BattleMachine.new(battle , scene)
 	machine.Update=function(self,battle,...)
 		self.current:Do(...)
 
-		if #machine.cardLogic.pending > 0 then
-			print('cardLogic update')
-			local logic_retsult = machine.cardLogic:Update(battle)
+		local logic_retsult = machine.cardLogic:Update(battle,...)
+		if logic_retsult then
+			battle.scene.InsertResult(machine ,logic_retsult)
 		end
 
 		local choose_result=machine.choose:Update(battle,...)
 		if choose_result then
-			--print('choose update',choose_result)
-			--print('o ',choose_result.toViewScene.command.key)
 			battle.scene.InsertResult(machine ,choose_result)
 		end
 

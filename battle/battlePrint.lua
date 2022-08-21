@@ -1,5 +1,5 @@
 local TableFunc = require("lib.TableFunc")
-local StringRead = require('lib.stringRead')
+local StringRead = require('lib.StringRead')
 
 local BattlePrint={}
 local function MakeState(char)
@@ -204,7 +204,7 @@ function BattlePrint.PrintCard( battle )
 		for index=2,#info[k],2 do
 			temp=temp..info[k][index]
 		end
-		info[k]=StrToTab(temp,4)--temp
+		info[k]=StrToTab(temp,5)--temp
 	end
 
 	local len = 1
@@ -220,8 +220,10 @@ function BattlePrint.PrintCard( battle )
 			local num =  hand_num_pos[k]-k-width
 			--print('num',hand_num_pos[k]-k ,width ,num)
 			local empty = FillEmpty(math.max(num,0))
-			w=w..empty..info[k][i].word
-			width =width+info[k][i].width+num
+			if info[k][i] then
+				w=w..empty..info[k][i].word
+				width =width+info[k][i].width+num
+			end
 		end
 		print(w)
 	end

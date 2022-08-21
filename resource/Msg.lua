@@ -1,4 +1,4 @@
-local StringRead = require('lib.stringRead')
+local StringRead = require('lib.StringRead')
 
 local Msg={}
 function Msg.msg(key,...)

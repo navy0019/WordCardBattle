@@ -275,9 +275,9 @@ function Choose.new(option)
 					return
 				else
 					local name = 'input_target_'..i
-					machine.toUse.name = {}
+					machine.toUse[name] = {}
 					for i=#machine.input_table, 1 ,-1 do
-						TableFunc.Push(machine.toUse.name , machine.input_table[1] )
+						TableFunc.Push(machine.toUse[name] , machine.input_table[1] )
 						TableFunc.Shift(machine.input_table) 
 					end
 					TableFunc.Shift(machine.input_check)

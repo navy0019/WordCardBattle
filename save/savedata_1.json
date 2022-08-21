@@ -1,11 +1,11 @@
 {
-"MapData":{"sceneList":[{"events":{"story":[],"door":[],"event":[],"ranSeed":1659270612,"isBattle":true},"name":1}],"stepFromDoor":1,"dropItem":1,"passedRoom":0,"money":0},
-"CurrentTeam":["hero1","hero2","hero3","hero4"],
 "ItemList":[],
+"CurrentTeamData":[{"act":2,"state":{"always":[],"before":[],"after":[]},"hp":12,"atk":2,"teamPos":1,"shield":0,"def":4},{"act":3,"state":{"always":[],"before":[],"after":[]},"hp":11,"atk":6,"teamPos":2,"shield":0,"def":0},{"act":5,"state":{"always":[],"before":[],"after":[]},"hp":10,"atk":5,"teamPos":3,"shield":0,"def":0},{"act":4,"state":{"always":[],"before":[],"after":[]},"hp":12,"atk":1,"teamPos":4,"shield":0,"def":3}],
+"CurrentDeafault":1,
+"MapData":{"sceneList":[{"events":{"story":[],"event":["potionTable"],"ranSeed":1660478914,"isBattle":true,"door":[]},"name":1}],"money":0,"stepFromDoor":1,"passedRoom":0,"dropItem":1},
+"DefaultTeam":[["hero1","hero2","hero3","hero4"],[],[]],
 "FileName":"savedata_1",
 "Backpack":[],
-"DefaultTeam":[["hero1","hero2","hero3","hero4"],[],[]],
-"CurrentTeamData":[{"shield":0,"hp":12,"atk":2,"def":4,"state":{"after":[],"before":[],"always":[]},"teamPos":1,"act":2},{"shield":0,"hp":11,"atk":6,"def":0,"state":{"after":[],"before":[],"always":[]},"teamPos":2,"act":3},{"shield":0,"hp":10,"atk":5,"def":0,"state":{"after":[],"before":[],"always":[]},"teamPos":3,"act":5},{"shield":0,"hp":12,"atk":1,"def":3,"state":{"after":[],"before":[],"always":[]},"teamPos":4,"act":4}],
-"CurrentDeafault":1,
+"CurrentTeam":["hero1","hero2","hero3","hero4"],
 "CurrentScene":1
 }

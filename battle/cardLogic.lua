@@ -1,41 +1,89 @@
 local TableFunc = require("lib.TableFunc")
 local CardSkill = require('battle.cardSkill')
-local stringRead =require("lib.stringRead")
+local StringAct = require("lib.StringAct")
+local State = require('lib.FSMstate')
+local Machine = require('lib.FSMmachine')
 
 local CardLogic={}
 
-
-local function UseCard( battle,toUse )
-	--TableFunc.Dump(toUse)
-	--local result = stringRead.ReadEffect(choose)
-
-	--table.insert(result,1,{toPending={func=battle.DropCard,arg={battle ,battle.battleData.hand ,card} ,actName='dropCard'}})
-	--local funcTab = battle.machine.funcTab
-	--table.insert(result,{toPending={func=funcTab.ReDraw,arg={} ,actName='redraw'}})
-
-	return result
-end
-local function Update(self,battle)
-	for i=#self.pending,1 ,-1 do
-		if self.pending[i].card then
-			print('have a card')
-			local pending = UseCard(battle,self.pending[i])
-			table.remove(self.pending ,i)
-			return pending
-			
-		else
-			--{isCopy=false,effect=''}
-			--print('> 0')
+local function AddBuff(card,buff)--{buff={atk=1,round=1},times=2}
+	for k,str in pairs(card.type) do
+		for key,value in pairs(buff.buff) do
+			if str:find(key) then
+				return
+			end
 		end
 	end
 end
-CardLogic.default={Update=Update,UseCard=UseCard}
+CardLogic.default={Update=Update}
 CardLogic.metatable={}
 function CardLogic.new()
-	local o = {pending={}}
-	--o.={}
-	setmetatable(o,CardLogic.metatable)
-	return o
+	local Wait = State.new("Wait")
+	local Classification = State.new("Classification")
+	local CheckBuff = State.new("CheckBuff")
+	local ReadEffect = State.new("ReadEffect")
+	local machine =  Machine.new({
+		initial=Wait,
+		states={
+			Wait  ,Classification,CheckBuff ,ReadEffect
+		},
+		events={
+			--[[ 	Wait(global)					
+			 Classification-->CheckBuff--> ReadEffect
+     					 				]]
+			{state=Wait,global=true,self=true},
+			{state=Classification,to='CheckBuff'},							
+			{state=CheckBuff,to='ReadEffect'},
+		}
+	})
+	machine.pending={}
+	machine.queue={}
+	machine.card_pending={}
+	machine.state_pending={}
+	Wait.Do=function(self,battle,...)	
+		if #machine.pending >0 then
+			print('TransitionTo Classification')
+			machine:TransitionTo('Classification',battle)
+		end
+	end
+	Classification.DoOnEnter=function(self,battle,...)
+		for i=1,#machine.pending do
+			local v = TableFunc.Shift(machine.pending)
+			local target_tab = v.card and machine.card_pending or machine.state_pending
+			TableFunc.Push(target_tab,v)
+		end
+		machine:TransitionTo('CheckBuff',battle)
+	end
+	CheckBuff.DoOnEnter=function(self,battle,...)
+		if #machine.state_pending ==0 then
+			machine:TransitionTo('ReadEffect',battle)
+		else	
+			for k,buff in pairs(machine.state_pending) do
+				for i,card in pairs(machine.card_pending) do
+					AddBuff(card ,buff)
+				end			
+			end
+		end
+		
+	end
+	ReadEffect.DoOnEnter=function(self,battle,...)
+		--print('ReadEffect!')
+		for k,v in pairs(machine.card_pending) do
+			StringAct.ReadEffect(v)
+			battle:DropCard(battle.battleData.hand , v.card)
+		end
+		local o ={toViewScene={key='UseCard' ,arg={} }}
+		TableFunc.Push(machine.queue , o)	
+		machine:TransitionTo('Wait',battle)
+	end
+	machine.Update=function(self,battle,...)
+		if #machine.queue > 0 then
+			local o = TableFunc.Shift(machine.queue)			
+			return o
+		end
+		self.current:Do(battle,...)
+	end
+	return machine
 end
 CardLogic.metatable.__index=function (table,key) return CardLogic.default[key] end
 return CardLogic

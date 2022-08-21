@@ -1,5 +1,5 @@
 local TableFunc=require('lib.TableFunc')
-local StringSplit=require('lib.stringSplit')
+local StringDecode=require('lib.StringDecode')
 
 local CardAssets =require('resource.cardAssets')
 local CharacterAssets =require('resource.characterAssets')
@@ -24,9 +24,10 @@ function Resource.GetAssets( popen ,path ,tab)
     if popen then
         local s=popen:read("*a")
         --print('s',s)
-        local t=StringSplit.split_comma_enter(s)
-        for k,v in pairs(t) do         
-            local is_file = v:sub(#v-3,#v) == '.txt' and true or false
+        local t=StringDecode.split_comma_enter(s)
+        for k,v in pairs(t) do
+            local format = 'cd'         
+            local is_file = v:sub(#v-(#format-1)  , #v) == format and true or false
             if is_file then 
                 local slash = _G.CurrentOs  == 'Mac' and '/' or '\\' 
                 
@@ -35,7 +36,7 @@ function Resource.GetAssets( popen ,path ,tab)
                 --print('p',p)
                 local file_name = p and v:sub(p+1,#v) or v  
                 --print('filename',file_name)    
-                local data = StringSplit.Decode(path..slash..file_name)
+                local data = StringDecode.Decode(path..slash..file_name)
                 --TableFunc.Dump(data)
                 TableFunc.Merge(tab ,data)
             else

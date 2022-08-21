@@ -1,28 +1,28 @@
-local StringSplit={}
+local StringDecode={}
 --做初步的轉換(轉換成table 數字轉乘number type 複數項目放入table)
 
-function StringSplit.split_by(s ,arg)
+function StringDecode.split_by(s ,arg)
 	local t ={}
 	for v in string.gmatch(s, '[^'..arg..']*') do-- +-*/()
 		table.insert(t,v)
 	end
 	return table.unpack(t)
 end
-function StringSplit.trim_head_tail(s)
+function StringDecode.trim_head_tail(s)
    return s:gsub("^%s*(.-)%s*$", "%1")
 end
-function StringSplit.trim(s,arg)
+function StringDecode.trim(s,arg)
 	if arg then
 		return s:gsub(arg,"")
 	else
 		return s:gsub("%s*","")
 	end
 end
-function StringSplit.trim_quote( s )
+function StringDecode.trim_quote( s )
 	return s:gsub("^%s*%p?(.-)%p?%s*$", "%1")
 end
 
-function StringSplit.split_comma_enter( s )
+function StringDecode.split_comma_enter( s )
 	local t = {}
 	for v in string.gmatch(s, '([^,^\n]+)') do
 		table.insert(t,v)
@@ -51,7 +51,7 @@ local function merge_line(t)
 	for k,v in pairs(t) do
 		local equal = v:find('=')
 		if not equal then
-			local line = StringSplit.trim_head_tail(v)
+			local line = StringDecode.trim_head_tail(v)
 			if #line >0 then
 				tab[#tab]=tab[#tab]..line
 			end
@@ -73,12 +73,12 @@ local function make_table(t)
 	for k,v in pairs(t) do
 		local equal = v:find('=')
 		if equal then
-			local key = StringSplit.trim(v:sub(1,equal-1))
-			local value = StringSplit.split_comma_enter(StringSplit.trim_head_tail(v:sub(equal+1,#v)))
+			local key = StringDecode.trim(v:sub(1,equal-1))
+			local value = StringDecode.split_comma_enter(StringDecode.trim_head_tail(v:sub(equal+1,#v)))
 			if #value >1 then
 				tab[key]={}
 				for i,j in pairs(value) do
-					j=StringSplit.trim_head_tail(j)
+					j=StringDecode.trim_head_tail(j)
 					table.insert(tab[key],j)
 				end
 			else
@@ -94,16 +94,16 @@ local function find_scope(str,p)
 	local scope_end   = str:find('}',p)
 	return scope_start,scope_end
 end
-function StringSplit.CheckInclude(content)
+function StringDecode.CheckInclude(content)
 	local include_start , include_end = content:find('include')
 
 	if include_end then
 		local include_line_start = content:find('=',include_end)
 		local include_line_end = content:find('\n',include_end)
 		local str =content:sub(include_line_start+1 ,include_line_end-1)
-		local tab=StringSplit.split_comma_enter(str)
+		local tab=StringDecode.split_comma_enter(str)
 		for k,v in pairs(tab) do
-			tab[k]=StringSplit.trim_head_tail(v)
+			tab[k]=StringDecode.trim_head_tail(v)
 		end
 		return tab
 	else
@@ -111,11 +111,11 @@ function StringSplit.CheckInclude(content)
 	end
 end
 
-function StringSplit.Decode(filename)
+function StringDecode.Decode(filename)
 	local file = io.open(filename,'r')
 	local content = file:read('*all')
 	local tab={}
-	local includeTab=StringSplit.CheckInclude(content)
+	local includeTab=StringDecode.CheckInclude(content)
 
 	if includeTab then
 		for k,v in pairs(includeTab) do
@@ -150,6 +150,6 @@ function StringSplit.Decode(filename)
 	return tab
 end
 
-return StringSplit
+return StringDecode
 
 

@@ -89,7 +89,7 @@ end
 
 
 Card.default={Lock=Lock,Unlock=Unlock,LockSwitch=LockSwitch,
-				CheckTargetRace=CheckTargetRace,Check=Check
+				Check=Check
 }--Update=Update,MoveDrawOrder=MoveDrawOrder,CheckMouseRange=CheckMouseRange,OnHold=OnHold,OnRelease=OnRelease,OnClick=OnClick,
 Card.metatable={}
 function Card.new(o)--effectOn,targetNum,master,Effect,name,numbering,info,dropTo,cardtype,cost,motionType

@@ -1,4 +1,4 @@
-local StringSplit=require('lib.stringSplit')
+local StringDecode=require('lib.StringDecode')
 
 local StringRead={}
 local function valueMap(key1 ,key2 ,obj)
@@ -23,55 +23,6 @@ local function valueMap(key1 ,key2 ,obj)
 	return map[key1](key1 ,key2 ,obj)
 end
 
-local function actMap(choose,effect,stack,key,...)
-	map={
-		get= function()
-			local target =stack:pop() 
-			for k,v in pairs(target) do
-				table.insert(v.data[effect_arg]) 
-			end
-			return t
-		end,
-
-		set= function()
-			local target =stack:pop()
-			local value  =stack:pop()
-			for k,v in pairs(target) do
-				v.data[effect_arg]=value
-			end
-		end,
-
-		card=function()
-			return arg_table.card 
-		end,
-
-		select_target=function()
-			local len=#choose.select_table 
-			TableFunc.Push(stack ,choose.select_table[len]) 
-		end,
-
-		input_target=function(...)
-			local num =... or 1
-			TableFunc.Push(stack ,choose.select_table[num])
-		end
-
-	}
-	assert(map[effect_key],effect_key..' is nil')
-	return map[effect_key]
-end
-function StringRead.ReadEffect(choose)
-	local card = choose.card
-	local effect=TableFunc.Copy(card.effect)
-	local stack={}
-	for k,v in pairs(effect) do
-		local arg = {StringSplit.split_by(v,'%s')}
-		local key = arg[1]
-		TableFunc.Shift(arg)
-
-		local value = actMap(choose,effect,stack,key,table.unpack(arg))
-	
-	end
-end
 function StringRead.StrFormat(str,...)
 	local t ={}
 	local head,tail
@@ -83,7 +34,7 @@ function StringRead.StrFormat(str,...)
 	local s =str
 	for k,v in pairs(t) do
 		local pattern = type(arg[k])=='number' and'%%d' or '%%s'
-		print(arg[k],pattern)
+		--print(arg[k],pattern)
 		s=s:gsub('%'..v..'%',pattern)
 	end
 
@@ -118,7 +69,7 @@ function StringRead.StrColor(str)
 			s=s:gsub(between,'')
 
 		else		
-			s=StringSplit.trim_head_tail(s:gsub(v,'')) 
+			s=StringDecode.trim_head_tail(s:gsub(v,'')) 
 			table.insert(t,s)
 		end
 	end
@@ -161,7 +112,7 @@ function StringRead.StrToValue(str,obj)
 
 	--word_table 取得數字 放入value_table
 	for k,v in pairs(word_table) do
-		local key1 ,key2 = StringSplit.split_by(v,'.')
+		local key1 ,key2 = StringDecode.split_by(v,'.')
 		local i = valueMap(key1 ,key2 ,obj)
 		--print('i',i)
 		table.insert(value_table,i)

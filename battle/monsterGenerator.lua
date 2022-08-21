@@ -38,7 +38,7 @@ function monsterGenerator.RandomMonster(roomNum)
 	table.sort( temp, CompairMin )
 	for k,monster in pairs(temp) do
 		--local m = Assets.Monsters.instance(monster[1],0,0)
-		local m = CharacterAssets.instance(monster[1])
+		local m = CharacterAssets.instance(monster[1],k)
 		GrowByRoomNum(m , roomNum )
 		table.insert(monsterInstance,m) 
 	end

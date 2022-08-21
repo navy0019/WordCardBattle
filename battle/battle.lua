@@ -47,6 +47,7 @@ local function CardWordUpdate(self)--InfoUpdate
 	end
 end
 local function DropCard(self,originTab,card)
+	local Card=require('lib.card')
 	if getmetatable(card)==Card.metatable then
 
 		table.insert(self.battleData.drop,card)

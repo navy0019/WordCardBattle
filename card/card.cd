@@ -20,17 +20,17 @@ effect 步驟(指令[欄位狀態]):
 			 select_target(hp:10 atk:5)    card(atk:3)     
 			 select_target                 												[select_target]
 			 select_target , get hp        												[10]
-			 select_target , get hp ,  card 											[10 , card]
-			 select_target , get hp ,  card , get atk 	        						[10 , 3]
-			 select_target , get hp ,  card , get atk ,  melee  						[7]       (select_target.hp - self.atk後的數值)
-             select_target , get hp ,  card , get atk ,  melee  , select_target 		[7 , target]
-			 select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp	[]        (select_target.hp設為value)
-			 select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp ,input_target 	[input_target]
+			 select_target , get hp ,  card 												[10 , card]
+			 select_target , get hp ,  card , get atk 	        										[10 , 3]
+			 select_target , get hp ,  card , get atk ,  melee  									[7]       (select_target.hp - self.atk後的數值)
+            		 select_target , get hp ,  card , get atk ,  melee  , select_target 							[7 , target]
+			 select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp	[]        					(select_target.hp設為value)
+			 select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp ,input_target 					[input_target]
 			 select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp ,input_target , move_to drop_card []
 
 
 
-include = throw_axe , poison_arrow ,defense ,attack ,attack2
+include = throw_axe , poison_arrow ,defense ,attack ,attack2 , origin_atk
 --throw_axe_part --
 {cost          =  4
 type          =  melee
@@ -74,15 +74,33 @@ drop_to       =  grave
 use_condition =  select 1 enemy ,
 atk           =  master.atk
 def           =  0
-effect        =  select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp
+effect        =  select_target , get hp  ,  built_in_atk melee card.atk  , select_target ,set hp
 }
 attack2_part
 {
 cost          =  2
 type          =  melee
 drop_to       =  grave
-use_condition =  select 1 enemy ,input 1~3 card ,
+use_condition =  select 1 enemy ,input 1~2 card ,,input 0~2 card 
 atk           =  master.atk
 def           =  0
 effect        =  select_target , get hp ,  card , get atk ,  melee  , select_target ,set hp
+}
+origin_atk_part
+{
+cost          =  2
+type          =  melee
+drop_to       =  grave
+use_condition =  select 1 enemy
+atk           =  master.atk
+def           =  0
+effect        =  select_target, get shield,
+		card, get atk,
+		select_target, get team_index,
+		>2, boolean true[2, divided],
+		minus,
+		select_target, set shield,
+		select_target, get shield,
+		< 0 ,boolean true[select_target, get shield, select_target, get hp, sum],
+		select_target, set hp
 }

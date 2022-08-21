@@ -1,6 +1,5 @@
 local Card = require("lib.card")
-local StringSplit=require('lib.stringSplit')
---local StringRead =require('lib.stringRead')
+local StringDecode=require('lib.StringDecode')
 local TableFunc=require('lib.TableFunc')
 
 --local StringConvert = require("lib.stringConvert")
@@ -13,12 +12,12 @@ function CardAssets.Init(card_table ,translate_table)
         for key,value in pairs(v) do
             if key =='use_condition' then
                 if type(value)~='table' then                    
-                    local select_type ,number ,race = StringSplit.split_by(value,'%s')
+                    local select_type ,number ,race = StringDecode.split_by(value,'%s')
                     number = tonumber(number)~=nil and tonumber(number) or number
                     v.use_condition={{select_type ,number ,race}}
                 else
                     for i,str in pairs(value) do
-                        local select_type ,number ,race = StringSplit.split_by(str,'%s')
+                        local select_type ,number ,race = StringDecode.split_by(str,'%s')
                         number = tonumber(number)~=nil and tonumber(number) or number
                         v.use_condition[i]={select_type ,number ,race }
                     end

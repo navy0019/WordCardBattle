@@ -50,6 +50,10 @@ local drawCommand = {
 		local str = ...
 		print(str[2])
 		return true
+	end,
+	UseCard=function(scene,...)
+		local machine = scene.BattleMachineView
+		machine:TransitionTo('PlayerAct')
 	end
 }
 function BattleViewScenes.new(battle , scene)
@@ -164,7 +168,7 @@ function BattleViewScenes.new(battle , scene)
 		end
 	end
 	ExtraInput.DoOnEnter=function(...)
-		print('0:確認選取  1:取消  ')
+		print('1:確認選取  2:取消  ')
 		local choose = LogicScenesMgr.CurrentScene.battle.machine.choose
 		local hand = battle.battleData.hand
 		for k,v in pairs(hand) do

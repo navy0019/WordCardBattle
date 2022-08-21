@@ -1,5 +1,4 @@
 local Character = require("lib.character")
-local StringSplit=require('lib.stringSplit')
 local TableFunc=require('lib.TableFunc')
 
 --local StringConvert = require("lib.stringConvert")
@@ -17,10 +16,11 @@ function CharacterAssets.Init(t)
         end
     end
 end
-function CharacterAssets.instance( key)
+function CharacterAssets.instance( key,index)
 
 	local o = TableFunc.Copy(_G.Resource.character[key])
 	o.key=key
+	o.data.team_index=index
 	o.getAsset=function(o,index)
 				assert(Resource.character[o.key][index],'don\'t have key '..index) 
 				return Resource.character[o.key][index] 

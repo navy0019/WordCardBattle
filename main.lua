@@ -25,9 +25,9 @@ GameMachine.Init()
 local x = 1
 
 --not GameMachine.stop
-while x<100 do
+while not GameMachine.stop do
 	GameMachine.Update()
-	x=x+1
+	--x=x+1
 	--print(x) 
 end
 print('end ')

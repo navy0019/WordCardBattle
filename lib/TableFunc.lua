@@ -12,6 +12,43 @@ function TableFunc.Upset(tab)
 	end
 
 end
+function TableFunc.Print_one_line(tab)
+	--print('print',#tab)
+	function isDic(t)
+		for k,v in pairs(t) do
+			if type(k)=='string' then
+				return true
+			end
+		end
+		return false
+	end
+	local s = ''
+	if #tab ==0 then return '[ ]' end
+	for k,v in pairs(tab) do
+		if type(v)=='table' then
+			--print('is table')
+			s=s..'['
+			if isDic(v) then
+				s=s..'obj'
+			else
+				for i,j in pairs(v) do
+					if type(j)~='table' then
+						s=s..tostring(j)
+					else
+						s=s..'obj'
+					end
+					if i < #v then
+						s=s..','
+					end
+				end
+			end
+			s=s..'], '
+		else
+			s=s..'['..v..'], '
+		end
+	end
+	return s
+end
 function TableFunc.Find(tab,target,key)
 	local key=key or nil
 	if key then

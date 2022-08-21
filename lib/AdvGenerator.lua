@@ -32,7 +32,7 @@ function AdvGenerator:SetAdvData( CurrentSave)
 	--TableFunc.Dump(CurrentSave.CurrentTeam)
 	for k,v in pairs(CurrentSave.CurrentTeam) do
 		--local hero = Assets.Characters.instance(v , 0 ,-24)
-		local hero = CharacterAssets.instance(v)
+		local hero = CharacterAssets.instance(v,k)
 		if CurrentSave.CurrentTeamData[k] then
 			hero.data=CurrentSave.CurrentTeamData[k]
 		else
