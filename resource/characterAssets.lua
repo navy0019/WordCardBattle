@@ -5,7 +5,7 @@ local TableFunc=require('lib.TableFunc')
 
 local CharacterAssets = {}
 function CharacterAssets.Init(t)
-	local data_map={'hp','act','atk','def',}
+	local data_map={'hp','act','atk','def','shield'}
     for k,v in pairs(t) do
         v.data={shield=0}
         for key,value in pairs(v) do
@@ -21,10 +21,10 @@ function CharacterAssets.instance( key,index)
 	local o = TableFunc.Copy(_G.Resource.character[key])
 	o.key=key
 	o.data.team_index=index
-	o.getAsset=function(o,index)
+	--[[o.getAsset=function(o,index)
 				assert(Resource.character[o.key][index],'don\'t have key '..index) 
 				return Resource.character[o.key][index] 
-			   end
+			   end]]
 	
 	local character = Character.new(o)
 	return character

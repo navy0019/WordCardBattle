@@ -97,7 +97,8 @@ function TableFunc.Dump(data, showMetatable, lastCount)
         for key,value in pairs(data) do
             for i = 1,count do io.write("\t") end
             if type(key) == "string" then
-                io.write("\"", key, "\" = ")
+               -- io.write("\"", key, "\" = ")
+               io.write(key, " = ")
             elseif type(key) == "number" then
                -- io.write("[", key, "] = ")
             else

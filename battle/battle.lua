@@ -12,8 +12,9 @@ local BattleMachine = require('battle.battleMachine')
 
 local Battle={}
 
-local function InitBattleData(battle,AdvGenerator)
-	local seed = battle.scene.events.ranSeed
+local function InitBattleData(battle,scene)
+	local AdvGenerator=scene.AdvGenerator
+	local seed =scene.events.ranSeed
 	math.randomseed(seed)
 
 	local roomNum = AdvGenerator.mapData.passedRoom
@@ -166,8 +167,8 @@ local function DealProcess(battle)
 		end
 	end
 end
-local function Update( self,dt  )
-	self.machine:Update(self,dt)
+local function Update( self,scene,dt  )
+	self.machine:Update(self,scene,dt)
 end 
 Battle.default={DealProcess=DealProcess,ClearDeath=ClearDeath,DropItem=DropItem,RemoveDeathCard=RemoveDeathCard,CheckLife=CheckLife,Reset=Reset,Update=Update, InitBattleData=InitBattleData,DropCard=DropCard ,CardWordUpdate=CardWordUpdate}
 Battle.metatable={}
@@ -175,12 +176,12 @@ Battle.metatable={}
 function Battle.new(scene)
 	--print('new Battle')
 	local o ={characterData={heroData={},monsterData={}},
-		battleData={round=1,actPoint=0,dealNum=5,maxDealNum=7,deck={},hand={},drop={},disappear={}},
-		scene=scene,endingItem={},choose={Choose.new()}
+		battleData={round=1,actPoint=0,dealNum=5,maxDealNum=7,deck={},hand={},drop={},disappear={},enemyGrave={}},
+		endingItem={},choose={Choose.new()}
 	}
 
 	--o.label=label or nil
-	InitBattleData(o ,scene.AdvGenerator)
+	InitBattleData(o ,scene)
 	o.machine=BattleMachine.new(o,scene)
 	
 	--o.keyCtrl = scene.keyCtrl

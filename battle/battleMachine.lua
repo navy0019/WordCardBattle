@@ -44,7 +44,7 @@ end
 local function CancelInput(battle,...)
 	local choose = battle.machine.choose
 	choose:Clear()
-	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='ExtraInput'} }
+	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}} }
 end
 local function CheckInput(battle, ...)
 	local choose = battle.machine.choose
@@ -58,17 +58,7 @@ end
 local function ReDraw( battle,choose )
 	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'}, viewState='PlayerAct'} }
 end
---[[local function InsertResult(machine , result)
-	if type(result)~='boolean' and result.toViewScene then
-		TableFunc.Unshift(machine.toViewScene , result.toViewScene)
-	end
-	if type(result)~='boolean' and result.toPending then
-		TableFunc.Push(machine.pending , result.toPending)
-	end
 
-	--table.insert(machine.record , 'pending '..command.actName)
-	TableFunc.Shift(machine.pending)
-end]]
 local function ClearDeath(battle)
 	battle.ClearDeath(battle)
 end
@@ -104,6 +94,17 @@ function InitPlayerRounde(battle)
 	battle:DealProcess()
 	--table.insert(machine.toViewScene,1,{alreadySent=false,command={key='TransitionTo' ,arg={'PlayerAct'}, viewState='Statusbefore'}})
 	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'},} }
+end
+function AfterUseCard(toUse, battle)
+	--[[local monsterData=battle.characterData.monsterData
+	for i=#monsterData,1 ,-1 do
+		local m =monsterData[i]
+		if m.data.hp <=0 then
+			TableFunc.Push(battle.battleData.enemyGrave ,m)
+			table.remove(monsterData,i)
+		end
+	end
+	return {toViewScene={key='DoAct',arg={toUse}}}]]
 end	
 function BattleMachine.new(battle , scene)
 	local PreState = State.new("PreState")
@@ -167,6 +168,7 @@ function BattleMachine.new(battle , scene)
 		UpdateState=UpdateState,
 		InitPlayerRounde=InitPlayerRounde,
 		LoopAdd=LoopAdd,
+		AfterUseCard=AfterUseCard
 
 	}
 	machine.record={}--debug用 記錄所有步驟
@@ -174,6 +176,8 @@ function BattleMachine.new(battle , scene)
 
 	PreState.Do=function(...)
 		machine:TransitionTo('Empty')
+		--TableFunc.Dump(battle.characterData)
+
 	end
 	Empty.Do=function(...)
 		--print('Empty Data Up')
@@ -355,17 +359,17 @@ function BattleMachine.new(battle , scene)
 		battle.keyCtrl:TransitionTo('keyLose')
 	end
 
-	machine.Update=function(self,battle,...)
+	machine.Update=function(self,battle,scene,...)
 		self.current:Do(...)
 
 		local logic_retsult = machine.cardLogic:Update(battle,...)
 		if logic_retsult then
-			battle.scene.InsertResult(machine ,logic_retsult)
+			scene.InsertResult(machine ,logic_retsult)
 		end
 
 		local choose_result=machine.choose:Update(battle,...)
 		if choose_result then
-			battle.scene.InsertResult(machine ,choose_result)
+			scene.InsertResult(machine ,choose_result)
 		end
 
 	end

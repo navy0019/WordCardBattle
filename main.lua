@@ -7,11 +7,12 @@ function script_path()
    end
 end
 path = script_path()
-print('path ',path)
+--print('path ',path)
 package.path = package.path..';'..path..'?.lua'
 
 local GetOs=require('lib.get_os_name')
 CurrentOs= GetOs.get_os_name()
+
 Resource = require('resource.Resource')
 GameMachine = require('GameMachine')
 local TableFunc=require('lib.TableFunc')
@@ -19,6 +20,9 @@ local TableFunc=require('lib.TableFunc')
 Resource.Init()
 GameMachine.Init()
 
+--[[for k,v in pairs(Resource.card) do
+   print(k,v)
+end]]
 --TableFunc.Dump(Resource.card)
 --TableFunc.Dump(Resource.character)
 --TableFunc.Dump(Resource.translate)

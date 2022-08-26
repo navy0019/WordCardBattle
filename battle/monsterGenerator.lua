@@ -1,6 +1,7 @@
 --local Assets = require('resource.allAssets')
 local Character = require('lib.character')
 local CharacterAssets = require('resource.characterAssets')
+local TableFunc = require('lib.TableFunc')
 
 local monsterGenerator = {}
 function CompairMin( t1,t2)
@@ -8,10 +9,11 @@ function CompairMin( t1,t2)
 end
 local function GrowByRoomNum(self, roomNum )
 	local value = math.floor(roomNum/5)
-	self.data.hp = self.data.hp + value * 2
-	self.data.act = self.data.act + value -1
+	self.data.hp = self.data.hp + value 
+	self.data.act = self.data.act + value
 	self.data.def = self.data.def + value
 	self.data.atk = self.data.atk + value
+	self.originData=TableFunc.Copy(self.data)
 end
 function monsterGenerator.RandomMonster(roomNum)
 	local max = 8

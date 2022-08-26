@@ -5,10 +5,10 @@ local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 
 local function MakeDiff( self,current_condition)
-	local diff =current_condition.max - #self.input_table  
+	local diff =current_condition.max - #self.card_table  
 	if diff > 0 then
 		if current_condition.max ~= current_condition.min then
-			local min = #self.input_table >=current_condition.min and 0 or current_condition.min
+			local min = #self.card_table >=current_condition.min and 0 or current_condition.min
 			local num = current_condition.min<diff and min..'~'..diff or diff
 			local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('can_need',num)} }}
 			TableFunc.Push(self.queue , o)
@@ -23,7 +23,7 @@ local function MakeDiff( self,current_condition)
 end
 local function LoopAdd(self,card)
 	local isCard = getmetatable(card) == Card.metatable and true or false
-	local current_condition = self.input_check[1]
+	local current_condition = self.card_check[1]
 	local diff
 
 	if not isCard then
@@ -32,36 +32,37 @@ local function LoopAdd(self,card)
 		return
 	end
 
-	local p = TableFunc.Find(self.input_table , card)
+	local p = TableFunc.Find(self.card_table , card)
 	if p then
-		table.remove(self.input_table,p)
+		table.remove(self.card_table,p)
 		MakeDiff(self, current_condition )
 		return
 	end
 
-	if #self.input_table+1 > current_condition.max then
-		TableFunc.Shift(self.input_table)
-		TableFunc.Push(self.input_table,card)
+	if #self.card_table+1 > current_condition.max then
+		TableFunc.Shift(self.card_table)
+		TableFunc.Push(self.card_table,card)
 		MakeDiff(self, current_condition)
 	else
-		TableFunc.Push(self.input_table,card)
+		TableFunc.Push(self.card_table,card)
 		MakeDiff(self, current_condition)
 	end
 
 end 
 
 local function Clear( self )
+	--print('Clear!')
 	self.card = nil 
-	self.select_table, self.select_check = nil,nil
-	self.input_table , self.input_check = nil,nil
+	self.target_table, self.target_check = nil,nil
+	self.card_table , self.card_check = nil,nil
 	self.toUse ={}
 	--self:TransitionTo('Wait')
 end
 
 local function Add(self,obj,table_type)
-	--print('try add ',self , obj ,table_type)
+	print('try add ' ,table_type)
 	if self.card then
-		if table_type == 'card' and not TableFunc.Find(self.card.use_condition ,'input') then
+		if table_type == 'card' then --and not TableFunc.Find(self.card.use_condition ,'input') 
 			local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')}}}
 			TableFunc.Push(self.queue , o)
 			self:Clear()
@@ -75,6 +76,7 @@ local function Add(self,obj,table_type)
 			TableFunc.Push(self[t] , obj)
 		end
 
+
 	elseif not self.card and getmetatable(obj)~= Card.metatable then
 		local o = {toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')}  } }
 		TableFunc.Push(self.queue , o)
@@ -83,18 +85,19 @@ local function Add(self,obj,table_type)
 	end
 end
 local function InitUse_condition(self)
+	--print('InitUse_condition')
 	local card=self.card
 	local input = TableFunc.Find(card.use_condition,'input') 
 	local select = TableFunc.Find(card.use_condition,'select')
 	if input then
 		--print('init input')
-		self.input_table={} 
-		self.input_check={} -- 滿足條件會移除 condition
+		self.card_table={} 
+		self.card_check={} -- 滿足條件會移除 condition
 	end
 	if select then 
 		--print('init select')
-		self.select_table={} 
-		self.select_check={} 
+		self.target_table={} 
+		self.target_check={} 
 	end
 
 	for k,v in pairs(card.use_condition) do
@@ -105,7 +108,7 @@ local function InitUse_condition(self)
 		local race=v[3]
 		local max ,min
 
-		local current_table = choose_type == 'input' and self.input_check or self.select_check
+		local current_table = choose_type == 'input' and self.card_check or self.target_check
 		table.insert(current_table,{})
 		local len = #current_table
 
@@ -172,8 +175,9 @@ function Choose.new(option)
 	machine.Clear=Clear
 	machine.queue={}
 	machine.toUse={}
+
 	Wait.Do=function(self,battle,...)
-		
+		--print('Choose Wait')
 		if machine.card then
 			print('TransitionTo cost')
 			machine:TransitionTo('CheckCost',battle)
@@ -191,35 +195,37 @@ function Choose.new(option)
 			machine.toUse.card = machine.card
 			InitUse_condition(machine)
 			--print('find select',TableFunc.Find(card.use_condition,'select'))
+			--print('find input ',TableFunc.Find(card.use_condition,'input'))
 			if not TableFunc.Find(card.use_condition,'select') and TableFunc.Find(card.use_condition,'input') then
 				print('cost TransitionTo ExtraInput')
 				local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 				TableFunc.Push(machine.queue , o)
 				
-				local current_condition = machine.input_check[1]
+				local current_condition = machine.card_check[1]
 				MakeDiff(machine , current_condition )
 			else
 				local monsterData = battle.characterData.monsterData
-				local heroData = battle.characterData.heroData	
+				local heroData = battle.characterData.heroData
+				--print('choose need target')
 				local o= {toViewScene={key='WaitIoRead' ,arg={Msg.msg('need_target',#heroData ,#monsterData)} } }
 				TableFunc.Push(machine.queue , o)
 			end
 		end
 	end
 	CheckCost.Do=function(self,battle,...)
-		if machine.select_table and #machine.select_table >0 then
+		if machine.target_table and #machine.target_table >0 then
 			print('cost TransitionTo Select')
 			machine:TransitionTo('CheckSelect',battle)
 		end
 	end
 	CheckSelect.DoOnEnter =function(self,battle,...)
 
-		for i,target in pairs(machine.select_table) do
+		for i,target in pairs(machine.target_table) do
 			--TableFunc.Dump(target)
-			for k,t in pairs(machine.select_check) do
+			for k,t in pairs(machine.target_check) do
 				--print('target race ',target.race ,t.race)
 				if target.race == t.race then
-					if machine.input_table then
+					if machine.card_table then
 						print('Select TransitionTo Input')
 						local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 						TableFunc.Push(machine.queue , o)
@@ -235,23 +241,24 @@ function Choose.new(option)
 		machine:Clear()
 		local monsterData = battle.characterData.monsterData
 		local heroData = battle.characterData.heroData	
-		local msg = #machine.select_table>0 and 'error_target'  or 'need_target'
+		local msg = #machine.target_table>0 and 'error_target'  or 'need_target'
 		local arg = msg =='need_target' and {#heroData ,#monsterData} or nil
 		local o={toViewScene={key='WaitIoRead' ,arg={Msg.msg(msg , table.unpack(arg)) } }}
 		TableFunc.Push(machine.queue , o)
 		machine:TransitionTo('Wait')
 	end
 
-	CheckInput.DoOnEnter=function(self,...)	
+	CheckInput.DoOnEnter=function(self,...)
+		--print('let\'s CheckInput')
 		local input,enforce,battle =...
-		print('...',...)
+		--print('input,enforce,battle',...)
 		local diff
-		if machine.input_table then
-			print('let\'s CheckInput')
-			for i=1,#machine.input_check do
-				local current_condition = machine.input_check[1]
+		if machine.card_table then
+			
+			for i=1,#machine.card_check do
+				local current_condition = machine.card_check[1]
 				--確認種類
-				for i,target in pairs(machine.input_table) do
+				for i,target in pairs(machine.card_table) do
 					if getmetatable(target)~= Card.metatable then
 						machine:Clear()
 						local o={toViewScene={key='WaitIoRead' ,arg={Msg.msg('error_target')} }}
@@ -268,21 +275,22 @@ function Choose.new(option)
 					return
 				end
 				--確認數量
-				if #machine.input_table > current_condition.max or #machine.input_table < current_condition.min then
-					--print('still need ',#machine.input_table ,tab.max ,tab.min)
+				if #machine.card_table > current_condition.max or #machine.card_table < current_condition.min then
+					--print('still need ',#machine.card_table ,tab.max ,tab.min)
 					MakeDiff(machine , current_condition )
 					machine:TransitionTo('InputWait')
 					return
 				else
 					local name = 'input_target_'..i
 					machine.toUse[name] = {}
-					for i=#machine.input_table, 1 ,-1 do
-						TableFunc.Push(machine.toUse[name] , machine.input_table[1] )
-						TableFunc.Shift(machine.input_table) 
+					for i=#machine.card_table, 1 ,-1 do
+						TableFunc.Push(machine.toUse[name] , machine.card_table[1] )
+						TableFunc.Shift(machine.card_table) 
 					end
-					TableFunc.Shift(machine.input_check)
-					print('complete input',name)  
+					TableFunc.Shift(machine.card_check)
+					--print('complete input',name)  
 				end
+				enforce=nil
 			end
 			machine:TransitionTo('PrepareToUse',battle)
 		else
@@ -292,10 +300,10 @@ function Choose.new(option)
 	end
 	--[[InputWait.DoOnEnter=function(self,battle,...)
 		print('input wait')
-		self.current_num = #machine.input_table
+		self.current_num = #machine.card_table
 	end
 	InputWait.Do=function(self,battle,...)
-		if #machine.input_table > self.current_num then
+		if #machine.card_table > self.current_num then
 			machine:TransitionTo('CheckInput')
 		end
 	end]]
@@ -305,15 +313,15 @@ function Choose.new(option)
 		local monData = battle.characterData.monsterData
 
 		--製作target
-		if machine.select_table then
-			machine.toUse.select_table={}	
-			local obj = machine.select_table[1]
+		if machine.target_table then
+			machine.toUse.target_table={}	
+			local obj = machine.target_table[1]
 			local race_table = obj.race =='hero' and heroData or monData
 			local index = TableFunc.Find(race_table,obj)	
 			assert(index,'can\'t find target in race_table')
 
 			local current_condition
-			for k,v in pairs(machine.select_check) do
+			for k,v in pairs(machine.target_check) do
 				if TableFunc.Find(v , obj.race ,'race') then 
 					current_condition=v
 					break
@@ -323,7 +331,7 @@ function Choose.new(option)
 			local need_num = current_condition.max
 			
 			if need_num == 4 or need_num >= #race_table then
-				machine.toUse.select_table=race_table
+				machine.toUse.target_table=race_table
 			elseif need_num > 1 then
 				local diff = need_num-1--(扣掉target_table已經包含的一個)
 				local reverse = 0
@@ -332,18 +340,18 @@ function Choose.new(option)
 					reverse = index+diff - #race_table
 					local start_index =index+1
 					for i=start_index ,#race_table do
-						table.insert(machine.toUse.select_table ,race_table[i])
+						table.insert(machine.toUse.target_table ,race_table[i])
 					end
 					for i=1,reverse do
-						table.insert(machine.toUse.select_table ,race_table[index-i])
+						table.insert(machine.toUse.target_table ,race_table[index-i])
 					end
 				else
 					for i=1,diff do
-						table.insert(machine.toUse.select_table ,race_table[index+i])
+						table.insert(machine.toUse.target_table ,race_table[index+i])
 					end
 				end
 			else
-				table.insert(machine.toUse.select_table ,race_table[index])
+				table.insert(machine.toUse.target_table ,race_table[index])
 			end
 			--print('PrepareToUse select done')
 			
@@ -351,6 +359,8 @@ function Choose.new(option)
 		local o ={toPending={key='ReadyToUse' ,arg={ machine.toUse ,battle },actName='toUse' }}
 		TableFunc.Push(machine.queue , o)
 		print('PrepareToUse done')
+		machine:Clear()
+		machine:TransitionTo('Wait')
 		--TableFunc.Dump(machine.toUse )
 
 	end

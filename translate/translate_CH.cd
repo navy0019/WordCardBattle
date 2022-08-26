@@ -1,4 +1,4 @@
-include = throw_axe , poison_arrow ,poison , attack , defense ,attack2
+include = throw_axe , poison_arrow ,poison , attack , defense ,attack2 ,origin_atk
 
 --throw_axe_part --
 {
@@ -33,10 +33,10 @@ info  =  #black# 對目標造成 %def% 傷害
 --attack2_part --
 {
 name  =  攻擊2
-info  =  #black# 選擇1~3張卡牌丟棄,對目標造成 %atk% 傷害
+info  =  #black# 直接對hp 造成近戰 %atk% 傷害
 }
 origin_atk_part
 {
 name  =  示範用攻擊
-info  =  #black# 對目標造成 %atk% 傷害
+info  =  #black# 對目標造成近戰 %atk% 傷害
 }

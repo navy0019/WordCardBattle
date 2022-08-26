@@ -1,0 +1,13 @@
+include = attack2 ,origin_atk
+
+
+--attack2_part --
+{
+name  =  攻擊2
+info  =  #black# 直接對 hp 造成近戰 %atk% 傷害
+}
+origin_atk_part
+{
+name  =  示範用攻擊
+info  =  #black# 對目標造成 %atk% 傷害
+}

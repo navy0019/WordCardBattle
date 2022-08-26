@@ -14,41 +14,7 @@ local function FindSymbol(str,t)
 		end
 	end
 end
-local function RemakeArg(arg)
-	local str=''
-	local t={}
-	local index=1 
-	for k,v in pairs(arg) do
-		str=str..' '..v
-	end
-	--print('str!',str,#str)
-	while index < #str do
-		if str:find('%]',index) then
-			local p=str:find('%]',index)		
-			local new_str = str:sub(index,p)
-			new_str=StringDecode.trim_head_tail(new_str)
-			--print('p~',p,new_str)
-			TableFunc.Push(t,new_str)
-			index = p+1
-		else
-			index=index+1
-		end		
-	end
 
-	return t
-end
-local function MakeAct(command)
-	local act={}										
-	scope_start= command:find('%[')
-	scope_end  = command:find('%]')
-	local str = command:sub(scope_start+1,scope_end-1)					
-	local temp={StringDecode.split_by(str,',')}
-	for k,v in pairs(temp) do
-		local w=StringDecode.trim_head_tail(v)							
-		TableFunc.Push(act , w)
-	end
-	return act
-end
 local actMap={
 		get= function(machine,effect,stack,toUse,...)
 			--print('get')
@@ -85,20 +51,22 @@ local actMap={
 			--TableFunc.Dump(toUse.card)
 		end,
 
-		select_target=function(machine,effect,stack,toUse,...)
-			TableFunc.Push(stack ,toUse.select_table) 
+		target=function(machine,effect,stack,toUse,...)
+			TableFunc.Push(stack ,toUse.target_table) 
 		end,
 
 		input_target=function(machine,effect,stack,toUse,...)
 			local num =... or 1
-			TableFunc.Push(stack ,toUse['input_target_'..num])  
+			TableFunc.Push(stack ,toUse['card_target_'..num])  
 		end,
 		melee=function(machine,effect,stack,toUse,...)
 			local atk_value = TableFunc.Pop(stack)
+			--print('atk_value',TableFunc.Dump(atk_value))
 			local tab={
 				atk_value,	
-				'select_target','get team_index',
+				'target','get team_index',
 				'> 2','boolean true[2,divided]',
+				'minus'
 			}
 			for i=#tab ,1 ,-1 do
 				table.insert(effect, machine.index+1 , tab[i])
@@ -108,23 +76,27 @@ local actMap={
 			local arg={...}
 			local atk_type=TableFunc.Shift(arg)
 			local atk_value = TableFunc.Shift(arg)
+			local tab
 			if tonumber(atk_value) then
 				atk_value = tonumber(atk_value)
 			else
 				atk_value = StringRead.StrToValue(atk_value ,toUse.card)
 			end
-			local condition
-			if atk_type =='melee' then condition ='> 2'end
-			if atk_type =='range' then condition ='< 2'end
-			if atk_type =='magic' then condition ='> 4'end
-
-			local tab={
-				'select_target','get shield',
-				atk_value ,atk_type ,'minus',
-				'select_target','set shield',
-				'select_target','get shield',
-				'< 0' ,'boolean true[select_target,get shield,select_target, get hp,sum] false[stop]'
+			if atk_type=='magic' then
+				tab={
+					'target','get hp' ,
+					atk_value , 'minus' ,
+					'target' ,'set hp'
+				}
+			else
+				tab={
+				'target','get shield',
+				atk_value ,atk_type ,
+				'target','set shield',
+				'target','get shield',
+				'< 0' ,'boolean true[target, get shield, target, get hp,sum ,target ,set hp] '
 			}
+			end
 			for i=#tab ,1 ,-1 do
 				table.insert(effect, machine.index+1 , tab[i])
 			end
@@ -134,15 +106,17 @@ local actMap={
 			local bool_tab = TableFunc.Pop(stack)
 			local arg={...}	--裡面必須是{true[xxx] ,false[xxx]}	
 			local scope_start,scope_end
-			--[[if #arg>2 then
-				arg=RemakeArg(arg)
-			end]]
+
 			--print('bool tab',bool_tab)
 			for k,bool in pairs(bool_tab) do
 				for i,command in pairs(arg) do
-					if command:find(tostring(bool))then
-						local act=MakeAct(command)
-						--StringAct.Act(stack,act,toUse)
+					local head, tail =command:find(tostring(bool))
+					
+					if head then
+						command=command:gsub(tostring(bool),'')
+						local mini_command =command:sub(2,#command-1)
+						local act={}
+						StringDecode.MakeTableByComma(mini_command,act)
 						for i=#act,1,-1 do
 							table.insert(effect, machine.index+1 , act[i])
 						end
@@ -212,6 +186,7 @@ local actMap={
 			local b = tonumber(arg[2]) and tonumber(arg[2]) or arg[2]
 			local index =FindSymbol(key,compare_map)
 			local t={}
+			--print('a',a ,'b',b)
 			if type(a)=='table' and type(b)~='table' then
 				for k,v in pairs(a) do
 					TableFunc.Push(t,func[index](v,b))
@@ -240,7 +215,7 @@ local actMap={
 
 }
 
-function StringAct.NewMachine(stack,effect,toUse)
+function StringAct.NewMachine(effect,toUse)
 	local Wait = State.new("Wait")
 	local Compare = State.new("Compare")
 	local Calculate= State.new("Calculate")
@@ -267,15 +242,18 @@ function StringAct.NewMachine(stack,effect,toUse)
 	machine.effect=effect
 	machine.stack={}
 	machine.toUse=toUse
+
 	Wait.Do=function(self,...)
 		if not stop then
 			machine.index=machine.index+1
 			local command = machine.effect[machine.index]
-			--print('wait command',command)
+			--print('stringAct wait command',command)
 			local arg={}
 			if tonumber(command) then
-				--print('is number')
 				TableFunc.Push(machine.stack,tonumber(command))
+
+			elseif type(command)=='table' then
+				TableFunc.Push(machine.stack,command)
 
 			elseif command:find('%[') then
 				machine:TransitionTo('Act',command)
@@ -305,7 +283,7 @@ function StringAct.NewMachine(stack,effect,toUse)
 			command=command:gsub('repeat','')						
 			key='repeat'
 		end
-		--print('Act command',command)
+		--print('Act command',command,key)
 		while index < #command do
 			if command:find('%]',index) then
 				local p=command:find('%]',index)		
@@ -320,7 +298,7 @@ function StringAct.NewMachine(stack,effect,toUse)
 		end
 
 		local value = actMap[key](machine, machine.effect ,machine.stack , machine.toUse ,table.unpack(arg))
-		if value =='stop' then
+		if value and value =='stop' then
 			machine.stop=true
 		end
 		machine:TransitionTo('Wait')
@@ -343,7 +321,7 @@ function StringAct.NewMachine(stack,effect,toUse)
 		local arg = {StringDecode.split_by(command,'%s')}
 		local key = TableFunc.Shift(arg)
 		if key:find('input_target')then
-			print('normal ',key)
+			--print('normal ',key)
 			local num = key:match('%d+')
 			TableFunc.Push(arg ,num)
 		end
@@ -361,17 +339,21 @@ end
 function StringAct.ReadEffect(toUse)
 	local card = toUse.card
 	local effect=TableFunc.Copy(card.effect)
-	local stack={}
-	local machine=StringAct.NewMachine(stack ,effect,toUse)
-	--[[for k,v in pairs(stack) do
-		print('stack: '..k,TableFunc.Dump(v))
-		print('\n')
-	end]]
+	local recode={}
+	local machine=StringAct.NewMachine(effect,toUse)
+
 	--if #stack==0 then print('stack clear')end
 	while not machine.stop and machine.index < #machine.effect do
 		machine:Update()
-		--print(TableFunc.Print_one_line(machine.stack))
+		--print('command:',machine.effect[machine.index])
+		--print(TableFunc.Print_one_line(machine.stack),'\n')
+		TableFunc.Push(recode,'command:'..tostring(machine.effect[machine.index]))
+		TableFunc.Push(recode,TableFunc.Print_one_line(machine.stack))
+
 	end
-	--TableFunc.Dump(toUse.select_table)
+	--[[for k,v in pairs(toUse.target_table) do
+		TableFunc.Dump(v.data)
+	end]]
+	return recode
 end
 return StringAct

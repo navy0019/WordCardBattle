@@ -46,9 +46,25 @@ function StringRead.StrColor(str)
 	local word_table={}
 	local t ={}
 	local s =str
-	for v in string.gmatch(str, '([%#%a+%#]+)') do	
-		table.insert(word_table,v)
+	
+	local index=1
+	while index <#str do
+		local w =s:sub(index,index)
+		if w =='#' then
+			--print('S',s ,index)
+			local scope_end=StringDecode.FindCommandScope(index+1 ,s,'#')
+			local value = str:sub(index,scope_end)
+			--print('value',value,scope_end)
+			table.insert(word_table,value)
+			index=scope_end+1
+		else
+			index=index+1
+		end
 	end
+	--[[for v in string.gmatch(str, '([#%a+#]+)') do	
+		table.insert(word_table,v)
+		print('match',v)
+	end]]
 
 
 	for k,v in pairs(word_table) do

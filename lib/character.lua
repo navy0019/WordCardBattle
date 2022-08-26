@@ -145,6 +145,10 @@ Character.metatable={}
 function Character.new(o)--,skill,advancedSkill,equipment,race,name
 	--local o = {equipment=equipment,skill=skill,advancedSkill=advancedSkill,act={},motion={},race=race,data=data,state=MonsterAI.new(),name=name}
 	o.originData=TableFunc.Copy(o.data)
+	--print('normal data')
+	--TableFunc.Dump(o.data)
+	--print('origindata')
+	--TableFunc.Dump(o.originData)
 	o.data.state={before={}, after={}, always={}}
 
 	setmetatable(o,Character.metatable)

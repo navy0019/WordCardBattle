@@ -5,7 +5,7 @@ local TableFunc=require('lib.TableFunc')
 --local StringConvert = require("lib.stringConvert")
 
 local CardAssets = {}
-function CardAssets.Init(card_table ,translate_table)
+function CardAssets.Init(card_table)
 	local data_map={'hp','act','atk','def','cost',}
     for k,v in pairs(card_table) do
         v.data={}
@@ -24,13 +24,23 @@ function CardAssets.Init(card_table ,translate_table)
                 end
             elseif TableFunc.Find(data_map,key) then
                 v.data[key]=value
-                v[key]=nil
+                v[key]=nil            
+            elseif key=='effect' and type(value)~='table' then
+            	local w =value
+            	--print('effect',w)
+            	v[key]={w}
             end
         end
     end
 end
-function CardAssets.instance( key,character)	
+function CardAssets.instance( key,character)
+	--print('key',key)
 	local o = TableFunc.Copy(_G.Resource.card[key])
+	--[[if test	then
+		o = TableFunc.Copy(_G.Resource.test_card[key])
+	else
+	 	o = TableFunc.Copy(_G.Resource.card[key])
+	end]]
 	--print(key,o)
 	o.key = key
 	--print('o key',_G.Resource.translate[o.key],o.key)

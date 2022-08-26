@@ -1,3 +1,4 @@
+local TableFunc=require('lib.TableFunc')
 local StringDecode={}
 --做初步的轉換(轉換成table 數字轉乘number type 複數項目放入table)
 
@@ -29,6 +30,7 @@ function StringDecode.split_comma_enter( s )
 	end
 	return t
 end
+
 local function split_line(str)
 	local tab = {}
 	local index = 1
@@ -72,8 +74,12 @@ local function make_table(t)
 	local tab={}
 	for k,v in pairs(t) do
 		local equal = v:find('=')
-		if equal then
+		--print('v',v)
+		local sq_brackets =v:find('%[')
+		if equal and not sq_brackets then
+			
 			local key = StringDecode.trim(v:sub(1,equal-1))
+			--print('just equal',key)
 			local value = StringDecode.split_comma_enter(StringDecode.trim_head_tail(v:sub(equal+1,#v)))
 			if #value >1 then
 				tab[key]={}
@@ -84,15 +90,20 @@ local function make_table(t)
 			else
 				tab[key]=value[1]
 			end
+		elseif equal and sq_brackets then
+			
+			local key = StringDecode.trim(v:sub(1,equal-1))
+			local str = StringDecode.trim_head_tail(v:sub(equal+1,#v))
+			--print('have command!',str)
+			local act ,copy_scope=StringDecode.Split_Command(str)
+			act=StringDecode.Replace_copy_scope(act,copy_scope)
+			--print('key',key,act)
+			tab[key]=act
+
 		end
 	end
 	decode_value(tab)
 	return tab
-end
-local function find_scope(str,p)
-	local scope_start = str:find('{',p) 		
-	local scope_end   = str:find('}',p)
-	return scope_start,scope_end
 end
 function StringDecode.CheckInclude(content)
 	local include_start , include_end = content:find('include')
@@ -110,7 +121,117 @@ function StringDecode.CheckInclude(content)
 		return nil
 	end
 end
+function StringDecode.MakeTableByComma(command,act)								
+	local temp={StringDecode.split_by(command,',')}
+	for k,v in pairs(temp) do
+		local word=StringDecode.trim_head_tail(v)					
+		table.insert(act , word)
+	end
+end
+function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
+	local count =0
+	local index=i
+	local symbol_right =symbol_right or symbol_left
+	--print('try find',s,i,symbol_left ,symbol_right)
+	while index <= #s do
+		local w = s:sub(index,index)
+		if w==symbol_left then			
+			if symbol_left~= symbol_right then
+				count=count+1
+				index=index+1
+			else
+				if count==0 then
+					return index
+				end
+			end
 
+		elseif w==symbol_right then
+			if count==0 then
+				return index
+			end
+			count=count-1
+			index=index+1
+		else
+			index=index+1
+		end
+	end
+end
+
+function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
+
+	function string_to_table(str,t)
+		str:gsub(".",function(c) table.insert(t,c) end)
+	end
+	local tab={}
+	string_to_table(str1,tab)
+	for i=1,#str1 do
+		if i >= p1 and i <=p2 then
+			table.remove(tab,p1)
+		end
+	end
+	if #tab < p1 then
+		table.insert(tab,'')
+	end
+	local s=''
+	for k,v in pairs(tab) do
+		if k== p1 then
+			s=s..str2..v
+		else
+			s=s..v
+		end
+
+	end
+	return s
+end
+function StringDecode.Replace_copy_scope(tab,copy_scope)
+	local new_tab={}
+	for k,v in pairs(tab) do	
+		if v:find('\"copy_scope\"') then
+			local index=1
+			local w= v
+			while index <= string.len(v)do		
+				local a,b = w:find('\"copy_scope\"',index)
+				local origin = TableFunc.Shift(copy_scope)
+				w=StringDecode.Gsub_by_index(w ,origin,a , b)			
+				index=b+1
+			end
+			table.insert(new_tab,w)
+		else
+			table.insert(new_tab,v)
+		end
+		
+	end
+	return new_tab	
+end
+
+function StringDecode.Split_Command(command)
+	local copy_scope ={}
+	local act={}
+	local index=1										
+	local word=''
+	--print('Split_Command',command)
+	while index <= string.len(command) do
+		local w = command:sub(index,index)
+		if w =='[' then
+			local scope_end=StringDecode.FindCommandScope(index+1 ,command,'[',']')
+			local scope_word =command:sub(index,scope_end)
+			--print('scope_word',scope_word)
+			table.insert(copy_scope, scope_word)
+			word=word.."\"copy_scope\""
+			--print(word)
+			index = scope_end
+		else
+			word=word..w
+		end
+		if index+1 >#command then
+			--print('make table',word)
+			StringDecode.MakeTableByComma(word,act)
+		end
+		index=index+1
+	end
+
+	return act,copy_scope
+end
 function StringDecode.Decode(filename)
 	local file = io.open(filename,'r')
 	local content = file:read('*all')

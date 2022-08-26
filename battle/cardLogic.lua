@@ -67,17 +67,21 @@ function CardLogic.new()
 		
 	end
 	ReadEffect.DoOnEnter=function(self,battle,...)
-		--print('ReadEffect!')
+		print('ReadEffect!')
 		for k,v in pairs(machine.card_pending) do
 			StringAct.ReadEffect(v)
 			battle:DropCard(battle.battleData.hand , v.card)
+			local o ={toViewScene={key='ViewUseCard' ,arg={} },
+					  toPending={key='AfterUseCard',arg={v ,battle }}
+				}
+			TableFunc.Push(machine.queue , o)
 		end
-		local o ={toViewScene={key='UseCard' ,arg={} }}
-		TableFunc.Push(machine.queue , o)	
+	
 		machine:TransitionTo('Wait',battle)
 	end
 	machine.Update=function(self,battle,...)
 		if #machine.queue > 0 then
+			--print('cardLogic queue shift')
 			local o = TableFunc.Shift(machine.queue)			
 			return o
 		end

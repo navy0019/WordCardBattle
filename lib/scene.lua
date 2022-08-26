@@ -130,7 +130,7 @@ local function DataPending(scene)
 		end
 	end
 	if scene.battle then
-		scene.battle:Update()						
+		scene.battle:Update(scene)						
 	end
 end
 local function FromCtrl(scene)--執行button
@@ -161,16 +161,20 @@ local function ViewPending(scene)
 
 		--print('viewState ',key,viewState,table.unpack(arg))
 		local result =funcTab[key](scene,table.unpack(arg))--注意drawCommand 是否有return true
-			
-		if result then			
+			TableFunc.Pop(self_pending)		
+		--[[if result then			
 			TableFunc.Pop(self_pending)			
-		end			
+		end		]]	
 	end
 end
 local function FromLogic(scene, dataScene)--view scene使用
 	local from_data= scene.battle and dataScene.battle.machine.toViewScene or dataScene.toViewScene
 	local self_pending = scene.battle and scene.BattleMachineView.pending or scene.pending
 	if #from_data > 0 then
+		--[[for i=#from_data ,1 ,-1  do
+			local v = from_data[i]
+			print('From Logic',v.key)
+		end]]
 		for i=#from_data ,1 ,-1  do
 			local v = TableFunc.Pop(from_data)	
 			TableFunc.Unshift(self_pending ,v)--.command
