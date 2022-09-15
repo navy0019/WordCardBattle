@@ -1,6 +1,4 @@
-include = hero1 , hero2 ,hero3 ,hero4 ,hero5 ,hero6
-
-hero1_part
+hero1
 {
 hp=12,
 act=2,
@@ -11,7 +9,7 @@ advancedSkill= attack,
 race='hero'
 }
 
-hero2_part
+hero2
 {
 hp=11,
 act=3,
@@ -22,7 +20,7 @@ advancedSkill=attack, attack ,
 race='hero'
 }
 
-hero3_part
+hero3
 {
 hp=10,
 act=5,
@@ -33,7 +31,7 @@ advancedSkill=attack, attack ,
 race='hero'
 }
 
-hero4_part
+hero4
 {
 hp=12,
 act=4,
@@ -44,7 +42,7 @@ advancedSkill=attack, attack ,
 race='hero'
 }
 
-hero5_part
+hero5
 {
 hp=12,
 act=3,
@@ -55,7 +53,7 @@ advancedSkill=attack, attack ,
 race='hero'
 }
 
-hero6_part
+hero6
 {
 hp=10,
 act=3,

@@ -33,21 +33,12 @@ local Math= require('lib.math')
 	Motion.NewTable(hitWord.motion , Motion.new({0,3,1,0.9},'outInCirc' ,function(self,dt)hitWord.transform.scale.x = Motion.Lerp(self,dt) hitWord.transform.scale.y=hitWord.transform.scale.x end ) ) 
 
 end]]
---[[local function clamp(v, minValue, maxValue)  
-    if v < minValue then
-        return minValue
-    end
-    if( v > maxValue) then
-        return maxValue
-    end
-    return v 
-end]]
-local function HP( char , value,battle)	
+--[[local function HP( char , value,battle)	
 	--local battle = SceneMgr.CurrentScene.battle
-	char.data.hp =  Math.clamp(char.data.hp + value ,0 , char.originData.hp)
+	--char.data.hp =  Math.clamp(char.data.hp + value ,0 , char.originData.hp)
 
 	return true
-	--[[local v 
+	local v 
 	if value < 0 then
 		v= math.min(value+char.data.shield,0)
 	else
@@ -82,11 +73,11 @@ local function HP( char , value,battle)
 	if hasMotion then
 		local cx =char.sprite.transform.position.x
 		Motion.NewTable(char.motion , Motion.new({0 ,cx ,cx-30*char.xDir ,0.3},'outCubic' ,function(motion,dt) char.sprite.transform.position.x  = Motion.Mirror(motion,dt)end))
-	end]]
+	end
 	
-end
+end]]
 
-local function DoAct(self,battle)
+--[[local function DoAct(self,battle)
 	--_G.rng:setState(battle.scene.events.ranState)
 	--_G.rng:setSeed(battle.scene.events.ranSeed)
 	self:DecideAct(battle.characterData.heroData,battle)
@@ -97,10 +88,7 @@ local function DoAct(self,battle)
 		--local cx =self.sprite.transform.position.x
 		--Motion.NewTable(self.motion , Motion.new({0 ,cx ,cx+40*self.xDir ,0.4},'outCubic' ,function(motion,dt) m.sprite.transform.position.x  = Motion.Mirror(motion,dt)end))
 
-
-		 --debug用 顯示攻擊名稱
-		SceneMgr.CurrentScene.dialog:Enqueue(m.name..' 對 '..target.name..' 造成'..MonsterSkill[key].info)
-	--[[	local currentStack = SceneMgr.CurrentScene.UIMachine.current.stack
+	local currentStack = SceneMgr.CurrentScene.UIMachine.current.stack
 		local p = TableFunc.Find(currentStack,'tempprint','name')
 		local x , y = m.sprite.transform.position.x +m.width/2 , m.sprite.transform.position.y+100
 		local hitWord = Word.new( _G.engPixelFont, self.act.key, x, y, 0 ,1 ,1 )
@@ -110,7 +98,7 @@ local function DoAct(self,battle)
 		table.insert(currentStack[p].label.Drawable,hitWord)
 		table.insert(currentStack[p].label.Motion,hitWord)
 		Motion.NewTable(hitWord.motion , Motion.new({0,wy+28,wy-20,0.8},'outCirc' ,function(self,dt)hitWord.transform.position.y = Motion.Lerp(self,dt)end) )
-]]
+
 
 	end
 end 
@@ -126,30 +114,19 @@ local function DecideAct( self ,charData,battle)
 	end
 	local t = charData[index]
 	self.act = {self=self,key=self.skill[ran],target=t}
-end
-local function ClearStatus(self)
-	self.data.state={before={}, after={}, always={}}
-end
---[[local function GrowByRoomNum(self, roomNum )
-	local value = math.floor(roomNum/5)
-	self.data.hp = self.data.hp + value * 2
-	self.data.act = self.data.act + value -1
-	self.data.def = self.data.def + value
-	self.data.atk = self.data.atk + value
 end]]
+local function ClearStatus(self)
+	self.data.state={before={}, after={}, always={} ,is_target={}}
+end
 
 local Character = {}
 
-Character.default={HP=HP,DoAct=DoAct,DecideAct=DecideAct,ClearStatus=ClearStatus}--,GrowByRoomNum=GrowByRoomNum
+Character.default={ClearStatus=ClearStatus}--,GrowByRoomNum=GrowByRoomNum
 Character.metatable={}
 function Character.new(o)--,skill,advancedSkill,equipment,race,name
 	--local o = {equipment=equipment,skill=skill,advancedSkill=advancedSkill,act={},motion={},race=race,data=data,state=MonsterAI.new(),name=name}
-	o.originData=TableFunc.Copy(o.data)
-	--print('normal data')
-	--TableFunc.Dump(o.data)
-	--print('origindata')
-	--TableFunc.Dump(o.originData)
-	o.data.state={before={}, after={}, always={}}
+
+	o.data.state={before={}, after={}, always={} ,is_target={}}
 
 	setmetatable(o,Character.metatable)
 	return o

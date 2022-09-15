@@ -22,7 +22,9 @@ local AdvGenerator ={
 }
 function AdvGenerator:ResetHeroData(...)
 	for k,v in pairs(self.heroData) do
-		v.data=TableFunc.Copy(v.originData)
+		local key = v.key
+		local originData = TableFunc.Copy(_G.Resource.character[key].data)
+		v.data=TableFunc.Copy(originData)
 		v.data.Status={before={}, after={}, always={}}
 	end
 end

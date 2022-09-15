@@ -4,8 +4,9 @@ local StringDecode={}
 
 function StringDecode.split_by(s ,arg)
 	local t ={}
-	for v in string.gmatch(s, '[^'..arg..']*') do-- +-*/()
-		table.insert(t,v)
+	for v in string.gmatch(s, '[^'..arg..']*') do
+		local str=StringDecode.trim_head_tail(v)
+		table.insert(t,str)
 	end
 	return table.unpack(t)
 end
@@ -121,13 +122,13 @@ function StringDecode.CheckInclude(content)
 		return nil
 	end
 end
-function StringDecode.MakeTableByComma(command,act)								
+--[[function StringDecode.MakeTableByComma(command,act)								
 	local temp={StringDecode.split_by(command,',')}
 	for k,v in pairs(temp) do
 		local word=StringDecode.trim_head_tail(v)					
 		table.insert(act , word)
 	end
-end
+end]]
 function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
 	local count =0
 	local index=i
@@ -191,6 +192,7 @@ function StringDecode.Replace_copy_scope(tab,copy_scope)
 			local w= v
 			while index <= string.len(v)do		
 				local a,b = w:find('\"copy_scope\"',index)
+				--print('')
 				local origin = TableFunc.Shift(copy_scope)
 				w=StringDecode.Gsub_by_index(w ,origin,a , b)			
 				index=b+1
@@ -225,52 +227,46 @@ function StringDecode.Split_Command(command)
 		end
 		if index+1 >#command then
 			--print('make table',word)
-			StringDecode.MakeTableByComma(word,act)
+			act={StringDecode.split_by(word,',')}
 		end
 		index=index+1
 	end
 
 	return act,copy_scope
 end
+
 function StringDecode.Decode(filename)
 	local file = io.open(filename,'r')
 	local content = file:read('*all')
+	local index =1
 	local tab={}
-	local includeTab=StringDecode.CheckInclude(content)
-
-	if includeTab then
-		for k,v in pairs(includeTab) do
-			tab[v]={}
-			local t={}
-			local part_start , part_end = content:find(v..'_part')
-			local scope_start = content:find('{',part_end) 		
-			local scope_end   = content:find('}',part_end)
-			local start = content:find('%a',scope_start)
-			local str = content:sub( start,scope_end-1)--scope_start+2
-			t = split_line(str)
+	while index <= #content do
+		local scope_start =content:find('{',index)
+		if scope_start then
+			local scope_end = StringDecode.FindCommandScope(scope_start+1,content ,'{' ,'}')
+			local scope_name = StringDecode.trim_head_tail(content:sub(index,scope_start-1))
+			local str = content:sub(scope_start+1 ,scope_end-1)
+			local t=	split_line(str)
 			t = merge_line(t)
 			t = make_table(t)
-			for key,value in pairs(t) do
-				tab[v][key]=value
-			end	
-		end
-	else
-		local t={}
-		local scope_start = content:find('{',1) 		
-		local scope_end   = content:find('}',1)
-		local start = content:find('%a',scope_start)
-		local str = content:sub( start,scope_end-1)--scope_start+2
-		t = split_line(str)
-		t = merge_line(t)
-		t = make_table(t)
-		for key,value in pairs(t) do
-			tab[key]=value
+			if #scope_name> 0 then
+				tab[scope_name]={} 
+				for key,value in pairs(t) do
+					tab[scope_name][key]=value
+				end
+			else
+				for key,value in pairs(t) do
+					tab[key]=value
+				end
+			end
+			index =scope_end+1
+		else
+			index=index+1
 		end
 	end
 	file:close()
 	return tab
 end
-
 return StringDecode
 
 

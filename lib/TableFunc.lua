@@ -29,8 +29,10 @@ function TableFunc.Print_one_line(tab)
 			--print('is table')
 			s=s..'['
 			if isDic(v) then
+				--print('is dic')
 				s=s..'obj'
 			else
+				--print('not dic')
 				for i,j in pairs(v) do
 					if type(j)~='table' then
 						s=s..tostring(j)
@@ -44,7 +46,7 @@ function TableFunc.Print_one_line(tab)
 			end
 			s=s..'], '
 		else
-			s=s..'['..v..'], '
+			s=s..'['..tostring(v)..'], '
 		end
 	end
 	return s

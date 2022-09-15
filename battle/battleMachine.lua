@@ -66,23 +66,33 @@ local function UpdateState(battle)
 	for i=1,4 do
 		local mon = battle.characterData.monsterData[i]
 		local hero = battle.characterData.heroData[i]
+		local originData ,key
 		if mon then
+			key =mon.key
+			originData = TableFunc.Copy(_G.Resource.character[key].data)
+			local monsterGenerator =require('battle.monsterGenerator')
+			monsterGenerator.GrowByRoomNum(originData )
+			
 			StatusHandle.Update(mon , mon.data.state.before ,battle)
 			--print('mon ',mon.data.state)				 
 			if  mon.data.def > 0 then 
-				StatusHandle.Add(mon,'shield',mon.originData.def)
+				--StatusHandle.Add(mon,'shield',mon.originData.def)
+				StatusHandle.Add(mon,'shield',originData.def)
 			end 
 		end
 		if hero then
 			--print('hero ',hero.data.state)
+			key =hero.key
+			originData = TableFunc.Copy(_G.Resource.character[key].data)
 			StatusHandle.Update(hero , hero.data.state.before ,battle)
 			if  hero.data.def > 0 then 
-				StatusHandle.Add(hero,'shield',hero.originData.def)
+				--StatusHandle.Add(hero,'shield',hero.originData.def)
+				StatusHandle.Add(hero,'shield',originData.def)
 			end 
 		end
 	end
 	--print('!!update Team!!')
-	return {toViewScene={key='UpdateState',arg={}}}
+	return {toViewScene={key='UpdateState',arg={battle}}}
 end
 function InitPlayerRounde(battle)
 	--print("InitPlayerRounde")
@@ -96,15 +106,29 @@ function InitPlayerRounde(battle)
 	return {toViewScene={key='TransitionTo' ,arg={'PlayerAct'},} }
 end
 function AfterUseCard(toUse, battle)
-	--[[local monsterData=battle.characterData.monsterData
+	--print('AfterUseCard')
+	local monsterData = battle.characterData.monsterData
+	local heroData    = battle.characterData.heroData
 	for i=#monsterData,1 ,-1 do
 		local m =monsterData[i]
+		m.data.shield = math.max(m.data.shield , 0)
 		if m.data.hp <=0 then
-			TableFunc.Push(battle.battleData.enemyGrave ,m)
+			--print('is dead')
+			m.data.hp=0
+			TableFunc.Push(battle.characterData.grave ,m)
 			table.remove(monsterData,i)
 		end
 	end
-	return {toViewScene={key='DoAct',arg={toUse}}}]]
+	for i=#heroData,1 ,-1 do
+		local h =heroData[i]
+		h.data.shield = math.max(h.data.shield , 0)
+		if h.data.hp <=0 then
+			h.data.hp=0
+			TableFunc.Push(battle.characterData.grave ,h)
+			table.remove(heroData,i)
+		end
+	end
+	return {toViewScene={key='ViewUseCard' ,arg={toUse ,battle} }}
 end	
 function BattleMachine.new(battle , scene)
 	local PreState = State.new("PreState")
@@ -137,9 +161,10 @@ function BattleMachine.new(battle , scene)
 			{state=StartRound,to='Statusbefore'},
 
 			{state=Statusbefore,to='PlayerAct' },	
-			{state=Statusbefore,to='MonsterAct'},
+			--{state=Statusbefore,to='MonsterAct'},
 
 			{state=PlayerAct,to='Statusafter' },
+			{state=PlayerAct,to='MonsterAct' },
 			{state=MonsterAct,to='Statusafter'},
 
 			{state=Statusafter,to="RoundEnd"},
@@ -215,13 +240,14 @@ function BattleMachine.new(battle , scene)
 	end
 
 	PlayerAct.DoOnEnter=function(...)
-		--print('PlayerAct Data')
-	
+		--print('PlayerAct Data')	
 		table.insert(machine.pending,{key='InitPlayerRounde',arg={battle},actName='InitPlayerRounde'})
-
 
 	end
 	MonsterAct.DoOnEnter=function(self,battle)
+		for k,mon in pairs(battle.characterData.monsterData) do
+			mon.AI:Act()
+		end
 		--[[local Empty = State.new("Empty")
 		Empty.waitTime=0.5
 		local Act = State.new("Act")

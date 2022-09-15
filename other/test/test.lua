@@ -19,15 +19,19 @@ CurrentOs= GetOs.get_os_name()
 
 Resource = require('resource.Resource')
 Resource.Init_Test()
-
+--TableFunc.Dump(Resource.card)
+--TableFunc.Dump(Resource.translate)
 local testData=require('test_data')
+local monsterAI=require('battle.monsterAI')
 local CardAssets=require('resource.cardAssets')
 
 local test_card={}
+local originData =TableFunc.Copy(testData)
+local heroData = testData.characterData.heroData
+local monsterData =testData.characterData.monsterData
 local function MakeToUse(card)
 	local toUse={card=card,target_table = {}}
-	local heroData = testData.characterData.heroData
-	local monsterData =testData.characterData.monsterData
+
 	for k,v in pairs(card.use_condition) do
 		local choose_type=v[1]
 		local num =v[2]
@@ -52,23 +56,50 @@ for k,v in pairs(Resource.card) do
 	TableFunc.Push(test_card,card)
 end
 
-local function ReadEffect()
+local function Test()
 	for k,v in pairs(test_card) do
 		local toUse=MakeToUse(v)
 		print(v.name)
-		local record=StringAct.ReadEffect(toUse)
-		TableFunc.Dump(record)
+		StringAct.UseCard(testData,toUse)
 		
-		for k,v in pairs(toUse.target_table) do
+		--[[for k,v in pairs(toUse.target_table) do
 			TableFunc.Dump(v.data)
 			for key,j in pairs(v.data) do
 				--reset 對象的資料
 				v.data[key]=k
 			end
+		end]]
+		for i,hero in pairs(heroData) do
+			local origin =originData.characterData.heroData[i]
+			for key,data in pairs(hero.data) do
+				if data~=origin.data[key] and key~='state'  then
+					print(hero.key)
+					TableFunc.Dump(hero.data)
+					hero.data[key] = origin.data[key]
+					break
+				end
+			end
+		end
+		for i,mon in pairs(monsterData) do
+			local origin =originData.characterData.monsterData[i]
+			for key,data in pairs(mon.data) do
+				if data~=origin.data[key] and key~='state' then
+					print(mon.key)
+					TableFunc.Dump(mon.data)
+					mon.data[key] = origin.data[key]
+					break
+				end
+			end
 		end
 	end
 end
-ReadEffect()
+--Test()
+local t={'70% atk random 1 hero'}
+local mAI =monsterAI.new()
+for k,v in pairs(monsterData) do
+	--mAI.MakeChance(testData, v.think_weights)
+end
+mAI.MakeChance(testData, t)
 --[[
 測試用 英雄2隻 怪物2隻 (hp atk..等素質)按照位置全部都是 1 or 2 
 卡片預設的 master都是 英雄1號(素質全部都是 1)

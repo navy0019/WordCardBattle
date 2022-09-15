@@ -26,7 +26,7 @@ end]]
 --TableFunc.Dump(Resource.card)
 --TableFunc.Dump(Resource.character)
 --TableFunc.Dump(Resource.translate)
-local x = 1
+--local x = 1
 
 --not GameMachine.stop
 while not GameMachine.stop do

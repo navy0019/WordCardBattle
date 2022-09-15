@@ -2,14 +2,6 @@ local battle={
 	characterData={
 		heroData = {
 			{
-				originData = {
-					team_index = 1,
-					shield = 1,
-					atk = 1,
-					hp = 1,
-					act = 1,
-					def = 1,
-				},
 				key = "hero1",
 				data = {
 					teamPos = 1,
@@ -22,23 +14,17 @@ local battle={
 					state = {
 						always = {
 						},
-						before = {
+						before = {{name='spell'}
 						},
 						after = {
 						},
+						is_target={		
+						}
 					},
 				},
 				race = "'hero'",
 			},
 			{
-				originData = {
-					team_index = 2,
-					shield = 2,
-					atk = 2,
-					hp = 2,
-					act = 2,
-					def = 2,
-				},
 
 				key = "hero2",
 				data = {
@@ -56,6 +42,8 @@ local battle={
 						},
 						after = {
 						},
+						is_target={		
+						}
 					},
 				},
 				race = "'hero'",
@@ -64,23 +52,7 @@ local battle={
 		},
 		monsterData = {
 			{
-
-				originData = {
-					team_index = 1,
-					shield = 1,
-					atk = 1,
-					act = 1,
-					state = {
-						always = {
-						},
-						before = {
-						},
-						after = {
-						},
-					},
-					def = 1,
-					hp = 1,
-				},
+				think_weights={'70% atk hero [find_state spell] ','30% buff enemy'},
 				key = "m_mid_1",
 				race = "enemy",
 				data = {
@@ -94,6 +66,8 @@ local battle={
 						},
 						after = {
 						},
+						is_target={		
+						}
 					},
 					hp = 1,
 					def = 1,
@@ -102,23 +76,7 @@ local battle={
 
 			},
 			{
-
-				originData = {
-					team_index = 2,
-					shield = 2,
-					atk = 2,
-					act = 2,
-					state = {
-						always = {
-						},
-						before = {
-						},
-						after = {
-						},
-					},
-					def = 2,
-					hp = 2,
-				},
+				think_weights={'70% atk hero [find_state spell] ','30% buff enemy'},
 				key = "m_mid_2",
 				race = "enemy",
 				data = {
@@ -132,6 +90,8 @@ local battle={
 						},
 						after = {
 						},
+						is_target={		
+						}
 					},
 					hp = 2,
 					def = 2,

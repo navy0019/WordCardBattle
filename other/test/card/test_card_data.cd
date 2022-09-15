@@ -1,19 +1,4 @@
-
-include =  attack2,origin_atk
-
-
-attack2_part
-{
-cost          =  2
-type          =  melee
-drop_to       =  grave
-use_condition =  select 1 enemy ,input 0~2 card 
-atk           =  master.atk
-def           =  0
-effect        =  target , get hp ,  card , get atk ,  melee  , target ,set hp
-}
-
-origin_atk_part
+testCard
 {
 cost          =  2
 type          =  melee
@@ -21,6 +6,6 @@ drop_to       =  grave
 use_condition =  select 1 enemy
 atk           =  master.atk
 def           =  0
-effect        =  built_in_atk melee card.atk
-		
+effect        =  enemy
 }
+

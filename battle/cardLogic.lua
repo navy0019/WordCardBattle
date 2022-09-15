@@ -1,5 +1,4 @@
 local TableFunc = require("lib.TableFunc")
-local CardSkill = require('battle.cardSkill')
 local StringAct = require("lib.StringAct")
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
@@ -42,7 +41,7 @@ function CardLogic.new()
 	machine.state_pending={}
 	Wait.Do=function(self,battle,...)	
 		if #machine.pending >0 then
-			print('TransitionTo Classification')
+			--print('TransitionTo Classification')
 			machine:TransitionTo('Classification',battle)
 		end
 	end
@@ -67,13 +66,13 @@ function CardLogic.new()
 		
 	end
 	ReadEffect.DoOnEnter=function(self,battle,...)
-		print('ReadEffect!')
-		for k,v in pairs(machine.card_pending) do
-			StringAct.ReadEffect(v)
+		--print('ReadEffect!'..#machine.card_pending)
+		for i=1, #machine.card_pending do
+			local v = TableFunc.Shift(machine.card_pending)
+			battle.battleData.actPoint = battle.battleData.actPoint - v.card.data.cost
+			StringAct.UseCard(battle,v)
 			battle:DropCard(battle.battleData.hand , v.card)
-			local o ={toViewScene={key='ViewUseCard' ,arg={} },
-					  toPending={key='AfterUseCard',arg={v ,battle }}
-				}
+			local o ={ toPending={key='AfterUseCard',arg={v ,battle }} }
 			TableFunc.Push(machine.queue , o)
 		end
 	

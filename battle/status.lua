@@ -41,14 +41,14 @@ local state = {
 			state.round=state.round-1
 			if state.round<=0 then
 				target:GetHit((state.value)*-1,false,false,battle)
-				SceneMgr.CurrentScene.dialog:Enqueue(target.name..'受到'..(state.value)*-1 ..'中毒傷害')
+				--SceneMgr.CurrentScene.dialog:Enqueue(target.name..'受到'..(state.value)*-1 ..'中毒傷害')
 			end
 
 		end,
 		add=function ( target,state,card  )
 			local s = TableFunc.Copy(state)
 			table.insert(target.data.state.after,s)
-			SceneMgr.CurrentScene.dialog:Enqueue(target.name..'中毒了')
+			--SceneMgr.CurrentScene.dialog:Enqueue(target.name..'中毒了')
 			
 		end,
 		remove=function(target,state,battle)
@@ -93,6 +93,14 @@ local state = {
 		effect=function (target,state,battle)
 		end,
 		add=function ( target,state,num)
+			local key = target.key
+			local originData = TableFunc.Copy(_G.Resource.character[key].data)
+			if target.race=='enemy' then
+				local monsterGenerator =require('battle.monsterGenerator')
+				monsterGenerator.GrowByRoomNum(originData )
+			end
+			--print('add shield ',key ,originData)
+			--TableFunc.Dump(originData)
 			for k,v in pairs(target.data.state.before) do
 				if v.name == state.name then
 					v.value =v.value+num
@@ -102,7 +110,7 @@ local state = {
 			end
 			local s = TableFunc.Copy(state)
 			s.value=num
-			target.data.shield=s.value+target.originData.shield
+			target.data.shield=s.value+originData.shield--s.value+target.originData.shield
 			table.insert(target.data.state.before,s)
 		end,
 		remove=function(target,state)
@@ -125,22 +133,33 @@ local state = {
 		add=function ( target,state ,card  )
 			for k,v in pairs(target.data.state.always) do
 				if v.name == state.name then
-					
+					local key = target.key
+					local originData = TableFunc.Copy(_G.Resource.character[key].data)
+					if target.race=='enemy' then
+						local monsterGenerator =require('battle.monsterGenerator')
+						monsterGenerator.GrowByRoomNum(originData )
+					end
 					v.round =v.round+card.level+state.round
-					target.data.atk =target.originData.atk+ v.value
+					target.data.atk =originData.atk+ v.value--target.originData.atk+ v.value
 					return k
 				end
 			end
 
 			local s = TableFunc.Copy(state)
 			s.round=s.round+card.level
-			target.data.atk =target.originData.atk+ s.value
-			SceneMgr.CurrentScene.dialog:Enqueue(target.name..'的力量提升'..s.value)
+			target.data.atk =originData.atk+ v.value--target.originData.atk+ s.value
+			--SceneMgr.CurrentScene.dialog:Enqueue(target.name..'的力量提升'..s.value)
 			table.insert(target.data.state.always,s)
 			card.battle:CardWordUpdate()
 		end,
 		remove=function(target,state,battle)
-			target.data.atk =target.originData.atk
+			local key = target.key
+			local originData = TableFunc.Copy(_G.Resource.character[key].data)
+			if target.race=='enemy' then
+				local monsterGenerator =require('battle.monsterGenerator')
+				monsterGenerator.GrowByRoomNum(originData )
+			end
+			target.data.atk =originData.atk--target.originData.atk
 			battle:CardWordUpdate()
 		end
 	},

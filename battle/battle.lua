@@ -151,18 +151,19 @@ local function Backfill(battle)
 	end	
 end
 local function Deal(battleData)
-	--table.insert(battleData.tempDeal,battleData.deck[1])
-	table.insert(battleData.hand,battleData.deck[1])
+	table.insert(battleData.hand, battleData.deck[1])
 	table.remove(battleData.deck,1)
 end
-local function DealProcess(battle)
-	local dealNum = math.min(#battle.battleData.deck , battle.battleData.dealNum) 
+local function DealProcess(battle , num)
+	local compare_num = num or battle.battleData.dealNum
+	local dealNum = math.min(#battle.battleData.deck , compare_num)
+
 	for i=1,dealNum do
 		Deal(battle.battleData)	
 	end
-	if dealNum < battle.battleData.dealNum then
+	if dealNum < compare_num then
 		Backfill(battle)
-		for i=1,battle.battleData.dealNum-dealNum do
+		for i=1,compare_num-dealNum do
 			Deal(battle.battleData)	
 		end
 	end
@@ -175,8 +176,8 @@ Battle.metatable={}
 
 function Battle.new(scene)
 	--print('new Battle')
-	local o ={characterData={heroData={},monsterData={}},
-		battleData={round=1,actPoint=0,dealNum=5,maxDealNum=7,deck={},hand={},drop={},disappear={},enemyGrave={}},
+	local o ={characterData={heroData={},monsterData={},grave={}},
+		battleData={round=1,actPoint=0,dealNum=5,maxDealNum=7,deck={},hand={},drop={},disappear={}},
 		endingItem={},choose={Choose.new()}
 	}
 
@@ -186,12 +187,10 @@ function Battle.new(scene)
 	
 	--o.keyCtrl = scene.keyCtrl
 
-	--[[o.signal=CallBack.new()	
-	
+	--[[o.signal=CallBack.new()		
 	o.signal:Register('Act',function(char,card)
 		o.battleMachine.statusMachine:addUpdate(o,'heroData' ,'always',card)
 		o.battleMachine.statusMachine:addUpdate(o,'monsterData' ,'always',card)
-
 	end)]]
 	setmetatable(o,Battle.metatable)
 	return o

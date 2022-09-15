@@ -7,13 +7,17 @@ local monsterGenerator = {}
 function CompairMin( t1,t2)
 	return t1[2] < t2[2]
 end
-local function GrowByRoomNum(self, roomNum )
+function monsterGenerator.GrowByRoomNum(data )
+	local AdvGenerator = require('lib.AdvGenerator')
+	local roomNum = AdvGenerator.mapData.passedRoom
 	local value = math.floor(roomNum/5)
-	self.data.hp = self.data.hp + value 
-	self.data.act = self.data.act + value
-	self.data.def = self.data.def + value
-	self.data.atk = self.data.atk + value
-	self.originData=TableFunc.Copy(self.data)
+	data.hp  = data.hp  + value 
+	data.act = data.act + value
+	data.def = data.def + value
+	data.atk = data.atk + value
+	--local key = self.key
+	--local originData = TableFunc.Copy(_G.Resource.character[key].data)
+	--self.originData=TableFunc.Copy(self.data)
 end
 function monsterGenerator.RandomMonster(roomNum)
 	local max = 8
@@ -41,7 +45,7 @@ function monsterGenerator.RandomMonster(roomNum)
 	for k,monster in pairs(temp) do
 		--local m = Assets.Monsters.instance(monster[1],0,0)
 		local m = CharacterAssets.instance(monster[1],k)
-		GrowByRoomNum(m , roomNum )
+		monsterGenerator.GrowByRoomNum(m.data )
 		table.insert(monsterInstance,m) 
 	end
 	--table.sort( monsterInstance, CompairMin )

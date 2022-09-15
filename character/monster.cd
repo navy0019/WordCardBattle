@@ -1,6 +1,4 @@
-include = m_mid_1 , m_mid_2 ,m_small_1 ,m_XL_1
-
-m_mid_1_part
+m_mid_1
 {
 hp=7,
 act=2,
@@ -9,10 +7,11 @@ atk=3,
 shield=0,
 skill=m_attack,
 race=enemy,
-dropItem= money 100
+dropItem= money 100,
+think_weights=70% atk hero [find_state spell] ,30% atk hero 1
 }
 
-m_mid_2_part
+m_mid_2
 {
 hp=5,
 act=2,
@@ -21,10 +20,11 @@ atk=5,
 shield=0,
 skill=m_attack,
 race=enemy,
-dropItem= money 100
+dropItem= money 100,
+think_weights=100% atk random 1 enemy
 }
 
-m_small_1_part
+m_small_1
 {
 hp=1,
 act=3,
@@ -34,9 +34,10 @@ shield=0,
 skill=m_attack,
 race=enemy,
 dropItem= money 100
+think_weights=70% atk hero [find_state spell] ,30% buff enemy
 }
 
-m_XL_1_part
+m_XL_1
 {
 hp=12,
 act=2,
@@ -46,4 +47,5 @@ shield=0,
 skill=m_attack,
 race=enemy,
 dropItem= money 100
+think_weights=70% atk hero [find_state spell] ,30% buff enemy
 }

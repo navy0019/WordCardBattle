@@ -179,7 +179,7 @@ function Choose.new(option)
 	Wait.Do=function(self,battle,...)
 		--print('Choose Wait')
 		if machine.card then
-			print('TransitionTo cost')
+			--print('TransitionTo cost')
 			machine:TransitionTo('CheckCost',battle)
 		elseif machine.condition then
 			machine:TransitionTo('CheckSelect',battle)
@@ -197,7 +197,7 @@ function Choose.new(option)
 			--print('find select',TableFunc.Find(card.use_condition,'select'))
 			--print('find input ',TableFunc.Find(card.use_condition,'input'))
 			if not TableFunc.Find(card.use_condition,'select') and TableFunc.Find(card.use_condition,'input') then
-				print('cost TransitionTo ExtraInput')
+				--print('cost TransitionTo ExtraInput')
 				local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 				TableFunc.Push(machine.queue , o)
 				
@@ -214,7 +214,7 @@ function Choose.new(option)
 	end
 	CheckCost.Do=function(self,battle,...)
 		if machine.target_table and #machine.target_table >0 then
-			print('cost TransitionTo Select')
+			--print('cost TransitionTo Select')
 			machine:TransitionTo('CheckSelect',battle)
 		end
 	end
@@ -226,7 +226,7 @@ function Choose.new(option)
 				--print('target race ',target.race ,t.race)
 				if target.race == t.race then
 					if machine.card_table then
-						print('Select TransitionTo Input')
+						--print('Select TransitionTo Input')
 						local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}
 						TableFunc.Push(machine.queue , o)
 						machine:TransitionTo('CheckInput',battle)
@@ -358,7 +358,7 @@ function Choose.new(option)
 		end
 		local o ={toPending={key='ReadyToUse' ,arg={ machine.toUse ,battle },actName='toUse' }}
 		TableFunc.Push(machine.queue , o)
-		print('PrepareToUse done')
+		--print('PrepareToUse done')
 		machine:Clear()
 		machine:TransitionTo('Wait')
 		--TableFunc.Dump(machine.toUse )
