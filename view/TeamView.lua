@@ -147,7 +147,7 @@ function scene.Enter()
 	MakeTeam.DoOnLeave=function()
 		local remove = {}
 		for k,v in pairs(scene.ButtonEvent) do
-			table.insert(remove,k)
+			TableFunc.Push(remove,k)
 		end
 		for k,v in pairs(remove) do
 			scene.Event:Emit('RemoveButton',v)			

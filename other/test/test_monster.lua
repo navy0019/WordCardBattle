@@ -48,45 +48,25 @@ local function MakeToUse(card)
 	return toUse
 end
 
-for k,v in pairs(Resource.card) do
-	local master = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
-	--print(master)
-	local card=CardAssets.instance(k,master)
-	--TableFunc.Dump(card)
-	TableFunc.Push(test_card,card)
+
+local mAI =monsterAI.new()
+local skill_card={}
+local preview_data = TableFunc.Copy(testData)
+for k,v in pairs(monsterData) do
+	local master = 'monster '..TableFunc.GetSerial(testData.characterData.monsterData[1])
+	TableFunc.Push(skill_card,{})
+
+	for i,skill in pairs(v.skill) do	
+		local len = #skill_card
+		local mon_skill_card = CardAssets.instance(skill,master)
+		TableFunc.Push(skill_card[len] , mon_skill_card)
+	end
+
+	v.machine =mAI.decideMachine(preview_data ,v ,skill_card[len])
+	v.machine:Update(preview_data,v)
+	--make group and use
 end
 
-local function Test()
-	for k,v in pairs(test_card) do
-		local toUse=MakeToUse(v)
-		print(v.name)
-		StringAct.UseCard(testData,toUse)
-		
-		for i,hero in pairs(heroData) do
-			local origin =originData.characterData.heroData[i]
-			for key,data in pairs(hero.data) do
-				if data~=origin.data[key] and key~='state'  then
-					print(hero.key)
-					TableFunc.Dump(hero.data)
-					hero.data[key] = origin.data[key]
-					break
-				end
-			end
-		end
-		for i,mon in pairs(monsterData) do
-			local origin =originData.characterData.monsterData[i]
-			for key,data in pairs(mon.data) do
-				if data~=origin.data[key] and key~='state' then
-					print(mon.key)
-					TableFunc.Dump(mon.data)
-					mon.data[key] = origin.data[key]
-					break
-				end
-			end
-		end
-	end
-end
-Test()
 --[[
 測試用 英雄2隻 怪物2隻 (hp atk..等素質)按照位置全部都是 1 or 2 
 卡片預設的 master都是 英雄1號(素質全部都是 1)

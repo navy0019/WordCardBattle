@@ -24,8 +24,9 @@ local function InitBattleData(battle,scene)
 
 	for k,hero in pairs(battle.characterData.heroData) do
 	 	for i,name in pairs(hero.skill) do
-	 		local card = CardAssets.instance( name,hero )--CardAssets.instance( name,0,0,hero ,battle )
-	 		table.insert(battle.battleData.deck,card)
+	 		local serial = 'hero '..TableFunc.GetSerial(hero)
+	 		local card = CardAssets.instance( name,serial )--CardAssets.instance( name,0,0,hero ,battle )
+	 		TableFunc.Push(battle.battleData.deck,card)
 	 	end
 	end
 
@@ -51,7 +52,7 @@ local function DropCard(self,originTab,card)
 	local Card=require('lib.card')
 	if getmetatable(card)==Card.metatable then
 
-		table.insert(self.battleData.drop,card)
+		TableFunc.Push(self.battleData.drop ,card)
 		local p = TableFunc.Find(originTab,card)
 		table.remove(originTab,p)
 		--card.parentTab=self.battleData.drop
@@ -64,7 +65,7 @@ local function DropCard(self,originTab,card)
 	else
 		local cards = TableFunc.Copy(card)
 		for k,v in pairs(cards) do
-			table.insert(self.battleData.drop ,v)
+			TableFunc.Push(self.battleData.drop ,v)
 			--v.parentTab=self.battleData.drop
 			local p=TableFunc.Find(originTab,v)
 			table.remove(originTab,p)
@@ -75,7 +76,7 @@ end
 local function DropItem(self,char)
 	if char.race=='enemy' then
 		local ran=_G.rng:random(#char.dropItem)
-		table.insert(self.endingItem,char.dropItem[ran]) 
+		TableFunc.Push(self.endingItem ,char.dropItem[ran]) 
 	end
 end
 local function CheckLife(battle)
@@ -146,13 +147,13 @@ end
 local function Backfill(battle)
 	TableFunc.Upset(battle.battleData.drop , battle.rng)
 	for i=1,#battle.battleData.drop do
-		table.insert(battle.battleData.deck , battle.battleData.drop[1])
-		table.remove(battle.battleData.drop , 1)
+		local card = TableFunc.Shift(battle.battleData.drop )
+		TableFunc.Push(battle.battleData.deck , card)	
 	end	
 end
 local function Deal(battleData)
-	table.insert(battleData.hand, battleData.deck[1])
-	table.remove(battleData.deck,1)
+	local card = TableFunc.Shift(battleData.deck )
+	TableFunc.Push(battleData.hand, card)
 end
 local function DealProcess(battle , num)
 	local compare_num = num or battle.battleData.dealNum

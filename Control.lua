@@ -31,14 +31,14 @@ function Control.MakeBasicEvent(ViewScenesMgr,LogicScenesMgr)
 			--print('AddButton ',buttonName,key,funcName)
 			if not Control.ButtonEvent[buttonName] then
 
-				table.insert(Control.keyMap,{key=key,buttonName=buttonName,arg={...}})
+				TableFunc.Push(Control.keyMap,{key=key,buttonName=buttonName,arg={...}})
 				--print('AddButton ',buttonName,key,funcName)
 			else
 				local p = TableFunc.Find(Control.keyMap ,key ,'key')
 				--print('p',p ,key ,funcName)
 				local button = Control.keyMap[p]
 				for k,v in pairs({...}) do
-					table.insert(button.arg ,v)
+					TableFunc.Push(button.arg ,v)
 				end
 
 			end
@@ -49,7 +49,7 @@ function Control.MakeBasicEvent(ViewScenesMgr,LogicScenesMgr)
 					function(...)
 							if funcName then
 								--print('control press 1')
-								table.insert(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
+								TableFunc.Push(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
 							end
 						end)
 				CurrentViewScenesMgrButton:Attach(Control.ButtonEvent,buttonName,
@@ -61,7 +61,7 @@ function Control.MakeBasicEvent(ViewScenesMgr,LogicScenesMgr)
 					function(...)
 							if funcName then
 								--print('control press 2')
-								table.insert(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
+								TableFunc.Push(LogicScenesMgr.CurrentScene.pending,{key=funcName,arg={...}})
 							end
 					end)
 			end

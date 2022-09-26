@@ -14,6 +14,10 @@ function CharacterAssets.Init(t)
                 v[key]=nil
             end
         end
+        if type(v.skill)~='table' then
+        	local skill =v.skill
+        	v.skill={skill}
+        end
     end
 end
 function CharacterAssets.instance( key,index)

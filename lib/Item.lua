@@ -14,7 +14,7 @@ function Item.AddList(obj)
 	if p then
 		Item.List[p].value = Item.List[p].value+obj.value
 	else
-		table.insert(Item.List,obj)
+		table.TableFunc.Push(Item.List,obj)
 	end
 end
 function Item.UpdateFromSaveFile( )
@@ -33,7 +33,7 @@ function Item.AddBackpack( obj )
 			end
 		end
 		if value > 0 then
-			table.insert(Item.Backpack,{key=obj.key,name=obj.name,value=math.min(value , keys[obj.key])})
+			table.TableFunc.Push(Item.Backpack,{key=obj.key,name=obj.name,value=math.min(value , keys[obj.key])})
 			value = value - Item.Backpack[#Item.Backpack].value
 		end
 		index=index+1	

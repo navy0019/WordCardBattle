@@ -6,7 +6,7 @@ local function MakeStatus(char)
 	for k,v in pairs(char.data.Status) do
 		for statusTab, s in pairs(v) do
 			local word = s.name..s.round
-			table.insert(tab,word )
+			TableFunc.Push(tab,word )
 		end
 	end
 

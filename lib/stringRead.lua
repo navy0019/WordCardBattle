@@ -1,20 +1,26 @@
 local StringDecode=require('lib.StringDecode')
+local TableFunc=require('lib.TableFunc')
 
 local StringRead={}
-local function valueMap(key1 ,key2 ,obj)
+local function valueMap(key1 ,key2 ,obj ,battle)
 	map={
-		master= function()return obj[key1].data[key2] end,
+		master= function()
+			local type , serial = StringDecode.split_by(obj.master ,'%s')
+			local tab = type =='hero' and battle.characterData.heroData or battle.characterData.monsterData
+			local index = TableFunc.MatchSerial(tab ,serial)
+			return tab[index].data[key2]--obj[key1].data[key2] 
+		end,
 		card= function()
 					local v = obj.data[key2]
 					if type(v)=='string' then
-						return StringRead.StrToValue(v ,obj)
+						return StringRead.StrToValue(v ,obj ,battle)
 					end
 					return v
 				end,
 		self= function()
 			local v = obj.data[key2]
 			if type(v)=='string' then
-				return StringRead.StrToValue(v ,obj)
+				return StringRead.StrToValue(v ,obj ,battle)
 			end
 			return v
 		end
@@ -28,7 +34,7 @@ function StringRead.StrFormat(str,...)
 	local head,tail
 	local arg={...}
 	for v in string.gmatch(str, '((%%)%a+(%%))') do
-		table.insert(t,v)
+		TableFunc.Push(t,v)
 	end
 
 	local s =str
@@ -55,45 +61,40 @@ function StringRead.StrColor(str)
 			local scope_end=StringDecode.FindCommandScope(index+1 ,s,'#')
 			local value = str:sub(index,scope_end)
 			--print('value',value,scope_end)
-			table.insert(word_table,value)
+			TableFunc.Push(word_table, value)
 			index=scope_end+1
 		else
 			index=index+1
 		end
 	end
-	--[[for v in string.gmatch(str, '([#%a+#]+)') do	
-		table.insert(word_table,v)
-		print('match',v)
-	end]]
-
 
 	for k,v in pairs(word_table) do
 		--print('str color ',v)
 		local color = v:match('%a+')
 		--print(color)
 		assert(Resource.color[color],'color '..color..' is nil')
-		table.insert(t,Resource.color[color])
+		TableFunc.Push(t, Resource.color[color])
 		if k+1 <= #word_table then
 			local self_head ,self_tail = s:find(word_table[k])
-			local head,tail = s:find(word_table[k+1],self_tail+1)
+			local head,tail = s:find(word_table[k+1], self_tail+1)
 			local between = s:sub(self_tail+1, head-1)
 			if k==1 and between:sub(1,1)==' ' then
-				between=between:sub(2,#between)
+				between=between:sub(2, #between)
 			end
-			table.insert(t,between)
+			TableFunc.Push(t, between)
 			s=s:gsub(v,'')
 			s=s:gsub(between,'')
 
 		else		
 			s=StringDecode.trim_head_tail(s:gsub(v,'')) 
-			table.insert(t,s)
+			TableFunc.Push(t, s)
 		end
 	end
 	return t
 end
-function StringRead.StrPrintf(str,...)
+function StringRead.StrPrintf(str,...)--
 	local Resource =require('resource.Resource')
-	local obj = ...
+	local obj,battle = ...
 	local s =str
 	if s:find('%%%a+%%') then
 		if type(obj)== 'table' then
@@ -101,7 +102,7 @@ function StringRead.StrPrintf(str,...)
 			local w = s:sub(head+1,tail-1)
 			s=s:gsub(w,'self.'..w)
 			w=w:gsub(w,'self.'..w..'')			
-			local v =StringRead.StrToValue(w,obj)	
+			local v =StringRead.StrToValue(w ,obj ,battle)	
 			s=s:gsub('%%'..w..'%%'	,v)
 		else
 			s=StringRead.StrFormat(s,...)
@@ -115,7 +116,7 @@ function StringRead.StrPrintf(str,...)
 	end
 	return s
 end
-function StringRead.StrToValue(str,obj)
+function StringRead.StrToValue(str,obj,battle)
 	--將特定文字轉成數字
 	local word_table={}
 	local value_table ={}
@@ -123,23 +124,20 @@ function StringRead.StrToValue(str,obj)
 	--擷取特定文字片段 word_table == {master.atk ,card.level}
 	for v in string.gmatch(str, '([%a.%a]+)') do
 		--print('v ',v)
-    	table.insert(word_table,v)
+    	TableFunc.Push(word_table, v)
 	end
 
 	--word_table 取得數字 放入value_table
 	for k,v in pairs(word_table) do
 		local key1 ,key2 = StringDecode.split_by(v,'.')
-		local i = valueMap(key1 ,key2 ,obj)
-		--print('i',i)
-		table.insert(value_table,i)
+		local i = valueMap(key1 ,key2 ,obj ,battle)
+		TableFunc.Push(value_table, i)
 	end
 
 	-- 將數字取代文字 ex:(master.atk + card.level)*2 --> (10 + 3)*2
-	s =str	
-	
+	s =str		
 	for k,v in pairs(value_table) do
 		s=s:gsub(word_table[k],v)
-		--print('ss',s)
 	end
 
 	local value = load('return '..s)()

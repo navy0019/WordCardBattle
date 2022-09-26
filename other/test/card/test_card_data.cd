@@ -6,6 +6,6 @@ drop_to       =  grave
 use_condition =  select 1 enemy
 atk           =  master.atk
 def           =  0
-effect        =  enemy
+effect        =  built_in_atk melee card.atk
 }
 

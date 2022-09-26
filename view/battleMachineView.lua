@@ -255,7 +255,7 @@ function BattleViewScenes.new(battle , scene)
 	PlayerAct.DoOnLeave=function(...)
 		local remove = {}
 		for k,v in pairs(scene.ButtonEvent) do
-			table.insert(remove,k)
+			TableFunc.Push(remove,k)
 		end
 		for k,v in pairs(remove) do
 			scene.Event:Emit('RemoveButton',v)			
@@ -280,7 +280,7 @@ function BattleViewScenes.new(battle , scene)
 	ExtraInput.DoOnLeave=function(...)
 		local remove = {}
 		for k,v in pairs(scene.ButtonEvent) do
-			table.insert(remove,k)
+			TableFunc.Push(remove,k)
 		end
 		for k,v in pairs(remove) do
 			scene.Event:Emit('RemoveButton',v)			

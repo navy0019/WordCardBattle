@@ -7,7 +7,7 @@ local function MakeState(char)
 	for k,v in pairs(char.data.state) do
 		for stateTab, s in pairs(v) do
 			local word = s.name..' '..s.round..'   '
-			table.insert(tab,word )
+			TableFunc.Push(tab,word )
 		end
 	end
 
@@ -52,7 +52,7 @@ function StrToTab( s ,num)
 	local currentIndex = 1 
 	while currentIndex <= #s do 
 		local char = string.byte(s,currentIndex) 
-		table.insert(t,s:sub(currentIndex , currentIndex+GetCharSize(char)-1 ))
+		TableFunc.Push(t ,s:sub(currentIndex , currentIndex+GetCharSize(char)-1 ))
 		currentIndex = currentIndex + GetCharSize(char) 		
 	end
 	local final_tab={}
@@ -65,7 +65,7 @@ function StrToTab( s ,num)
 				width=width+ math.min(2, GetCharSize(string.byte(temp,1))) 
 				w=w..temp
 			end
-			table.insert(final_tab,{})
+			TableFunc.Push(final_tab,{})
 			local len = #final_tab
 			final_tab[len].word=w
 			final_tab[len].width=width
@@ -75,7 +75,7 @@ function StrToTab( s ,num)
 	end
 
 	if #t>0 then 
-		table.insert(final_tab,{})
+		TableFunc.Push(final_tab,{})
 		for i=1,#t do
 			local temp =TableFunc.Shift(t)
 			width=width+ math.min(2, GetCharSize(string.byte(temp,1))) 
@@ -86,7 +86,7 @@ function StrToTab( s ,num)
 		final_tab[len].width=width  
 	end
 
-	--table.insert(final_tab,w)
+	--TableFunc.Push(final_tab,w)
 
 	return final_tab
 end
@@ -181,11 +181,11 @@ function BattlePrint.PrintCard( battle )
 	local hand_num_pos={}
 	local temp_index=1
 	for v in string.gmatch(hand, '%d+') do
-    	table.insert(hand_num_pos,v)
+    	TableFunc.Push(hand_num_pos, v)
 	end
 
 	for k,v in pairs(hand_num_pos) do
-		local p = hand:find(v,temp_index)
+		local p = hand:find(v, temp_index)
 		hand_num_pos[k]=p
 		temp_index=p+1
 	end
@@ -199,7 +199,7 @@ function BattlePrint.PrintCard( battle )
 	--Make Info
 	local info ={}
 	for k,card in pairs(battle.battleData.hand) do
-		info[k] = StringRead.StrPrintf(card.info,card)
+		info[k] = StringRead.StrPrintf(card.info ,card ,battle)
 		local temp = ''
 		for index=2,#info[k],2 do
 			temp=temp..info[k][index]

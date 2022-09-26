@@ -12,6 +12,19 @@ function TableFunc.Upset(tab)
 	end
 
 end
+function TableFunc.GetSerial(tab)
+	local s=tostring(tab)
+	return s:gsub('table: ','')
+end
+function TableFunc.MatchSerial(tab ,serial)
+	for k,v in pairs(tab) do
+		local s = TableFunc.GetSerial(v)
+		if s == serial then
+			return k
+		end
+	end
+	return false
+end
 function TableFunc.Print_one_line(tab)
 	--print('print',#tab)
 	function isDic(t)
@@ -145,13 +158,7 @@ function TableFunc.Merge(targetTab, tab )
 		end
 	end
 end
-function TableFunc.CountDic(tab)
-	local index=0
-	for k,v in pairs(tab) do
-		index=index+1
-	end
-	return index
-end
+
 
 function TableFunc.Shift(tab)
 	local v = tab[1]

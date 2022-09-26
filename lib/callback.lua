@@ -5,7 +5,7 @@ local function Register(tab,funcName , func)
 		tab[funcName]={}
 	end
 	if not TableFunc.Find(tab[funcName],func) then
-		table.insert(tab[funcName],func)
+		TableFunc.Push(tab[funcName],func)
 	end
 end
 local function Emit(tab,funcName,...)

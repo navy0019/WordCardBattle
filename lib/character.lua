@@ -26,9 +26,9 @@ local Math= require('lib.math')
 		Motion.NewTable(char.motion , Motion.new({0, hitWord.color[2] ,1,0.9},'inCirc' ,function(self,dt)hitWord.color[2] = Motion.Lerp(self,dt) hitWord.color[3]=hitWord.color[2] end ) )
 	end
 	local wx,wy = hitWord.transform.position.x ,hitWord.transform.position.y
-	--table.insert(SceneMgr.CurrentScene.TempPrint,hitWord)
-	table.insert(currentStack[p].label.Drawable,hitWord)
-	table.insert(currentStack[p].label.Motion,hitWord)
+	--TableFunc.Push(SceneMgr.CurrentScene.TempPrint, hitWord)
+	TableFunc.Push(currentStack[p].label.Drawable, hitWord)
+	TableFunc.Push(currentStack[p].label.Motion, hitWord)
 	Motion.NewTable(hitWord.motion , Motion.new({0,wy+28,wy-20,0.8},'outCirc' ,function(self,dt)hitWord.transform.position.y = Motion.Lerp(self,dt)end) )
 	Motion.NewTable(hitWord.motion , Motion.new({0,3,1,0.9},'outInCirc' ,function(self,dt)hitWord.transform.scale.x = Motion.Lerp(self,dt) hitWord.transform.scale.y=hitWord.transform.scale.x end ) ) 
 
@@ -95,8 +95,8 @@ end]]
 		hitWord.t ,hitWord.life =0 ,1.3 
 		local wx,wy = hitWord.transform.position.x ,hitWord.transform.position.y
 		
-		table.insert(currentStack[p].label.Drawable,hitWord)
-		table.insert(currentStack[p].label.Motion,hitWord)
+		TableFunc.Push(currentStack[p].label.Drawable ,hitWord)
+		TableFunc.Push(currentStack[p].label.Motion   ,hitWord)
 		Motion.NewTable(hitWord.motion , Motion.new({0,wy+28,wy-20,0.8},'outCirc' ,function(self,dt)hitWord.transform.position.y = Motion.Lerp(self,dt)end) )
 
 

@@ -1,6 +1,6 @@
 local CallBack = require("lib.callback")
 local SceneMgr = require('lib.sceneManager')
---local SaveFileMgr=require('save.saveManager')
+local TableFunc=require('lib.TableFunc')
 
 local LogicScenesMgr=SceneMgr.new()--{SaveFileMgr=SaveFileMgr,SceneMgr=SceneMgr,Event=CallBack.new()}
 LogicScenesMgr.name='LogicScenesMgr'
@@ -31,13 +31,13 @@ function LogicScenesMgr.Update()
 			--print('LogicScenesMgr switchingScene '..type(switchingScene))
 			LogicScenesMgr:Switch(LogicScenesMgr.NormalScene, switchingScene)
 			local command ={alreadySent=false,command={key='SwitchScene' ,arg={}} }
-			table.insert(LogicScenesMgr.toViewScenesMgr,command)
+			TableFunc.Push(LogicScenesMgr.toViewScenesMgr ,command)
 
 		elseif LogicScenesMgr.CurrentScene.switchingScene == nil then
 			--print('LogicScenesMgr switchingScene ',switchingScene)
 			LogicScenesMgr:Switch(LogicScenesMgr.Adventure, switchingScene)
 			local command ={alreadySent=false,command={key='SwitchScene' ,arg={}} }
-			table.insert(LogicScenesMgr.toViewScenesMgr,command)
+			TableFunc.Push(LogicScenesMgr.toViewScenesMgr ,command)
 		end		
 	end
 	
@@ -45,8 +45,7 @@ function LogicScenesMgr.Update()
 		for k= #LogicScenesMgr.toViewScenesMgr , 1, -1 do
 			local v = LogicScenesMgr.toViewScenesMgr[k]		
 			if v.alreadySent then
-				--table.insert(LogicScenesMgr.record , 'toViewScene '..tostring(v.command.ViewScenesState)..' '..v.command.key)
-				table.remove(LogicScenesMgr.toViewScenesMgr, k)
+				TableFunc.Pop(LogicScenesMgr.toViewScenesMgr)
 			else
 				v.alreadySent=true
 			end			

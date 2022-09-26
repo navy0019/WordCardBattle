@@ -4,7 +4,6 @@ local battle={
 			{
 				key = "hero1",
 				data = {
-					teamPos = 1,
 					team_index = 1,
 					shield = 1,
 					atk = 1,
@@ -28,7 +27,6 @@ local battle={
 
 				key = "hero2",
 				data = {
-					teamPos = 2,
 					team_index = 2,
 					shield = 2,
 					atk = 2,
@@ -38,7 +36,7 @@ local battle={
 					state = {
 						always = {
 						},
-						before = {
+						before = {{name='spell'}
 						},
 						after = {
 						},
@@ -52,7 +50,7 @@ local battle={
 		},
 		monsterData = {
 			{
-				think_weights={'70% atk hero [find_state spell] ','30% buff enemy'},
+				think_weights={'70% atk random 1 hero [find_state spell] ','atk hero 1','30% buff enemy 1'},
 				key = "m_mid_1",
 				race = "enemy",
 				data = {
@@ -73,10 +71,11 @@ local battle={
 					def = 1,
 					act = 1,
 				},
+				skill={'testCard'},
 
 			},
 			{
-				think_weights={'70% atk hero [find_state spell] ','30% buff enemy'},
+				think_weights={'100% atk random 1 hero '},
 				key = "m_mid_2",
 				race = "enemy",
 				data = {
@@ -97,7 +96,7 @@ local battle={
 					def = 2,
 					act = 2,
 				},
-
+				skill={'testCard'},
 			},
 
 		},

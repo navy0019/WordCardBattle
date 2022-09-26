@@ -6,7 +6,7 @@ function StringDecode.split_by(s ,arg)
 	local t ={}
 	for v in string.gmatch(s, '[^'..arg..']*') do
 		local str=StringDecode.trim_head_tail(v)
-		table.insert(t,str)
+		TableFunc.Push(t ,str)
 	end
 	return table.unpack(t)
 end
@@ -27,7 +27,7 @@ end
 function StringDecode.split_comma_enter( s )
 	local t = {}
 	for v in string.gmatch(s, '([^,^\n]+)') do
-		table.insert(t,v)
+		TableFunc.Push(t, v)
 	end
 	return t
 end
@@ -39,11 +39,11 @@ local function split_line(str)
 		local enter = str:find('\n',index)
 		if enter then
 			local s = str:sub(index,enter-1)			
-			table.insert(tab, s)
+			TableFunc.Push(tab, s)
 			index = enter+1
 		else
 			local s = str:sub(index,#str)
-			table.insert(tab, s)		
+			TableFunc.Push(tab, s)		
 			break
 		end
 	end
@@ -59,7 +59,7 @@ local function merge_line(t)
 				tab[#tab]=tab[#tab]..line
 			end
 		else
-			table.insert(tab,v)
+			TableFunc.Push(tab ,v)
 		end
 	end
 	return tab
@@ -86,7 +86,7 @@ local function make_table(t)
 				tab[key]={}
 				for i,j in pairs(value) do
 					j=StringDecode.trim_head_tail(j)
-					table.insert(tab[key],j)
+					TableFunc.Push(tab[key], j)
 				end
 			else
 				tab[key]=value[1]
@@ -122,13 +122,7 @@ function StringDecode.CheckInclude(content)
 		return nil
 	end
 end
---[[function StringDecode.MakeTableByComma(command,act)								
-	local temp={StringDecode.split_by(command,',')}
-	for k,v in pairs(temp) do
-		local word=StringDecode.trim_head_tail(v)					
-		table.insert(act , word)
-	end
-end]]
+
 function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
 	local count =0
 	local index=i
@@ -161,17 +155,18 @@ end
 function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
 
 	function string_to_table(str,t)
-		str:gsub(".",function(c) table.insert(t,c) end)
+		str:gsub(".",function(c) TableFunc.Push(t,c) end)
 	end
 	local tab={}
 	string_to_table(str1,tab)
+	--print('p12',p1,p2)
 	for i=1,#str1 do
 		if i >= p1 and i <=p2 then
 			table.remove(tab,p1)
 		end
 	end
 	if #tab < p1 then
-		table.insert(tab,'')
+		TableFunc.Push(tab,'')
 	end
 	local s=''
 	for k,v in pairs(tab) do
@@ -187,26 +182,31 @@ end
 function StringDecode.Replace_copy_scope(tab,copy_scope)
 	local new_tab={}
 	for k,v in pairs(tab) do	
+		--print('v',v)
 		if v:find('\"copy_scope\"') then
 			local index=1
 			local w= v
 			while index <= string.len(v)do		
 				local a,b = w:find('\"copy_scope\"',index)
-				--print('')
-				local origin = TableFunc.Shift(copy_scope)
-				w=StringDecode.Gsub_by_index(w ,origin,a , b)			
-				index=b+1
+				if a and b then
+					local origin = TableFunc.Shift(copy_scope)
+					w=StringDecode.Gsub_by_index(w ,origin,a , b)			
+					index=b+1
+				else
+					break
+				end
 			end
-			table.insert(new_tab,w)
+			--print('w',w)
+			TableFunc.Push(new_tab, w)
 		else
-			table.insert(new_tab,v)
+			TableFunc.Push(new_tab, v)
 		end
 		
 	end
 	return new_tab	
 end
 
-function StringDecode.Split_Command(command)
+function StringDecode.Split_Command(command)--裁切[ ]部分
 	local copy_scope ={}
 	local act={}
 	local index=1										
@@ -218,7 +218,7 @@ function StringDecode.Split_Command(command)
 			local scope_end=StringDecode.FindCommandScope(index+1 ,command,'[',']')
 			local scope_word =command:sub(index,scope_end)
 			--print('scope_word',scope_word)
-			table.insert(copy_scope, scope_word)
+			TableFunc.Push(copy_scope, scope_word)
 			word=word.."\"copy_scope\""
 			--print(word)
 			index = scope_end

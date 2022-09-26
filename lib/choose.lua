@@ -101,15 +101,13 @@ local function InitUse_condition(self)
 	end
 
 	for k,v in pairs(card.use_condition) do
-		--table.insert(self.target_table, {})
-		--TableFunc.Dump(card.use_condition)
 		local choose_type=v[1]
 		local num =v[2]
 		local race=v[3]
 		local max ,min
 
 		local current_table = choose_type == 'input' and self.card_check or self.target_check
-		table.insert(current_table,{})
+		TableFunc.Push(current_table,{})
 		local len = #current_table
 
 		if type(num)=='string' then
@@ -340,18 +338,18 @@ function Choose.new(option)
 					reverse = index+diff - #race_table
 					local start_index =index+1
 					for i=start_index ,#race_table do
-						table.insert(machine.toUse.target_table ,race_table[i])
+						TableFunc.Push(machine.toUse.target_table ,race_table[i])
 					end
 					for i=1,reverse do
-						table.insert(machine.toUse.target_table ,race_table[index-i])
+						TableFunc.Push(machine.toUse.target_table ,race_table[index-i])
 					end
 				else
 					for i=1,diff do
-						table.insert(machine.toUse.target_table ,race_table[index+i])
+						TableFunc.Push(machine.toUse.target_table ,race_table[index+i])
 					end
 				end
 			else
-				table.insert(machine.toUse.target_table ,race_table[index])
+				TableFunc.Push(machine.toUse.target_table ,race_table[index])
 			end
 			--print('PrepareToUse select done')
 			

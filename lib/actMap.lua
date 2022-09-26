@@ -11,21 +11,61 @@ local function FindSymbol(str,t)
 		end
 	end
 end
-local function group_with_codition(data,codition)
+local function group_with_condition(data,condition)
 	local StringAct=require('lib.StringAct')
-	local mini_command =codition:sub(2,#codition-1)
+	local mini_command =condition:sub(2,#condition-1)
 	local act={StringDecode.split_by(mini_command,',')}	
 	local m=StringAct.NewMachine(act,toUse ,battle)
+	local t={}
 	m.stack={data}				
 	StringAct.ReadEffect(battle ,m)
+
 	local result =TableFunc.Shift(m.stack)
-	local t={}
 	for k,v in pairs(result) do
 		if v then
 			TableFunc.Push(t ,data[k])
 		end
 	end
 	return t
+end
+local function get_group(data,stack,arg)
+	local condition , num
+	if #arg > 1 then
+		for k,v in pairs(arg) do
+			if tonumber(v) then
+				num=tonumber(v)
+			else
+				condition=v
+			end
+		end
+	else
+		local v = TableFunc.Shift(arg)
+		if tonumber(v) then
+			num=tonumber(v)
+		else
+			condition=v
+		end		
+	end
+	if condition and not num then
+		--print('no number')
+		local t=group_with_condition(data,condition)
+		TableFunc.Push(stack, t)
+	elseif not condition and num then
+		if data[num] then
+			TableFunc.Push(stack, {data[num]})
+		else
+			TableFunc.Push(stack, {})
+		end
+	elseif condition and num then
+		local t=group_with_condition(data ,condition)
+		if t[num] then
+			TableFunc.Push(stack, t[num])
+		else
+			TableFunc.Push(stack, {})
+		end
+	else
+		TableFunc.Push(stack ,data) 
+	end
 end
 local ActMap={
 		get= function(battle,...)
@@ -39,7 +79,7 @@ local ActMap={
 			for k,v in pairs(target) do
 				local value 
 				if type(v.data[arg])=='string' then
-					value=StringRead.StrToValue(v.data[arg] ,v)
+					value=StringRead.StrToValue(v.data[arg] ,v ,battle)
 				else
 					value=v.data[arg]
 				end
@@ -75,24 +115,25 @@ local ActMap={
 			TableFunc.Push(stack ,{toUse.card}) 
 			--TableFunc.Dump(toUse.card)
 		end,
-
+		enemy=function(battle,...)
+			local arg={...}
+			local machine= TableFunc.Shift(arg)
+			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
+			local monsterData=battle.characterData.monsterData
+			get_group(monsterData ,stack ,arg)
+		end,
+		hero=function(battle,...)					
+			local arg={...}
+			local machine= TableFunc.Shift(arg)
+			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
+			local heroData=battle.characterData.heroData
+			get_group(heroData ,stack ,arg)
+		end,
 		target=function(battle,...)
-			local machine,codition=...
-			local toUse= machine.toUse
-			local stack=machine.stack
-			if codition and not tonumber(codition) then
-				local t=group_with_codition(toUse.target_table ,codition)
-				TableFunc.Push(stack, t)
-			elseif codition and tonumber(codition) then
-				local num = tonumber(codition)
-				if toUse.target_table[num] then
-					TableFunc.Push(stack, toUse.target_table[num])
-				else
-					TableFunc.Push(stack, {})
-				end
-			else
-				TableFunc.Push(stack ,toUse.target_table) 
-			end
+			local arg={...}
+			local machine= TableFunc.Shift(arg)
+			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
+			get_group(toUse.target_table ,stack ,arg)
 			
 		end,
 
@@ -130,7 +171,7 @@ local ActMap={
 			if tonumber(atk_value) then
 				atk_value = tonumber(atk_value)
 			else
-				atk_value = StringRead.StrToValue(atk_value ,toUse.card)
+				atk_value = StringRead.StrToValue(atk_value ,toUse.card ,battle)
 			end
 			if atk_type=='magic' then
 				tab={
@@ -334,71 +375,30 @@ local ActMap={
 			end
 			
 		end,
-		enemy=function(battle,...)
-			local arg={...}
-			local machine = TableFunc.Shift(arg)
-			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
-			local codition =TableFunc.Shift(arg)
-			local monsterData=battle.characterData.monsterData
-
-			if codition and not tonumber(codition) then
-				local t=group_with_codition(monsterData,codition)
-				TableFunc.Push(stack, t)
-			elseif codition and tonumber(codition) then
-				local num = tonumber(codition)
-				if monsterData[num] then
-					--TableFunc.Dump(monsterData[num])
-					TableFunc.Push(stack, monsterData[num])
-				else
-					TableFunc.Push(stack, {})
-				end
-			else
-				TableFunc.Push(stack, monsterData)
-			end
-			--print('stack',#stack)
-		end,
-		hero=function(battle,...)		
-			local arg={...}
-			local machine = TableFunc.Shift(arg)
-			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
-			local codition =TableFunc.Shift(arg)
-			local heroData=battle.characterData.heroData
-			if codition and not tonumber(codition) then
-				local t=group_with_codition(heroData,codition)
-				TableFunc.Push(stack, t)
-			elseif codition and tonumber(codition) then
-				local num = tonumber(codition)
-				if heroData[num] then				
-					TableFunc.Push(stack, heroData[num])
-				else
-					TableFunc.Push(stack, {})
-				end
-			else
-				TableFunc.Push(stack, heroData)
-			end
-		end,
 		find_state=function(battle,...)
 			local arg={...}
 
 			local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local state_name=TableFunc.Shift(arg)
-			local characterData = TableFunc.Shift(machine.stack) 
-			for k,character in pairs(characterData) do
-				for key, buff in pairs(character.data.state.before) do
-					if buff.name== state_name then TableFunc.Push(machine.stack ,{true}) return end
-				end
-				for key, buff in pairs(character.data.state.always) do
-					if buff.name== state_name then TableFunc.Push(machine.stack ,{true}) return end
-				end
-				for key, buff in pairs(character.data.state.after) do
-					if buff.name== state_name then TableFunc.Push(machine.stack ,{true}) return end
-				end
-				for key, buff in pairs(character.data.state.is_target) do
-					if buff.name== state_name then TableFunc.Push(machine.stack ,{true}) return end
+			local characterData = TableFunc.Shift(machine.stack)
+			local result ={}
+			local function search_state(state_tab ,state_name) 
+				for key, buff in pairs(state_tab) do
+					if buff.name== state_name then 
+						TableFunc.Push(result ,true)
+					else
+						TableFunc.Push(result ,false) 
+					end
 				end
 			end
-			TableFunc.Push(machine.stack ,{false})
+			for k,character in pairs(characterData) do
+				search_state(character.data.state.before , state_name)
+				search_state(character.data.state.always , state_name)
+				search_state(character.data.state.after  , state_name) 
+				search_state(character.data.state.is_target, state_name) 
+			end
+			TableFunc.Push(machine.stack, result)
 		end,
 		loop=function(battle,...)
 			local arg={...}

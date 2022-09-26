@@ -40,8 +40,8 @@ function AdvGenerator:SetAdvData( CurrentSave)
 		else
 			CurrentSave.CurrentTeamData[k]=hero.data
 		end
-		hero.data.teamPos=k
-		table.insert(self.heroData,hero)
+		hero.data.team_index=k
+		TableFunc.Push(self.heroData,hero)
 	end
 end
 function AdvGenerator:ResetMap(...)
@@ -70,13 +70,13 @@ function AdvGenerator.GenerateMapEvent()
 	-----1st chance-----exit door
 	local ran = math.random(1,10)
 	if AdvGenerator.mapData.stepFromDoor > 6 and ran < AdvGenerator.mapData.stepFromDoor then
-		table.insert(event.door,'door')
+		TableFunc.Push(event.door,'door')
 	end
 	-----2nd chance-----put random safe event
 	ran = math.random(1,10)
 	if ran > 5 then
 		local safe = safeEvent[math.random(#safeEvent)]
-		table.insert(event.event,safe)
+		TableFunc.Push(event.event,safe)
 	end
 
 	-----3rd chance-----decide story or battle or empty
@@ -90,7 +90,7 @@ function AdvGenerator.GenerateMapEvent()
 		
 	else
 		---story
-		--table.insert(event.story,'event')				
+		--TableFunc.Push(event.story,'event')				
 	end
 
 	return event
@@ -108,7 +108,7 @@ function AdvGenerator.AddNewScene(name,events)
 	LogicScenesMgr:AddScene(LogicScenesMgr.Adventure ,dataScene)
 	ViewScenesMgr:AddScene(ViewScenesMgr.Adventure ,ViewScene)	
 
-	table.insert(AdvGenerator.mapData.sceneList,{name=dataScene.name,events=dataScene.events})
+	TableFunc.Push(AdvGenerator.mapData.sceneList,{name=dataScene.name,events=dataScene.events})
 
 end
 function AdvGenerator.Check()
@@ -127,10 +127,8 @@ function AdvGenerator.Save()
 	saveData.CurrentTeam={}
 	--
 	for k,v in pairs(AdvGenerator.heroData) do
-		--
-		table.insert(saveData.CurrentTeam,v.key)
-		--
-		table.insert(saveData.CurrentTeamData,v.data)
+		TableFunc.Push(saveData.CurrentTeam,  v.key)
+		TableFunc.Push(saveData.CurrentTeamData,  v.data)
 	end
 	saveData.CurrentScene=LogicScenesMgr.CurrentScene.name
 	return true

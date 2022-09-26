@@ -25,7 +25,7 @@ function CardAssets.Init(card_table)
             elseif TableFunc.Find(data_map,key) then
                 v.data[key]=value
                 v[key]=nil            
-            elseif key=='effect' and type(value)~='table' then
+            elseif (key=='effect' or key=='type') and type(value)~='table' then
             	local w =value
             	--print('effect',w)
             	v[key]={w}

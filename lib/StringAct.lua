@@ -7,6 +7,17 @@ local ActMap =require('lib.actMap')
 local StringAct={}
 local compare_map={'>','<','==','>=','<='}
 local calculate_map={'sum','minus','multiplie','divided'}
+local type_tab={atk={'melee','range','magic','atk'}}
+
+function StringAct.Match_type(key1 ,key2)
+	if key1 == key2 then return true end
+	for k,v in pairs(type_tab) do
+		if type(v)=='table' and TableFunc.Find(v ,key1) and TableFunc.Find(v ,key2) then
+			return true
+		end
+	end
+	return false
+end
 local function FindSymbol(str,t)
 	for k,v in pairs(t) do
 		if str:find(v) then
@@ -80,8 +91,7 @@ function StringAct.NewMachine(effect,toUse ,battle)
 		arg=StringDecode.Replace_copy_scope(arg,copy_scope)
 
 		local key = TableFunc.Shift(arg)
-
-
+		--print('key',key)
 		local value = ActMap[key](battle,machine,table.unpack(arg))
 		if value and value =='stop' then
 			machine.stop=true
@@ -106,13 +116,11 @@ function StringAct.NewMachine(effect,toUse ,battle)
 	end
  
 	Normal.DoOnEnter=function(self,command,battle,...)
-		print('normal command',command )
+		--print('normal command',command )
 		local arg ,key
 		arg = {StringDecode.split_by(command,'%s')}
 		key = StringDecode.trim_head_tail(TableFunc.Shift(arg)) 
-		for k,v in pairs(arg) do
-			print(k,v)
-		end
+
 		if key:find('input_target')then
 			local num = key:match('%d+')
 			TableFunc.Push(arg ,num)
@@ -133,8 +141,8 @@ end
 function StringAct.ReadEffect(battle ,machine)
 	while not machine.stop and machine.index < #machine.effect do
 		machine:Update(battle)
-		print('command:',machine.effect[machine.index])
-		print(TableFunc.Print_one_line(machine.stack),'\n')
+		--print('command:',machine.effect[machine.index])
+		--print(TableFunc.Print_one_line(machine.stack),'\n')
 	end
 end
 function StringAct.UseCard(battle ,toUse)

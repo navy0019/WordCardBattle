@@ -36,7 +36,7 @@ function monsterGenerator.RandomMonster(roomNum)
 		local value = monsterValue[ran1]
 		if max - value >=0 then		
 			local monName = monsterType[ran1]
-			table.insert(temp,{monName,value})
+			TableFunc.Push(temp, {monName,value})
 			max=max-value
 		end
 	end
@@ -46,7 +46,7 @@ function monsterGenerator.RandomMonster(roomNum)
 		--local m = Assets.Monsters.instance(monster[1],0,0)
 		local m = CharacterAssets.instance(monster[1],k)
 		monsterGenerator.GrowByRoomNum(m.data )
-		table.insert(monsterInstance,m) 
+		TableFunc.Push(monsterInstance ,m) 
 	end
 	--table.sort( monsterInstance, CompairMin )
 

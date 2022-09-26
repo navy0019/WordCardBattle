@@ -37,7 +37,7 @@ function TeamData.ResetTeam()
 	end
 	local num = TeamData.CurrentDeafault
 	for k,v in pairs(TeamData.DefaultTeam[num]) do
-		table.insert(TeamData.CurrentTeam,v)
+		TableFunc.Push(TeamData.CurrentTeam, v)
 	end
 	TeamData.UpdateTeamSelected()
 end
@@ -48,7 +48,7 @@ function TeamData.SaveTeam()
 	end
 	--SaveMgr.CurrentSave.DefaultTeam[num]={}
 	for k,v in pairs(TeamData.CurrentTeam) do
-		table.insert(TeamData.DefaultTeam[num],v)
+		TableFunc.Push(TeamData.DefaultTeam[num], v)
 	end
 	TeamData.UpdateTeamSelected()
 	TeamData.ToSaveFile()
@@ -107,7 +107,7 @@ function TeamData.SwitchDefault(num)
 end
 function TeamData.init()
 	for i=1,16 do
-		table.insert(TeamData.AllHeros,{name="hero"..i,selected=false,lock=true})
+		TableFunc.Push(TeamData.AllHeros,{name="hero"..i,selected=false,lock=true})
 		if i<=6 then
 			TeamData.AllHeros[i].lock = false
 		end

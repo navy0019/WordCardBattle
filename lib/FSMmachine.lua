@@ -5,21 +5,21 @@ local function AddTransition(self,event)
 	if event.to then
 		self.states[name].to = self.states[name].to or {}
 		if not TableFunc.Find(self.states[name].to , event.to) then
-			table.insert(self.states[name].to,event.to)
+			TableFunc.Push(self.states[name].to  ,event.to)
 		end
 	elseif event.global then --global 才有的 self:是否包含自己 
 		self.states[name].to = {}
 		for k,v in pairs(self.states) do
 			if v~= event.state then
 				if not TableFunc.Find(self.states[name].to, v.name) then
-					table.insert(self.states[name].to ,v.name)
+					TableFunc.Push(self.states[name].to ,v.name)
 				end
 				if not TableFunc.Find(v.to, name) then
-					table.insert(v.to , name)
+					TableFunc.Push(v.to , name)
 				end		
 			end
 			if event.self and not TableFunc.Find(self.states[name].to, name) then
-				table.insert(self.states[name].to,name)
+				TableFunc.Push(self.states[name].to ,name)
 			end	
 		end
 	else
@@ -30,7 +30,7 @@ local function DelTransition(self,state,ToName)
 	local name = state.name
 	local p = TableFunc.Find(self.states[name].to,ToName)
 	if p then
-		table.remove(self.states[name].to,p)
+		table.remove(self.states[name].to ,p)
 	end
 
 end

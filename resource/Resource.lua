@@ -28,8 +28,7 @@ function Resource.GetAssets( popen ,path ,tab)
         for k,v in pairs(t) do
             local format = 'cd'         
             local is_file = v:sub(#v-(#format-1)  , #v) == format and true or false
-            if is_file then 
-                
+            if is_file then                 
                 
                 local p = v:find('%s[^%s]*$')
                 --print('v',v)
@@ -61,10 +60,9 @@ function Resource.Init()
     Msg.Init(Resource.translate)
 end
 function Resource.Init_Test()
-    local card_path = _G.path..slash..'other'..slash..'test'..slash..'card'
-    local card_popen = io.popen(cmd..card_path)
-   -- Resource.test_card={}
-    Resource.GetAssets( card_popen ,card_path ,Resource.card)
+    local test_card_path = _G.path..slash..'other'..slash..'test'..slash..'card'
+    local test_card_popen = io.popen(cmd..test_card_path)
+    Resource.GetAssets( test_card_popen ,test_card_path ,Resource.card)
     CardAssets.Init(Resource.card)
 
     local translate_path = _G.path..slash..'other'..slash..'test'..slash..'translate'

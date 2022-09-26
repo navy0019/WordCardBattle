@@ -105,7 +105,7 @@ function scene.Enter()
 	ChooseSave.DoOnLeave=function()
 		local remove = {}
 		for k,v in pairs(scene.ButtonEvent) do
-			table.insert(remove,k)
+			TableFunc.Push(remove,k)
 		end
 		for k,v in pairs(remove) do
 			--scene.ButtonEvent:RemoveRegister(v)

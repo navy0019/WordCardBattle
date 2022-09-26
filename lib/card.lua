@@ -9,7 +9,7 @@ local Card={}
 --[[local function FindInfoPos( card )
 	local pos = {}
 	for k,v in pairs(card.updateWord) do
-		table.insert(pos,v[2]+(k-1)*2+1)
+		TableFunc.Push(pos, v[2]+(k-1)*2+1)
 	end
 	return pos
 end 
@@ -39,8 +39,8 @@ local function MoveDrawOrder(self,num)
 	if not p then
 		assert(nil,self.numbering..'  '..self.handPos)
 	end	
-	table.remove(self.parentTab,p)
-	table.insert(self.parentTab,num,self)
+	table.remove(self.parentTab ,p)
+	table.insert(self.parentTab ,num,self)
 end
 local function CheckTargetRace(self,mx,my,characterData)
 	local heroData = characterData.heroData

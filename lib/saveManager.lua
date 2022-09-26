@@ -10,9 +10,9 @@ function SaveMgr.LoadFileList()
 		local check=io.open(_G.path..'save/savedata_'..i..'.json', "r")
 		if check then
 			local data = SaveMgr.Load('savedata_'..i)
-			table.insert(SaveMgr.SaveData , data)
+			TableFunc.Push(SaveMgr.SaveData , data)
 		else
-			table.insert(SaveMgr.SaveData , 'Empty')
+			TableFunc.Push(SaveMgr.SaveData , 'Empty')
 		end
 	end
 	--print(#SaveMgr.SaveData)
@@ -20,7 +20,11 @@ end
 function SaveMgr.Encode(data)
 
 	local str=''
-	local len = TableFunc.CountDic(data)
+	local len =0 
+	for k,v in pairs(data) do
+		len=len+1
+	end
+
 	local index=0
 	for key,value in pairs(data) do
 		index=index+1
