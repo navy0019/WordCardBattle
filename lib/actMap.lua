@@ -74,12 +74,13 @@ local ActMap={
 			local stack=machine.stack
 			local target =TableFunc.Pop(stack)
 			
-			
+			--print('get ',arg)
 			local t={}
 			for k,v in pairs(target) do
 				local value 
 				if type(v.data[arg])=='string' then
 					value=StringRead.StrToValue(v.data[arg] ,v ,battle)
+					print('get ',v.data[arg]..value)
 				else
 					value=v.data[arg]
 				end
@@ -149,7 +150,6 @@ local ActMap={
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 
 			local atk_value = TableFunc.Pop(stack)
-			--print('atk_value',TableFunc.Dump(atk_value))
 			local tab={
 				atk_value,	
 				'target','get team_index',
@@ -167,6 +167,7 @@ local ActMap={
 
 			local atk_type=TableFunc.Shift(arg)
 			local atk_value = TableFunc.Shift(arg)
+			--print('atk_value',atk_value)
 			local tab
 			if tonumber(atk_value) then
 				atk_value = tonumber(atk_value)

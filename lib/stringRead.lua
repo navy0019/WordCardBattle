@@ -8,10 +8,13 @@ local function valueMap(key1 ,key2 ,obj ,battle)
 			local type , serial = StringDecode.split_by(obj.master ,'%s')
 			local tab = type =='hero' and battle.characterData.heroData or battle.characterData.monsterData
 			local index = TableFunc.MatchSerial(tab ,serial)
-			return tab[index].data[key2]--obj[key1].data[key2] 
+			local value = tab[index].data[key2]
+			--print('value',value)
+			return value
 		end,
 		card= function()
 					local v = obj.data[key2]
+					--print('v',v)
 					if type(v)=='string' then
 						return StringRead.StrToValue(v ,obj ,battle)
 					end

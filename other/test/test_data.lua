@@ -50,7 +50,7 @@ local battle={
 		},
 		monsterData = {
 			{
-				think_weights={'70% atk random 1 hero [find_state spell] ','atk hero 1','30% buff enemy 1'},
+				think_weights={'70% atk random 1 hero [find_state spell] ','atk hero 1'},
 				key = "m_mid_1",
 				race = "enemy",
 				data = {
@@ -71,7 +71,7 @@ local battle={
 					def = 1,
 					act = 1,
 				},
-				skill={'testCard'},
+				skill={},
 
 			},
 			{
@@ -96,7 +96,7 @@ local battle={
 					def = 2,
 					act = 2,
 				},
-				skill={'testCard'},
+				skill={},
 			},
 
 		},

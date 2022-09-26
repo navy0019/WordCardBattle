@@ -1,6 +1,6 @@
 testCard
 {
-cost          =  2
+cost          =  1
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy
@@ -8,4 +8,13 @@ atk           =  master.atk
 def           =  0
 effect        =  built_in_atk melee card.atk
 }
-
+testCard2
+{
+cost          =  1
+type          =  melee
+drop_to       =  grave
+use_condition =  select 1 enemy
+atk           =  master.atk
+def           =  0
+effect        =  built_in_atk melee card.atk
+}

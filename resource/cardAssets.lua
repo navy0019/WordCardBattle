@@ -44,6 +44,7 @@ function CardAssets.instance( key,character)
 	--print(key,o)
 	o.key = key
 	--print('o key',_G.Resource.translate[o.key],o.key)
+	assert(_G.Resource.translate[o.key] , 'can\'t find '..key..' in translate file ,need check translate.cd ')
 	o.name = _G.Resource.translate[o.key]['name']
     o.info = _G.Resource.translate[o.key]['info']
 	o.getAsset=function(o,index)

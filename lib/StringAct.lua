@@ -9,11 +9,13 @@ local compare_map={'>','<','==','>=','<='}
 local calculate_map={'sum','minus','multiplie','divided'}
 local type_tab={atk={'melee','range','magic','atk'}}
 
-function StringAct.Match_type(key1 ,key2)
-	if key1 == key2 then return true end
-	for k,v in pairs(type_tab) do
-		if type(v)=='table' and TableFunc.Find(v ,key1) and TableFunc.Find(v ,key2) then
-			return true
+function StringAct.Match_type(except ,card_type)
+	for i ,card_key in pairs(card_type) do
+		for k ,tab_value in pairs(type_tab) do
+			if card_key == except then return true end
+			if type(tab_value)=='table' and TableFunc.Find(tab_value ,except) and TableFunc.Find(tab_value ,card_key) then
+				return true
+			end
 		end
 	end
 	return false
