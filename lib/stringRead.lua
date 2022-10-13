@@ -2,34 +2,17 @@ local StringDecode=require('lib.StringDecode')
 local TableFunc=require('lib.TableFunc')
 
 local StringRead={}
-local function valueMap(key1 ,key2 ,obj ,battle)
-	map={
-		master= function()
-			local type , serial = StringDecode.split_by(obj.master ,'%s')
-			local tab = type =='hero' and battle.characterData.heroData or battle.characterData.monsterData
-			local index = TableFunc.MatchSerial(tab ,serial)
-			local value = tab[index].data[key2]
-			--print('value',value)
-			return value
-		end,
-		card= function()
-					local v = obj.data[key2]
-					--print('v',v)
-					if type(v)=='string' then
-						return StringRead.StrToValue(v ,obj ,battle)
-					end
-					return v
-				end,
-		self= function()
-			local v = obj.data[key2]
-			if type(v)=='string' then
-				return StringRead.StrToValue(v ,obj ,battle)
-			end
-			return v
-		end
-	}
-	assert(map[key1],key1..' is nil')
-	return map[key1](key1 ,key2 ,obj)
+function StringRead.ReadStrTable(tab,obj ,battle)
+	local s =''
+	local value
+	--TableFunc.Dump(tab)
+	for i,t in pairs(tab) do
+		value=t.value
+		if tonumber(value) then value ='+'..value end
+		s='('..s..value..')'
+	end
+	value=StringRead.StrToValue(s ,obj ,battle)
+	return value
 end
 
 function StringRead.StrFormat(str,...)
@@ -55,9 +38,13 @@ function StringRead.StrColor(str)
 	local word_table={}
 	local t ={}
 	local s =str
-	
+
+	for v in str:gmatch('(%#.-%#)') do
+		TableFunc.Push(word_table ,v)
+	end
+
 	local index=1
-	while index <#str do
+	--[[while index <#str do
 		local w =s:sub(index,index)
 		if w =='#' then
 			--print('S',s ,index)
@@ -69,7 +56,7 @@ function StringRead.StrColor(str)
 		else
 			index=index+1
 		end
-	end
+	end]]
 
 	for k,v in pairs(word_table) do
 		--print('str color ',v)
@@ -95,16 +82,17 @@ function StringRead.StrColor(str)
 	end
 	return t
 end
-function StringRead.StrPrintf(str,...)--
+function StringRead.StrPrintf(str,obj,battle,...)
 	local Resource =require('resource.Resource')
-	local obj,battle = ...
+
 	local s =str
-	if s:find('%%%a+%%') then
+	if s:find('%%.-%%') then
 		if type(obj)== 'table' then
-			local head,tail = s:find('%%%a+%%')
+			local head,tail = s:find('%%.-%%')
 			local w = s:sub(head+1,tail-1)
+			
 			s=s:gsub(w,'self.'..w)
-			w=w:gsub(w,'self.'..w..'')			
+			w=w:gsub(w,'self.'..w..'')		
 			local v =StringRead.StrToValue(w ,obj ,battle)	
 			s=s:gsub('%%'..w..'%%'	,v)
 		else
@@ -119,30 +107,52 @@ function StringRead.StrPrintf(str,...)--
 	end
 	return s
 end
-function StringRead.StrToValue(str,obj,battle)
-	--將特定文字轉成數字
+local function split_dot_word(str)
 	local word_table={}
+	for v in string.gmatch(str, '(%a+[^%(%)^+^-^*^/])') do
+		table.insert(word_table, v)
+	end
+
+	local t={}
+	local n = ''
+	for k,v in pairs(word_table) do
+		if v:find('%.') then
+			n=n..v
+		else
+			n=n..v
+			table.insert(t,n)
+			n=''
+		end
+	end
+	return t
+end
+function StringRead.StrToValue(str,obj,battle)
+	--將特定文字轉成數字 ex:(master.data.atk + card.level)*2 -->return (10 + 3)*2
+	--擷取特定文字片段 word_table == {master.atk ,card.level}
+	local word_table=split_dot_word(str)
 	local value_table ={}
 
-	--擷取特定文字片段 word_table == {master.atk ,card.level}
-	for v in string.gmatch(str, '([%a.%a]+)') do
-		--print('v ',v)
-    	TableFunc.Push(word_table, v)
-	end
-
 	--word_table 取得數字 放入value_table
+	local StringAct=require('lib.StringAct')
+	local machine = StringAct.NewMachine()
 	for k,v in pairs(word_table) do
-		local key1 ,key2 = StringDecode.split_by(v,'.')
-		local i = valueMap(key1 ,key2 ,obj ,battle)
-		TableFunc.Push(value_table, i)
+		local arg = {StringDecode.split_by(v,'.')}
+		local key1 =TableFunc.Shift(arg)
+		local effect={key1}
+		for k,v in pairs(arg) do
+			TableFunc.Push(effect ,'get '..v)
+		end
+		local toUse={card=obj,self=obj}
+		StringAct.ReadEffect(battle ,machine ,effect , toUse )
+		local value = TableFunc.Pop(TableFunc.Pop(machine.stack))
+		TableFunc.Push(value_table,value)
 	end
 
-	-- 將數字取代文字 ex:(master.atk + card.level)*2 --> (10 + 3)*2
+	-- 將數字取代文字
 	s =str		
 	for k,v in pairs(value_table) do
 		s=s:gsub(word_table[k],v)
 	end
-
 	local value = load('return '..s)()
 	return value
 

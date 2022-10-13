@@ -185,12 +185,13 @@ function Choose.new(option)
 	end
 	CheckCost.DoOnEnter =function(self,battle,...)
 		local card =machine.card
-		if card.data.cost > battle.battleData.actPoint then
+		if card.cost > battle.battleData.actPoint then
 			machine.card=nil
 			local o= {toViewScene={key='WaitIoRead' ,arg={Msg.msg('actpoint_not_enough')} }}
 			TableFunc.Push(machine.queue , o)
 		else
 			machine.toUse.card = machine.card
+			machine.toUse.self = machine.card
 			InitUse_condition(machine)
 			--print('find select',TableFunc.Find(card.use_condition,'select'))
 			--print('find input ',TableFunc.Find(card.use_condition,'input'))

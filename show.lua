@@ -3,7 +3,7 @@ local Msg = require('resource.Msg')
 local Show={}
 local function MakeStatus(char)
 	local tab = {}
-	for k,v in pairs(char.data.Status) do
+	for k,v in pairs(char.state) do
 		for statusTab, s in pairs(v) do
 			local word = s.name..s.round
 			TableFunc.Push(tab,word )

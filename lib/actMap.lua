@@ -15,10 +15,10 @@ local function group_with_condition(data,condition)
 	local StringAct=require('lib.StringAct')
 	local mini_command =condition:sub(2,#condition-1)
 	local act={StringDecode.split_by(mini_command,',')}	
-	local m=StringAct.NewMachine(act,toUse ,battle)
+	local m=StringAct.NewMachine()
 	local t={}
 	m.stack={data}				
-	StringAct.ReadEffect(battle ,m)
+	StringAct.ReadEffect(battle ,m ,act )
 
 	local result =TableFunc.Shift(m.stack)
 	for k,v in pairs(result) do
@@ -30,22 +30,14 @@ local function group_with_condition(data,condition)
 end
 local function get_group(data,stack,arg)
 	local condition , num
-	if #arg > 1 then
-		for k,v in pairs(arg) do
-			if tonumber(v) then
-				num=tonumber(v)
-			else
-				condition=v
-			end
-		end
-	else
-		local v = TableFunc.Shift(arg)
+	for k,v in pairs(arg) do
 		if tonumber(v) then
 			num=tonumber(v)
 		else
 			condition=v
-		end		
+		end
 	end
+
 	if condition and not num then
 		--print('no number')
 		local t=group_with_condition(data,condition)
@@ -58,101 +50,168 @@ local function get_group(data,stack,arg)
 		end
 	elseif condition and num then
 		local t=group_with_condition(data ,condition)
+
 		if t[num] then
-			TableFunc.Push(stack, t[num])
+			TableFunc.Push(stack, {t[num]})
 		else
 			TableFunc.Push(stack, {})
 		end
 	else
 		TableFunc.Push(stack ,data) 
 	end
+	--print(stack[#stack] , TableFunc.Dump(stack))
 end
 local ActMap={
-		get= function(battle,...)
-			--print('get')
-			local machine,arg=...
-			local stack=machine.stack
-			local target =TableFunc.Pop(stack)
-			
-			--print('get ',arg)
-			local t={}
-			for k,v in pairs(target) do
-				local value 
-				if type(v.data[arg])=='string' then
-					value=StringRead.StrToValue(v.data[arg] ,v ,battle)
-					print('get ',v.data[arg]..value)
-				else
-					value=v.data[arg]
+		get= function(battle,machine,...)
+			--local machine,arg=...
+			local arg  			={...}
+			local key 			=TableFunc.Shift(arg)
+			local stack ,effect =machine.stack , machine.effect
+			local target 		=TableFunc.Pop(stack)			
+
+			--處理參數部分
+			if key:find('%.')then
+				local act= {StringDecode.split_by(key,'.')}
+				key = TableFunc.Shift(act)
+				for i=#act,1,-1 do
+					act[i]='get '..act[i]
+					table.insert(effect, machine.index+1 , act[i])
 				end
-				TableFunc.Push(t , value) 
 			end
-			TableFunc.Push(stack ,t)
+
+			--輸出數值
+			local result={}
+			for k,v in pairs(target) do
+				local data = v[key]
+				local value 
+
+
+				if type(data)=='string' and not tonumber(data)  then
+
+					value=StringRead.StrToValue(data ,machine.toUse.self ,battle)
+					--print('get str ',data[key]..value)
+				--[[elseif type(data) == 'table' and not TableFunc.IsDictionary(data)  then
+
+					value=StringRead.ReadStrTable(data, machine.toUse.self ,battle)
+					--print('get table value',value)]]
+				else
+					--print('Get',data)
+					value=data
+				end
+				TableFunc.Push(result  , value) 
+			end
+
+			TableFunc.Push(stack ,result)
 		end,
 
-		set= function(battle,...)
+		set= function(battle,machine,...)
 			--print('set somthing')
-			local machine,arg=...
+			--local machine,arg=...
+			local arg={...}
+			local key =TableFunc.Shift(arg)
 			local stack=machine.stack
-			local target =TableFunc.Pop(stack)
+			local target --=TableFunc.Pop(stack)
 			local value  =TableFunc.Pop(stack)
-			for k,character in pairs(target) do
+
+			if key:find('%.')then
+				local act= {StringDecode.split_by(key,'.')}
+				key = TableFunc.Pop(act)
+				for i=#act,2,-1 do
+					act[i]='get '..act[i]
+				end
+				local StringAct=require('lib.StringAct')
+				local m = StringAct.NewMachine()
+				m.stack={target}
+				StringAct.ReadEffect(battle ,m ,act ,machine.toUse)
+				target = TableFunc.Pop(m.stack)
+			end
+
+			for k,obj in pairs(target) do
 				for i,v in pairs(value) do
-					character.data[arg]=v
+					obj[key]=v
 				end				
 			end
 		end,
-		set_target= function(battle,...)
+		set_target= function(battle,machine,...)
 			local arg={...}
-			local machine= TableFunc.Shift(arg)
+			--local machine= TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local group= TableFunc.Pop(stack)
 			--print('set_target',TableFunc.Dump(group))
 			machine.toUse.target_table=group
 		end,
-		card=function(battle,...)
-			local machine,arg=...
+		card=function(battle,machine,...)
+			--local machine,arg=...
 			local toUse= machine.toUse
 			local stack=machine.stack
 			TableFunc.Push(stack ,{toUse.card}) 
 			--TableFunc.Dump(toUse.card)
 		end,
-		enemy=function(battle,...)
+		self=function(battle,machine,...)
+			--local machine,arg=...
+			local toUse= machine.toUse
+			local stack=machine.stack
+			TableFunc.Push(stack ,{toUse.self}) 
+		end,
+		master=function(battle,machine,...)
+			local toUse= machine.toUse
+			local stack=machine.stack
+			local master
+			--print('Master')
+		--	TableFunc.Dump(toUse)
+			if type(toUse.self.master) =='string' then
+
+				local type , serial = StringDecode.split_by(toUse.self.master ,'%s')
+				local tab = type =='hero' and battle.characterData.heroData or battle.characterData.monsterData
+				local index = TableFunc.MatchSerial(tab ,serial)
+				master = tab[index]
+			else
+				master = toUse.self.master
+			end
+			TableFunc.Push(stack ,{master})
+
+		end,
+		enemy=function(battle,machine,...)
 			local arg={...}
-			local machine= TableFunc.Shift(arg)
+			--local machine= TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local monsterData=battle.characterData.monsterData
 			get_group(monsterData ,stack ,arg)
 		end,
-		hero=function(battle,...)					
+		hero=function(battle,machine,...)					
 			local arg={...}
-			local machine= TableFunc.Shift(arg)
+			--local machine= TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local heroData=battle.characterData.heroData
 			get_group(heroData ,stack ,arg)
 		end,
-		target=function(battle,...)
+		target=function(battle,machine,...)
+
 			local arg={...}
-			local machine= TableFunc.Shift(arg)
+			--local machine= TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
+			--print('Target',toUse.target_table,#toUse.target_table)
 			get_group(toUse.target_table ,stack ,arg)
 			
 		end,
 
-		input_target=function(battle,...)
-			local machine,num=...
+		input_target=function(battle,machine,...)
+			--local machine,num=...
 			local toUse= machine.toUse
 			local stack=machine.stack
 			if num == nil then num= 1 end
 			TableFunc.Push(stack ,toUse['card_target_'..num])  
 		end,
-		melee=function(battle,...)
-			local machine,arg=...
+		melee=function(battle,machine,...)
+			--local machine,arg=...
+			--print('In melee')
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 
 			local atk_value = TableFunc.Pop(stack)
+
 			local tab={
 				atk_value,	
-				'target','get team_index',
+				'target','get data ','get team_index',
 				'> 2','boolean true[2,divided] ',
 				'minus'
 			}
@@ -160,33 +219,29 @@ local ActMap={
 				table.insert(effect, machine.index+1 , tab[i])
 			end
 		end,
-		built_in_atk=function(battle,...)
+		built_in_atk=function(battle,machine,...)
 			local arg={...}
-			local machine= TableFunc.Shift(arg)
+			----local machine= TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 
 			local atk_type=TableFunc.Shift(arg)
 			local atk_value = TableFunc.Shift(arg)
 			--print('atk_value',atk_value)
 			local tab
-			if tonumber(atk_value) then
-				atk_value = tonumber(atk_value)
-			else
-				atk_value = StringRead.StrToValue(atk_value ,toUse.card ,battle)
-			end
+
 			if atk_type=='magic' then
 				tab={
-					'target','get hp' ,
+					'target','get data.hp' ,
 					atk_value , 'minus' ,
-					'target' ,'set hp'
+					'target.data' ,'set hp'
 				}
 			else
 				tab={
-				'target','get shield',
+				'target','get data','get shield',
 				atk_value ,atk_type ,
-				'target','set shield',
-				'target','get shield',
-				'< 0' ,'boolean true[target, get shield, target, get hp,sum ,target ,set hp] '
+				'set target.data.shield',
+				'target','get data.shield',
+				'< 0' ,'boolean true[target, get data.shield, target, get data.hp,sum ,set target.data.hp] '
 			}
 			end
 			for i=#tab ,1 ,-1 do
@@ -194,10 +249,10 @@ local ActMap={
 			end
 		end,
 
-		boolean=function(battle,...)			
+		boolean=function(battle,machine,...)			
 			
 			local arg={...}	--arg:{true[xxx] ,false[xxx]}	
-			local machine = TableFunc.Shift(arg)
+			----local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 
 			local scope_start,scope_end
@@ -222,9 +277,9 @@ local ActMap={
 			end
 
 		end,
-		deal=function(battle,...)
+		deal=function(battle,machine,...)
 			local arg={...}
-			local machine = TableFunc.Shift(arg)
+			----local machine = TableFunc.Shift(arg)
 			local toUse= machine.toUse
 			local stack=machine.stack
 			local num =arg[1]
@@ -235,17 +290,19 @@ local ActMap={
 			TableFunc.Push(machine.record ,{act_name='deal',arg={table.unpack(t)}})
 			battle:DealProcess(num)
 		end,
-		stop=function(battle,...)
+		stop=function(battle,machine,...)
 			return 'stop'
 		end,
-		calculate=function(battle,...)
+		calculate=function(battle,machine,...)
 			local func = {
 				function(a,b)return a+b end,
 				function(a,b)return a-b end,
 				function(a,b)return a*b end,
 				function(a,b)return math.floor(a/b) end
 			}
-			local machine,key=...
+			--local machine,key=...
+			local arg={...}
+			local key =TableFunc.Shift(arg)
 			local toUse= machine.toUse
 			local stack=machine.stack
 			local v1 = TableFunc.Pop(stack)
@@ -283,7 +340,7 @@ local ActMap={
 				TableFunc.Push(stack, t)
 			end
 		end,
-		compare=function(battle,...)
+		compare=function(battle,machine,...)
 			local func={
 				function(a,b) return a>b end,
 				function(a,b) return a<b end,
@@ -292,7 +349,7 @@ local ActMap={
 				function(a,b) return a<=b end
 			}
 			local arg={...}
-			local machine=TableFunc.Shift(arg)
+			--local machine=TableFunc.Shift(arg)
 			local toUse= machine.toUse
 			local stack=machine.stack
 			local key =arg[1]
@@ -327,25 +384,25 @@ local ActMap={
 				TableFunc.Push(stack, t)
 			end			
 		end,
-		length=function(battle,...)
+		length=function(battle,machine,...)
 			local arg={...}
-			local machine = TableFunc.Shift(arg)
+			----local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local v= TableFunc.Shift(machine.stack)
 			TableFunc.Push(machine.stack ,#v)
 
 		end,
-		copy=function(battle,...)
+		copy=function(battle,machine,...)
 			local arg={...}
-			local machine = TableFunc.Shift(arg)
+			----local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local v= machine.stack[#machine.stack]
 			TableFunc.Push(machine.stack ,v)
 
 		end,
-		random=function(battle,...)
+		random=function(battle,machine,...)
 			local arg={...}
-			local machine = TableFunc.Shift(arg)
+			--local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local num =TableFunc.Shift(arg)
 			local group = TableFunc.Shift(arg)
@@ -358,8 +415,8 @@ local ActMap={
 			if group then
 				local StringAct=require('lib.StringAct')
 				local effect =grop_arg and {group..' '..grop_arg} or{group}
-				local m=StringAct.NewMachine(effect,toUse ,battle)
-				StringAct.ReadEffect(battle ,m)
+				local m=StringAct.NewMachine()
+				StringAct.ReadEffect(battle ,m ,effect,toUse)
 				local result =TableFunc.Shift(m.stack)
 				local t={}
 				if #result>0 then
@@ -376,10 +433,10 @@ local ActMap={
 			end
 			
 		end,
-		find_state=function(battle,...)
+		find_state=function(battle,machine,...)
 			local arg={...}
 
-			local machine = TableFunc.Shift(arg)
+			--local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local state_name=TableFunc.Shift(arg)
 			local characterData = TableFunc.Shift(machine.stack)
@@ -387,23 +444,24 @@ local ActMap={
 			local function search_state(state_tab ,state_name) 
 				for key, buff in pairs(state_tab) do
 					if buff.name== state_name then 
-						TableFunc.Push(result ,true)
+						--TableFunc.Push(result ,true)
+						TableFunc.Push(result ,buff)
 					else
 						TableFunc.Push(result ,false) 
 					end
 				end
 			end
 			for k,character in pairs(characterData) do
-				search_state(character.data.state.before , state_name)
-				search_state(character.data.state.always , state_name)
-				search_state(character.data.state.after  , state_name) 
-				search_state(character.data.state.is_target, state_name) 
+				search_state(character.state.before , state_name)
+				search_state(character.state.always , state_name)
+				search_state(character.state.after  , state_name) 
+				search_state(character.state.is_target, state_name) 
 			end
 			TableFunc.Push(machine.stack, result)
 		end,
-		loop=function(battle,...)
+		loop=function(battle,machine,...)
 			local arg={...}
-			local machine = TableFunc.Shift(arg)
+			--local machine = TableFunc.Shift(arg)
 			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
 			local loop_num= TableFunc.Shift(arg)
 			local command = StringDecode.trim_head_tail(TableFunc.Shift(arg))
@@ -417,6 +475,16 @@ local ActMap={
 				end 
 			end
 
+		end,
+		add_buff=function(battle,machine,...)
+			local arg ={...}
+			--local machine = TableFunc.Shift(arg)
+			local toUse ,stack ,effect= machine.toUse ,machine.stack ,machine.effect
+			local key = TableFunc.Shift(arg)
+			local parameter = TableFunc.Shift(arg)
+			local target = TableFunc.Pop(stack)
+			print(key,parameter)
+			--StateHandler.AddBuff(battle, target , key ,parameter)
 		end
 
 }

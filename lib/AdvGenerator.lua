@@ -20,26 +20,34 @@ local AdvGenerator ={
 	originHead=nil,
 	mapData={stepFromDoor=0,money=0,passedRoom=0,dropItem=1,sceneList={}}
 }
+--local key_map={'hp','act','atk','def','shield'}
 function AdvGenerator:ResetHeroData(...)
+	
 	for k,v in pairs(self.heroData) do
 		local key = v.key
-		local originData = TableFunc.Copy(_G.Resource.character[key].data)
+		--v['team_index']=originData[key]
+		v.data={}
+		local originData = TableFunc.Copy(_G.Resource.character[key])
 		v.data=TableFunc.Copy(originData)
-		v.data.Status={before={}, after={}, always={}}
+		--[[for i,key in pairs(key_map) do
+			v.data[key]=originData.data[key]
+		end]]
+		v.state={before={}, after={}, always={}}
 	end
 end
 
 function AdvGenerator:SetAdvData( CurrentSave)
+	print('SetAdvData')
 	self.heroData={}
 	--TableFunc.Dump(CurrentSave.CurrentTeam)
 	for k,v in pairs(CurrentSave.CurrentTeam) do
 		--local hero = Assets.Characters.instance(v , 0 ,-24)
 		local hero = CharacterAssets.instance(v,k)
-		if CurrentSave.CurrentTeamData[k] then
-			hero.data=CurrentSave.CurrentTeamData[k]
-		else
-			CurrentSave.CurrentTeamData[k]=hero.data
-		end
+		CurrentSave.CurrentTeamData[k]=CurrentSave.CurrentTeamData[k] or TableFunc.Copy(hero.data)
+		local current_team_data = CurrentSave.CurrentTeamData[k]
+		--print('current_team_data',current_team_data)
+		--TableFunc.Dump(current_team_data)
+
 		hero.data.team_index=k
 		TableFunc.Push(self.heroData,hero)
 	end
@@ -128,7 +136,12 @@ function AdvGenerator.Save()
 	--
 	for k,v in pairs(AdvGenerator.heroData) do
 		TableFunc.Push(saveData.CurrentTeam,  v.key)
-		TableFunc.Push(saveData.CurrentTeamData,  v.data)
+		TableFunc.Push(saveData.CurrentTeamData,{})
+		local current =saveData.CurrentTeamData[k]
+		--[[for i,key in pairs(key_map) do
+			current.data[key]=v[key]
+		end]]
+		TableFunc.Push(current,  v.data)
 	end
 	saveData.CurrentScene=LogicScenesMgr.CurrentScene.name
 	return true

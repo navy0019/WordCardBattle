@@ -6,9 +6,6 @@ local Word = require("lib.word")]]
 local SceneMgr = require('lib.sceneManager')
 local TableFunc = require('lib.TableFunc')
 
-local MonsterSkill = require('battle.mSkill')
-local MonsterAI = require('battle.monsterAI')
-
 local Math= require('lib.math')
 
 
@@ -35,31 +32,31 @@ local Math= require('lib.math')
 end]]
 --[[local function HP( char , value,battle)	
 	--local battle = SceneMgr.CurrentScene.battle
-	--char.data.hp =  Math.clamp(char.data.hp + value ,0 , char.originData.hp)
+	--char.hp =  Math.clamp(char.hp + value ,0 , char.originData.hp)
 
 	return true
 	local v 
 	if value < 0 then
-		v= math.min(value+char.data.shield,0)
+		v= math.min(value+char.shield,0)
 	else
-		if value+char.data.hp <= char.originData.hp then
+		if value+char.hp <= char.originData.hp then
 			v= value
 		else
-			v=math.abs(char.originData.hp-char.data.hp)
+			v=math.abs(char.originData.hp-char.hp)
 		end
 	end
 
 	if ignoreDef then
 		--SceneMgr.CurrentScene.dialog:Enqueue(char.name..' 的生命 '..v)	
-		char.data.hp =  clamp(char.data.hp + value ,0 , char.originData.hp)
+		char.hp =  clamp(char.hp + value ,0 , char.originData.hp)
 	else
-		char.data.shield = math.max(char.data.shield+value ,0)
-		char.data.hp = clamp(char.data.hp + v ,0, char.originData.hp)
+		char.shield = math.max(char.shield+value ,0)
+		char.hp = clamp(char.hp + v ,0, char.originData.hp)
 	end 
 	--word motion
 	--HitWordMotion(char,v)
 
-	if char.data.hp <=0 then
+	if char.hp <=0 then
 		SceneMgr.CurrentScene.dialog:Enqueue(char.name..'死亡')	
 		char.state:TransitionTo('Death')
 		 _G.Event:Emit('Death',char,battle)
@@ -116,7 +113,7 @@ local function DecideAct( self ,charData,battle)
 	self.act = {self=self,key=self.skill[ran],target=t}
 end]]
 local function ClearStatus(self)
-	self.data.state={before={}, after={}, always={} ,is_target={}}
+	self.state={before={}, after={}, always={} ,is_target={}}
 end
 
 local Character = {}
@@ -126,7 +123,7 @@ Character.metatable={}
 function Character.new(o)--,skill,advancedSkill,equipment,race,name
 	--local o = {equipment=equipment,skill=skill,advancedSkill=advancedSkill,act={},motion={},race=race,data=data,state=MonsterAI.new(),name=name}
 
-	o.data.state={before={}, after={}, always={} ,is_target={}}
+	o.state={before={}, after={}, always={} ,is_target={}}
 
 	setmetatable(o,Character.metatable)
 	return o

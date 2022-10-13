@@ -12,6 +12,14 @@ function TableFunc.Upset(tab)
 	end
 
 end
+function TableFunc.IsDictionary(tab)
+	for k,v in pairs(tab) do
+		if type(k)=='string' then
+			return true
+		end
+	end
+	return false
+end
 function TableFunc.GetSerial(tab)
 	local s=tostring(tab)
 	return s:gsub('table: ','')

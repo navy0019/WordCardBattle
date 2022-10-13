@@ -1,65 +1,47 @@
 hero1
 {
-hp=12,
-act=2,
-def=4,
-atk=2,
-skill= attack, attack2 ,
-advancedSkill= attack,
-race='hero'
+data		= hp:12 ,act:2 ,def:4 ,atk:2
+skill		= attack, attack2 ,
+advancedSkill	= attack,
+race		='hero'
 }
 
 hero2
 {
-hp=11,
-act=3,
-def=0,
-atk=6,
-skill=attack, attack2 ,
-advancedSkill=attack, attack ,
-race='hero'
+data		= hp:11 ,act:3 ,def:0 ,atk:6
+skill		= attack, attack2 ,
+advancedSkill	= attack, attack ,
+race		='hero'
 }
 
 hero3
 {
-hp=10,
-act=5,
-def=0,
-atk=5,
-skill=attack, attack ,
-advancedSkill=attack, attack ,
-race='hero'
+data		= hp:10 ,act:5 ,def:0 ,atk:5
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
 }
 
 hero4
 {
-hp=12,
-act=4,
-def=3,
-atk=1,
-skill=attack, attack ,
-advancedSkill=attack, attack ,
-race='hero'
+data		= hp:12 ,act:4 ,def:3 ,atk:1
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
 }
 
 hero5
 {
-hp=12,
-act=3,
-def=0,
-atk=5,
-skill=attack, attack ,
-advancedSkill=attack, attack ,
-race='hero'
+data		= hp:12 ,act:3 ,def:0 ,atk:5
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
 }
 
 hero6
 {
-hp=10,
-act=3,
-def=0,
-atk=7,
-skill=attack, attack ,
-advancedSkill=attack, attack ,
-race='hero'
+data		= hp:10 ,act:3 ,def:0 ,atk:7
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
 }

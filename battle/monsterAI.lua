@@ -5,10 +5,11 @@ local StringAct=require('lib.StringAct')
 local TableFunc=require('lib.TableFunc')
 
 local mAI={}
-local function CheckGroupExist(battle, opt )
+local function CheckGroupExist(battle, opt ,mon)
 	--print(opt.group)
-	local machine=StringAct.NewMachine({opt.group},{ target_table={}} ,battle)
-	StringAct.ReadEffect(battle ,machine)
+	local machine=StringAct.NewMachine()
+	machine.stack={opt.group}
+	StringAct.ReadEffect(battle ,machine ,{ self = mon ,target_table={}})
 	local result=TableFunc.Pop(machine.stack)
 	if #result > 0 then
 		return true
@@ -78,7 +79,7 @@ local function decideMachine(battle ,m ,skill_card)
 			local chance =tonumber(v.chance)
 			TableFunc.Push(chance_tab,{})
 			for k,opt in pairs(v.option) do
-				local exist=CheckGroupExist(battle,  opt)
+				local exist=CheckGroupExist(battle, opt , mon)
 				if exist then
 					--print('exist',opt.group)
 					local len = #chance_tab
@@ -129,16 +130,16 @@ local function decideMachine(battle ,m ,skill_card)
 	    end
 
 	    local cost = 0
-	    while cost < mon.data.act do
+	    while cost < mon.act do
 	    	local index = math.random(#card_option)
 	    	local card =card_option[index]
-	    	if cost +card.data.cost <= mon.data.act then
-	    		cost = cost +card.data.cost
+	    	if cost +card.cost <= mon.act then
+	    		cost = cost +card.cost
 	    		TableFunc.Push(machine.decide, card_option[index])
 	    	else
 	    		for i=#card_option, 1 ,-1 do
 	    			local card=card_option[i]
-	    			if cost +card.data.cost > mon.data.act then
+	    			if cost +card.cost > mon.act then
 	    				TableFunc.Pop(card_option)
 	    			end
 	    		end

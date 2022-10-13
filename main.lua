@@ -20,9 +20,6 @@ local TableFunc=require('lib.TableFunc')
 Resource.Init()
 GameMachine.Init()
 
---[[for k,v in pairs(Resource.card) do
-   print(k,v)
-end]]
 --TableFunc.Dump(Resource.card)
 --TableFunc.Dump(Resource.character)
 --TableFunc.Dump(Resource.translate)

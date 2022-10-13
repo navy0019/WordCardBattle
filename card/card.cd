@@ -6,7 +6,7 @@ drop_to       =  grave
 use_condition =  select 1 enemy   , 
 		input 1 hand_card
 
-atk           =  master.atk + card.level * 2
+atk           =  master.data.atk + card.level * 2
 def           =  0
 effect        =  target , get hp ,  card , get atk ,  melee  , target ,set hp ,input_target , move_to drop_card
 }
@@ -18,7 +18,7 @@ type          =  range
 drop_to       =  grave
 use_condition =  select 1 enemy
 
-atk           =  master.atk + card.level 
+atk           =  master.data.atk + card.level 
 effect        =  target , get hp ,  card , get atk ,  range  , target ,set hp ,target 
 ,get state ,add_buff poison 3 round
 }
@@ -29,8 +29,7 @@ cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 hero ,
-atk           =  0
-def           =  master.def
+data          =  atk:0 , def : master.data.def
 effect        =  target , get shield ,  card , get def ,  add  , target ,set shield ,
 }
 
@@ -40,9 +39,8 @@ cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy ,
-atk           =  master.atk
-def           =  0
-effect        =   built_in_atk melee card.atk
+data          =  atk:master.data.atk , def : 0
+effect        =  built_in_atk melee card.data.atk
 }
 attack2
 {
@@ -50,9 +48,8 @@ cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy 
-atk           =  master.atk
-def           =  0
-effect        =  target , get hp ,  card , get atk ,  melee  , target ,set hp
+data          =  atk:master.data.atk , def : 0
+effect        =  target.data.hp ,  card.data.atk ,  melee  , target.data ,set hp
 }
 origin_atk
 {
@@ -60,13 +57,11 @@ cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy
-atk           =  master.atk
-def           =  0
-effect        =  target, get shield,
-		card ,get atk,
-		melee,target, set shield,
-		target, get shield,
-		< 0 ,boolean true[ target, get shield, target, get hp,sum ,target ,set hp]
+data          =  atk:master.atk , def : 0
+effect        =  target.data.shield,  card.data.atk , melee,
+		target.data  ,set shield,
+		target.data.shield,
+		< 0 ,boolean true[ target, get data.shield, target.data, get hp,sum ,target.data ,set hp]
 		
 }
 
@@ -76,7 +71,6 @@ cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy
-atk           =  master.atk
-def           =  0
-effect.       =  loop 2 [random 1 enemy [get hp, > 0] ,copy ,length , >0 ,boolean true[set_target,built_in_atk melee card.atk] ]
+data          =  atk:master.data.atk , def : 0
+effect.       =  loop 2 [random 1 enemy [get data.hp, > 0] ,copy ,length , >0 ,boolean true[set_target,built_in_atk melee card.data.atk] ]
 }

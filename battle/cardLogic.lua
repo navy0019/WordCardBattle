@@ -39,6 +39,7 @@ function CardLogic.new()
 	machine.queue={}
 	machine.card_pending={}
 	machine.state_pending={}
+	machine.act_maching = StringAct.NewMachine()
 	Wait.Do=function(self,battle,...)	
 		if #machine.pending >0 then
 			--print('TransitionTo Classification')
@@ -69,8 +70,11 @@ function CardLogic.new()
 		--print('ReadEffect!'..#machine.card_pending)
 		for i=1, #machine.card_pending do
 			local v = TableFunc.Shift(machine.card_pending)
-			battle.battleData.actPoint = battle.battleData.actPoint - v.card.data.cost
-			StringAct.UseCard(battle,v)
+			--TableFunc.Dump(v)
+			battle.battleData.actPoint = battle.battleData.actPoint - v.card.cost
+			--StringAct.UseCard(battle,v)
+			local effect=TableFunc.Copy(v.card.effect)
+			StringAct.ReadEffect(battle ,machine.act_maching,v.card.effect ,v)
 			battle:DropCard(battle.battleData.hand , v.card)
 			local o ={ toPending={key='AfterUseCard',arg={v ,battle }} }
 			TableFunc.Push(machine.queue , o)

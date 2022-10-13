@@ -5,10 +5,11 @@ local CardAssets =require('resource.cardAssets')
 local CharacterAssets =require('resource.characterAssets')
 local Msg = require('resource.Msg')
 
-local Resource={card={},character={},translate={}}
+local Resource={card={},character={},translate={},state={}}
 Resource.color={white={1,1,1,1},black={0,0,0,1}}
 
 local cmd = _G.CurrentOs  == 'Mac' and 'ls ' or 'dir '
+local slash = _G.CurrentOs  == 'Mac' and '/' or '\\' 
 
 local card_path = _G.path..'card'
 local card_popen = io.popen(cmd..card_path)
@@ -19,7 +20,11 @@ local character_popen = io.popen(cmd..character_path)
 local translate_path = _G.path..'translate'
 local translate_popen = io.popen(cmd..translate_path)
 
-local slash = _G.CurrentOs  == 'Mac' and '/' or '\\' 
+
+local state_path = _G.path..'state'
+local state_popen = io.popen(cmd..state_path)
+
+
 function Resource.GetAssets( popen ,path ,tab)
     if popen then
         local s=popen:read("*a")
@@ -31,8 +36,6 @@ function Resource.GetAssets( popen ,path ,tab)
             if is_file then                 
                 
                 local p = v:find('%s[^%s]*$')
-                --print('v',v)
-                --print('p',p)
                 local file_name = p and v:sub(p+1,#v) or v  
                 --print('filename',file_name)    
                 local data = StringDecode.Decode(path..slash..file_name)
@@ -48,8 +51,7 @@ function Resource.GetAssets( popen ,path ,tab)
     end
 end
 
-function Resource.Init()
-    
+function Resource.Init()   
     Resource.GetAssets( card_popen ,card_path ,Resource.card)
     CardAssets.Init(Resource.card)
 
@@ -57,6 +59,9 @@ function Resource.Init()
     CharacterAssets.Init(Resource.character)   
 
     Resource.GetAssets( translate_popen ,translate_path ,Resource.translate)
+    Msg.Init(Resource.translate)
+
+    Resource.GetAssets( state_popen ,state_path ,Resource.state)
     Msg.Init(Resource.translate)
 end
 function Resource.Init_Test()

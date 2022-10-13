@@ -36,13 +36,13 @@ function scene.Enter()
 	})
 
 	Wait.DoOnEnter=function()
-		print('1: 組隊   2:開始冒險')
+		print('1:開始冒險 2: 組隊')
 
-		scene.Event:Emit('AddButton','MakeTeamButton',1 ,'switchScene','Team')
+		scene.Event:Emit('AddButton','MakeTeamButton',2 ,'switchScene','Team')
 		scene.ButtonEvent:Register('MakeTeamButton',function(...) end)
 
 		scene.ButtonEvent:Register('AdvStartButton',function(...) end)
-		scene.Event:Emit('AddButton','AdvStartButton',2 ,'switchScene','AdvStart')		
+		scene.Event:Emit('AddButton','AdvStartButton',1 ,'switchScene','AdvStart')		
 		scene.Event:Emit('WaitIoRead')
 	end
 

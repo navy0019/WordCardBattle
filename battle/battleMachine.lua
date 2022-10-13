@@ -5,8 +5,8 @@ local Card = require('lib.card')
 local Choose = require('lib.choose')
 local Msg= require('resource.Msg')
 local TableFunc = require("lib.TableFunc")
-local StatusHandle = require('battle.status')
 local cardLogic = require('battle.cardLogic')
+local StateHandler =require("battle.StateHandler")
 
 local BattleMachine={}
 --[[
@@ -69,25 +69,23 @@ local function UpdateState(battle)
 		local originData ,key
 		if mon then
 			key =mon.key
-			originData = TableFunc.Copy(_G.Resource.character[key].data)
+			originData = TableFunc.Copy(_G.Resource.character[key])
 			local monsterGenerator =require('battle.monsterGenerator')
-			monsterGenerator.GrowByRoomNum(originData )
+			monsterGenerator.GrowByRoomNum(originData.data )
 			
-			StatusHandle.Update(mon , mon.data.state.before ,battle)
-			--print('mon ',mon.data.state)				 
+			--StateHandler.Update(mon , mon.state.before ,battle)
+			--print('mon ',mon.state)				 
 			if  mon.data.def > 0 then 
-				--StatusHandle.Add(mon,'shield',mon.originData.def)
-				StatusHandle.Add(mon,'shield',originData.def)
+				--StateHandler.Add(mon,'shield',originData.def)
 			end 
 		end
 		if hero then
-			--print('hero ',hero.data.state)
+			--print('hero ',hero.state)
 			key =hero.key
-			originData = TableFunc.Copy(_G.Resource.character[key].data)
-			StatusHandle.Update(hero , hero.data.state.before ,battle)
+			originData = TableFunc.Copy(_G.Resource.character[key])
+			--StateHandler.Update(hero , hero.state.before ,battle)
 			if  hero.data.def > 0 then 
-				--StatusHandle.Add(hero,'shield',hero.originData.def)
-				StatusHandle.Add(hero,'shield',originData.def)
+				--StateHandler.Add(hero,'shield',originData.def)
 			end 
 		end
 	end
@@ -305,14 +303,14 @@ function BattleMachine.new(battle , scene)
 			--machine.statusMachine:addUpdate(battle,'monsterData' ,'after',battle)
 			local buffNum = Battle.CountBuff(battle.characterData.monsterData ,'after')
 			if buffNum >0 then
-				time=0.2*buffNum+Battle.CountAlive(battle.characterData.monsterData)*0.2
+				--time=0.2*buffNum+Battle.CountAlive(battle.characterData.monsterData)*0.2
 			else
 				time=0
 			end
 			
 		else
 			battleMachine.statusMachine:addUpdate(battle,'heroData' ,'after',battle)
-			local buffNum = Battle.CountBuff(battle.characterData.heroData ,'after')
+			--local buffNum = Battle.CountBuff(battle.characterData.heroData ,'after')
 			if buffNum >0 then
 				time=0.2*Battle.CountBuff(battle.characterData.heroData ,'after')+Battle.CountAlive(battle.characterData.heroData)*0.2
 			else

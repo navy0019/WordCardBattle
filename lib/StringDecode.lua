@@ -86,7 +86,8 @@ local function make_table(t)
 				tab[key]={}
 				for i,j in pairs(value) do
 					j=StringDecode.trim_head_tail(j)
-					TableFunc.Push(tab[key], j)
+					local new_value = tonumber(j) and tonumber(j) or j
+					TableFunc.Push(tab[key], new_value)
 				end
 			else
 				tab[key]=value[1]
@@ -95,10 +96,8 @@ local function make_table(t)
 			
 			local key = StringDecode.trim(v:sub(1,equal-1))
 			local str = StringDecode.trim_head_tail(v:sub(equal+1,#v))
-			--print('have command!',str)
 			local act ,copy_scope=StringDecode.Split_Command(str)
 			act=StringDecode.Replace_copy_scope(act,copy_scope)
-			--print('key',key,act)
 			tab[key]=act
 
 		end
@@ -134,10 +133,8 @@ function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
 			if symbol_left~= symbol_right then
 				count=count+1
 				index=index+1
-			else
-				if count==0 then
+			elseif count==0 then
 					return index
-				end
 			end
 
 		elseif w==symbol_right then
@@ -153,7 +150,8 @@ function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
 end
 
 function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
-
+	--print('str1',str1)
+	--將str每個字放入table -> 把要替換的範圍remove
 	function string_to_table(str,t)
 		str:gsub(".",function(c) TableFunc.Push(t,c) end)
 	end
@@ -181,28 +179,20 @@ function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
 end
 function StringDecode.Replace_copy_scope(tab,copy_scope)
 	local new_tab={}
-	for k,v in pairs(tab) do	
-		--print('v',v)
-		if v:find('\"copy_scope\"') then
-			local index=1
-			local w= v
-			while index <= string.len(v)do		
-				local a,b = w:find('\"copy_scope\"',index)
-				if a and b then
-					local origin = TableFunc.Shift(copy_scope)
-					w=StringDecode.Gsub_by_index(w ,origin,a , b)			
-					index=b+1
-				else
-					break
-				end
-			end
-			--print('w',w)
-			TableFunc.Push(new_tab, w)
-		else
-			TableFunc.Push(new_tab, v)
+	local copy = TableFunc.Copy(copy_scope)
+
+	for i,str in pairs(tab) do
+		local index =1
+		while tab[i]:find('\"copy_scope\"') do
+			--print('tab[i]',tab[i])
+			local a,b = tab[i]:find('\"copy_scope\"')
+			local key = TableFunc.Shift(copy)
+			--print('key!',key)
+			tab[i] =StringDecode.Gsub_by_index(tab[i] ,key,a , b)
 		end
-		
+
 	end
+	new_tab=tab
 	return new_tab	
 end
 
@@ -220,21 +210,42 @@ function StringDecode.Split_Command(command)--裁切[ ]部分
 			--print('scope_word',scope_word)
 			TableFunc.Push(copy_scope, scope_word)
 			word=word.."\"copy_scope\""
-			--print(word)
+
 			index = scope_end
 		else
 			word=word..w
 		end
-		if index+1 >#command then
-			--print('make table',word)
-			act={StringDecode.split_by(word,',')}
-		end
+
 		index=index+1
 	end
 
+	--print('w',word)
+	act={StringDecode.split_by(word,',')}
+	--TableFunc.Dump(act)
+	--TableFunc.Dump(copy_scope)
 	return act,copy_scope
 end
-
+function StringDecode.TransToTable(obj ,key ,value)
+	if type(obj[key])~='table' then
+		--print(obj,key,value)
+		local new_value = tonumber(value) and tonumber(value) or value
+		obj[key]={ new_value }
+	end
+end
+function StringDecode.TransToDic(tab)	
+	local t={}
+	for k,v in pairs(tab) do
+		if v:find(':') then
+			for key ,value in v:gmatch('(.+):(.+)') do
+				local new_key   =StringDecode.trim_head_tail(key)
+				local new_value =StringDecode.trim_head_tail(value)
+				new_value = tonumber(new_value) and tonumber(new_value) or new_value
+				t[key]=new_value
+			end
+		end
+	end
+	return t
+end
 function StringDecode.Decode(filename)
 	local file = io.open(filename,'r')
 	local content = file:read('*all')
@@ -252,6 +263,7 @@ function StringDecode.Decode(filename)
 			if #scope_name> 0 then
 				tab[scope_name]={} 
 				for key,value in pairs(t) do
+					--print(scope_name,key,value)
 					tab[scope_name][key]=value
 				end
 			else
@@ -264,6 +276,7 @@ function StringDecode.Decode(filename)
 			index=index+1
 		end
 	end
+
 	file:close()
 	return tab
 end

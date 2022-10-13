@@ -15,9 +15,6 @@ function monsterGenerator.GrowByRoomNum(data )
 	data.act = data.act + value
 	data.def = data.def + value
 	data.atk = data.atk + value
-	--local key = self.key
-	--local originData = TableFunc.Copy(_G.Resource.character[key].data)
-	--self.originData=TableFunc.Copy(self.data)
 end
 function monsterGenerator.RandomMonster(roomNum)
 	local max = 8
@@ -45,7 +42,8 @@ function monsterGenerator.RandomMonster(roomNum)
 	for k,monster in pairs(temp) do
 		--local m = Assets.Monsters.instance(monster[1],0,0)
 		local m = CharacterAssets.instance(monster[1],k)
-		monsterGenerator.GrowByRoomNum(m.data )
+		m.data.team_index=k
+		monsterGenerator.GrowByRoomNum(m.data)
 		TableFunc.Push(monsterInstance ,m) 
 	end
 	--table.sort( monsterInstance, CompairMin )

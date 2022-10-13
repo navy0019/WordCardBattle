@@ -11,7 +11,7 @@ local head,tail =path:find('WordCardBattle')
 path=path:sub(1,tail+1)
 
 package.path = package.path..';'..path..'?.lua'
-
+tonumber(str)
 local StringAct=require('lib.StringAct')
 local TableFunc=require('lib.TableFunc')
 local GetOs=require('lib.get_os_name')
@@ -30,7 +30,7 @@ local originData =TableFunc.Copy(testData)
 local heroData = testData.characterData.heroData
 local monsterData =testData.characterData.monsterData
 local function MakeToUse(card)
-	local toUse={card=card,target_table = {}}
+	local toUse={card=card,self=card,target_table = {}}
 
 	for k,v in pairs(card.use_condition) do
 		local choose_type=v[1]
@@ -45,6 +45,7 @@ local function MakeToUse(card)
 			end
 		end
 	end
+	--TableFunc.Dump(toUse)
 	return toUse
 end
 
@@ -52,34 +53,52 @@ for k,v in pairs(Resource.card) do
 	local master = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
 	--print(master)
 	local card=CardAssets.instance(k,master)
+	--TableFunc.Push(card.data.atk , {from='state', value=2   }) 
+	--TableFunc.Push(card.data.atk , {from='state', value='*3'}) 
 	--TableFunc.Dump(card)
 	TableFunc.Push(test_card,card)
 end
 
 local function Test()
+	local machine=StringAct.NewMachine()
 	for k,v in pairs(test_card) do
 		local toUse=MakeToUse(v)
 		print(v.name)
-		StringAct.UseCard(testData,toUse)
-		
+		--StringAct.UseCard(testData,toUse)
+		StringAct.ReadEffect(testData ,machine ,v.effect,toUse ,'print_log')
+
+		--local print_key={'team_index','hp','act','atk','def','shield'}
 		for i,hero in pairs(heroData) do
 			local origin =originData.characterData.heroData[i]
-			for key,data in pairs(hero.data) do
-				if data~=origin.data[key] and key~='state'  then
-					print(hero.key)
-					TableFunc.Dump(hero.data)
-					hero.data[key] = origin.data[key]
+			for key,value in pairs(hero.data) do
+
+				if value~=origin.data[key] and type(origin.data[key])~='table'  then
+					print('name '..hero.key)
+					print('team_index '..hero.data.team_index)
+					print('hp '..hero.data.hp)
+					print('shield '..hero.data.shield)
+					print('ak '..hero.data.atk)
+					print('def '..hero.data.def..'\n')
+					--TableFunc.Dump(hero)
+					hero[key] = origin[key]
 					break
 				end
 			end
 		end
+		print('\n')
 		for i,mon in pairs(monsterData) do
 			local origin =originData.characterData.monsterData[i]
-			for key,data in pairs(mon.data) do
-				if data~=origin.data[key] and key~='state' then
-					print(mon.key)
-					TableFunc.Dump(mon.data)
-					mon.data[key] = origin.data[key]
+			for key,value in pairs(mon.data) do
+				--print(type(data) ,type(origin[key]) ,key)
+				if value~=origin.data[key] and type(origin.data[key])~='table' then
+					print('name '..mon.key)
+					print('team_index '..mon.data.team_index)
+					print('hp '..mon.data.hp)
+					print('shield '..mon.data.shield)
+					print('atk '..mon.data.atk)
+					print('def '..mon.data.def..'\n')
+					--TableFunc.Dump(mon)
+					mon[key] = origin[key]
 					break
 				end
 			end

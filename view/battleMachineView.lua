@@ -4,7 +4,7 @@ local TableFunc = require("lib.TableFunc")
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 
-local BattlePrint = require('battle.battlePrint')
+local BattlePrint = require('view.battlePrint')
 
 local BattleViewScenes={}
 local function GetTableSerial(t)
@@ -30,7 +30,7 @@ local function UpdateCopyTable(copy , data ,index)
 	end
 end
 local function CompareOriginData(machine, battle)
-	--只比較素質 不比較state
+	--只比較data 不比較state
 	local copy_heroData = machine.copy_data.heroData
 	local copy_monsterData = machine.copy_data.monsterData
 	local t={}

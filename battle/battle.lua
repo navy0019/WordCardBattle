@@ -23,6 +23,7 @@ local function InitBattleData(battle,scene)
 	battle.characterData.heroData=AdvGenerator.heroData
 
 	for k,hero in pairs(battle.characterData.heroData) do
+		hero.data.team_index=k
 	 	for i,name in pairs(hero.skill) do
 	 		local serial = 'hero '..TableFunc.GetSerial(hero)
 	 		local card = CardAssets.instance( name,serial )--CardAssets.instance( name,0,0,hero ,battle )
@@ -117,8 +118,6 @@ local function ClearDeath(battle)
 		if monsterData[i].data.hp <= 0 then
 			print('remove')
 			table.remove(monsterData,i)
-		else
-			--print('HPPP ',monsterData[i].name,monsterData[i].data.hp)
 		end
 	end
 	return true
@@ -211,7 +210,7 @@ end
 function Battle.CountBuff(datas,key)
 	local num=0
 	for k,v in pairs(datas) do
-		for j,s in pairs(v.data.Status[key]) do
+		for j,s in pairs(v.state[key]) do
 			num=num+1
 		end	
 	end
