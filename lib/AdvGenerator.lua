@@ -27,12 +27,12 @@ function AdvGenerator:ResetHeroData(...)
 		local key = v.key
 		--v['team_index']=originData[key]
 		v.data={}
-		local originData = TableFunc.Copy(_G.Resource.character[key])
-		v.data=TableFunc.Copy(originData)
+		local originData = TableFunc.DeepCopy(_G.Resource.character[key])
+		v.data=TableFunc.DeepCopy(originData)
 		--[[for i,key in pairs(key_map) do
 			v.data[key]=originData.data[key]
 		end]]
-		v.state={before={}, after={}, always={}}
+		v.state={round_start={}, round_end={}, every_card={}}
 	end
 end
 
@@ -43,7 +43,7 @@ function AdvGenerator:SetAdvData( CurrentSave)
 	for k,v in pairs(CurrentSave.CurrentTeam) do
 		--local hero = Assets.Characters.instance(v , 0 ,-24)
 		local hero = CharacterAssets.instance(v,k)
-		CurrentSave.CurrentTeamData[k]=CurrentSave.CurrentTeamData[k] or TableFunc.Copy(hero.data)
+		CurrentSave.CurrentTeamData[k]=CurrentSave.CurrentTeamData[k] or TableFunc.DeepCopy(hero.data)
 		local current_team_data = CurrentSave.CurrentTeamData[k]
 		--print('current_team_data',current_team_data)
 		--TableFunc.Dump(current_team_data)
@@ -156,7 +156,7 @@ function AdvGenerator.Load()
 	Item.List=saveData.ItemList
 	Item.Backpack=saveData.Backpack
 
-	local list = TableFunc.Copy(saveData.MapData.sceneList)
+	local list = TableFunc.DeepCopy(saveData.MapData.sceneList)
 	saveData.MapData.sceneList={}
 	AdvGenerator.mapData.sceneList={}
 	

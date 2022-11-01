@@ -3,9 +3,12 @@ local TableFunc=require('lib.TableFunc')
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 local ActMap =require('lib.actMap')
+local ActMap2 = require('lib.combine_act_map')
+TableFunc.Merge(ActMap,ActMap2)
+
 
 local StringAct={}
-local compare_map={'>','<','==','>=','<='}
+local compare_map={'>=','<=','==','>','<'}
 local calculate_map={'sum','minus','multiplie','divided'}
 local type_tab={atk={'melee','range','magic','atk'}}
 
@@ -27,14 +30,23 @@ local function FindSymbol(str,t)
 		end
 	end
 end
+
 local function analysis(str,machine,battle)
 
 	local stack ,effect = machine.stack ,machine.effect
 	
 	local arg ,copy_scope
+
 	local command = str
-	if not tonumber(str) and type(str)~='table' then
-		arg ,copy_scope = StringDecode.Split_Command(str)
+	
+	if not tonumber(command) and type(command)~='table' then
+		if command:find('%[') then
+			local left = command:find('%[') 
+			local str_left = command:sub(1,left-1)
+			local str_right = command:sub(left ,#command)
+			command=str_left ..' '..str_right
+		end
+		arg ,copy_scope = StringDecode.Split_Command(command)
 		arg={StringDecode.split_by(arg[1],'%s')}
 		arg=StringDecode.Replace_copy_scope(arg,copy_scope)
 	end
@@ -44,28 +56,41 @@ local function analysis(str,machine,battle)
 	elseif arg then
 		command = TableFunc.Shift(arg)
 	end
-	--print('command',command)
+	if arg then
+		for i=#arg ,1 ,-1 do
+			arg[i]=StringDecode.trim_head_tail(arg[i]) 
+			local len ,value = 0 ,arg[i]
+			local left ,right = value:find('%[') , 0
+			if left then
+				right =StringDecode.FindCommandScope(left+1, value ,'[',']')
+				len =right-left+1
+			end
+			if left and len ==#value and #arg >1 then
+				local parameter = ' '..arg[i]
+				assert(arg[i-1],'out of range')
+				arg[i-1]=arg[i-1]..parameter
+				table.remove(arg,i)
+			end
+		end
+	end
 	return command ,arg
 end
 function StringAct.NewMachine()
 	local Wait = State.new("Wait")
 	local Compare = State.new("Compare")
 	local Calculate= State.new("Calculate")
-	local Act= State.new("Act")
 	local Normal = State.new("Normal")
+
 	local machine =  Machine.new({
 		initial=Wait,
 		states={
-			Wait  ,Act,Compare ,Calculate,Normal
+			Wait  ,Compare ,Calculate,Normal
 		},
 		events={
-			--[[ 	Wait(global)					
-			 Classification-->CheckBuff--> ReadEffect
-     					 				]]
+
 			{state=Wait,global=true,self=true},
 			{state=Compare,global=true,self=true},
-			{state=Calculate,global=true,self=true},
-			{state=Act,global=true,self=true},							
+			{state=Calculate,global=true,self=true},						
 			{state=Normal,global=true,self=true},
 		}
 	})
@@ -97,8 +122,6 @@ function StringAct.NewMachine()
 				for i=#act,1,-1 do
 					table.insert(machine.effect, machine.index+1 , act[i])
 				end
-			elseif command:find('%[') then
-				machine:TransitionTo('Act',command,battle,arg)
 
 			elseif FindSymbol(command ,compare_map) then
 				machine:TransitionTo('Compare',command,battle,arg)
@@ -112,18 +135,6 @@ function StringAct.NewMachine()
 			
 		end
 
-	end
-	Act.DoOnEnter=function(self,command,battle,arg,...)
-		--print('Act command',command)
-
-		--local key = TableFunc.Shift(arg)
-		local key=command
-		--print('key',key)
-		local value = ActMap[key](battle,machine,table.unpack(arg))
-		if value and value =='stop' then
-			machine.stop=true
-		end
-		machine:TransitionTo('Wait')
 	end
 
 	Compare.DoOnEnter=function(self,command,battle,arg,...)
@@ -171,7 +182,7 @@ function StringAct.NewMachine()
 end
 function StringAct.ReadEffect(battle ,machine ,effect ,toUse ,print_log)
 	machine.toUse=toUse
-	machine.effect=TableFunc.Copy(effect)
+	machine.effect=TableFunc.DeepCopy(effect)
 	machine.index=0
 	while not machine.stop and machine.index < #machine.effect do
 		machine:Update(battle)
@@ -183,7 +194,7 @@ function StringAct.ReadEffect(battle ,machine ,effect ,toUse ,print_log)
 end
 --[[function StringAct.UseCard(battle ,toUse)
 	local card = toUse.card
-	local effect=TableFunc.Copy(card.effect)
+	local effect=TableFunc.DeepCopy(card.effect)
 	--local record={}
 	--TableFunc.Dump(card)
 	local machine=StringAct.NewMachine()

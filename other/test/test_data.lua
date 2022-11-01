@@ -14,16 +14,11 @@ local battle={
 					atk = 2,
 				},
 				race = "enemy",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={
+					round_start={}, 
+					round_end={}, 
+					every_card={},
+					is_target={}},
 				key = "m_small_1",
 				dropItem = "money 100",
 				think_weights = {
@@ -44,16 +39,7 @@ local battle={
 					atk = 3,
 				},
 				race = "enemy",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={round_start={}, round_end={}, every_card={},is_target={}},
 				key = "m_mid_1",
 				dropItem = "money 100",
 				think_weights = {
@@ -74,16 +60,7 @@ local battle={
 					atk = 4,
 				},
 				race = "enemy",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={round_start={}, round_end={}, every_card={},is_target={}},
 				key = "m_XL_1",
 				dropItem = "money 100",
 				think_weights = {
@@ -108,16 +85,11 @@ local battle={
 				},
 				race = "'hero'",
 				key = "hero1",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={	
+					round_start={}, 
+					round_end={}, 
+					every_card={},
+					is_target={}},
 				advancedSkill = "attack",
 			},
 			{
@@ -135,16 +107,7 @@ local battle={
 				},
 				race = "'hero'",
 				key = "hero2",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={round_start={}, round_end={}, every_card={},is_target={}},
 				advancedSkill = {
 					"attack",
 					"attack",
@@ -165,16 +128,7 @@ local battle={
 				},
 				race = "'hero'",
 				key = "hero3",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={round_start={}, round_end={}, every_card={},is_target={}},
 				advancedSkill = {
 					"attack",
 					"attack",
@@ -195,16 +149,7 @@ local battle={
 				},
 				race = "'hero'",
 				key = "hero4",
-				state = {
-					is_target = {
-					},
-					before = {
-					},
-					always = {
-					},
-					after = {
-					},
-				},
+				state={round_start={}, round_end={}, every_card={},is_target={}},
 				advancedSkill = {
 					"attack",
 					"attack",

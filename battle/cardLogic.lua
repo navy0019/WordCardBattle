@@ -73,7 +73,7 @@ function CardLogic.new()
 			--TableFunc.Dump(v)
 			battle.battleData.actPoint = battle.battleData.actPoint - v.card.cost
 			--StringAct.UseCard(battle,v)
-			local effect=TableFunc.Copy(v.card.effect)
+			local effect=TableFunc.DeepCopy(v.card.effect)
 			StringAct.ReadEffect(battle ,machine.act_maching,v.card.effect ,v)
 			battle:DropCard(battle.battleData.hand , v.card)
 			local o ={ toPending={key='AfterUseCard',arg={v ,battle }} }

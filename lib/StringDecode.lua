@@ -179,7 +179,7 @@ function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
 end
 function StringDecode.Replace_copy_scope(tab,copy_scope)
 	local new_tab={}
-	local copy = TableFunc.Copy(copy_scope)
+	local copy = TableFunc.DeepCopy(copy_scope)
 
 	for i,str in pairs(tab) do
 		local index =1
@@ -210,12 +210,10 @@ function StringDecode.Split_Command(command)--裁切[ ]部分
 			--print('scope_word',scope_word)
 			TableFunc.Push(copy_scope, scope_word)
 			word=word.."\"copy_scope\""
-
 			index = scope_end
 		else
 			word=word..w
 		end
-
 		index=index+1
 	end
 

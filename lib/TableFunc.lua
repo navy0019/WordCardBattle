@@ -12,13 +12,24 @@ function TableFunc.Upset(tab)
 	end
 
 end
+
 function TableFunc.IsDictionary(tab)
+	if type(tab)~='table' then return false end
 	for k,v in pairs(tab) do
-		if type(k)=='string' then
-			return true
+		if type(k)~='string' then
+			return false
 		end
 	end
-	return false
+	return true
+end
+function TableFunc.IsArray(tab)
+	if type(tab)~='table' then return false end
+	for k,v in pairs(tab) do
+		if type(k)=='string' then
+			return false
+		end
+	end
+	return true
 end
 function TableFunc.GetSerial(tab)
 	local s=tostring(tab)
@@ -35,21 +46,13 @@ function TableFunc.MatchSerial(tab ,serial)
 end
 function TableFunc.Print_one_line(tab)
 	--print('print',#tab)
-	function isDic(t)
-		for k,v in pairs(t) do
-			if type(k)=='string' then
-				return true
-			end
-		end
-		return false
-	end
 	local s = ''
 	if #tab ==0 then return '[ ]' end
 	for k,v in pairs(tab) do
 		if type(v)=='table' then
 			--print('is table')
 			s=s..'['
-			if isDic(v) then
+			if TableFunc.IsDictionary(v) then
 				--print('is dic')
 				s=s..'obj'
 			else
@@ -139,13 +142,20 @@ function TableFunc.Dump(data, showMetatable, lastCount)
         io.write("\n")
     end
 end
-function TableFunc.Copy( tab )
+function TableFunc.ShallowCopy( tab )
+	local nt={}
+	for k,v in pairs(tab) do
+		nt[k]=v
+	end
+	return nt
+end
+function TableFunc.DeepCopy( tab )
 	local nt = {}
 	for k,v in pairs(tab) do
 		if type(v)~='table' then
 			nt[k]=v
 		else
-			nt[k]=TableFunc.Copy( v )
+			nt[k]=TableFunc.DeepCopy( v )
 		end
 	end
 	return nt

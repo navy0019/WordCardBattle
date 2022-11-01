@@ -11,7 +11,12 @@ local head,tail =path:find('WordCardBattle')
 path=path:sub(1,tail+1)
 
 package.path = package.path..';'..path..'?.lua'
-tonumber(str)
+
+--[[
+測試用 (hp atk..等素質)按照位置全部都是 2 ,3, 4..... 可到test_data裡更改
+卡片預設的 master都是 hero[1]
+target 預設都是monster[1]
+]]
 local StringAct=require('lib.StringAct')
 local TableFunc=require('lib.TableFunc')
 local GetOs=require('lib.get_os_name')
@@ -21,12 +26,13 @@ Resource = require('resource.Resource')
 Resource.Init_Test()
 --TableFunc.Dump(Resource.card)
 --TableFunc.Dump(Resource.translate)
+--TableFunc.Dump(Resource.state)
 local testData=require('test_data')
 local monsterAI=require('battle.monsterAI')
 local CardAssets=require('resource.cardAssets')
 
 local test_card={}
-local originData =TableFunc.Copy(testData)
+local originData =TableFunc.DeepCopy(testData)
 local heroData = testData.characterData.heroData
 local monsterData =testData.characterData.monsterData
 local function MakeToUse(card)
@@ -38,24 +44,19 @@ local function MakeToUse(card)
 		local race=v[3]
 		if choose_type =='select' then
 			local rece_table = race=='hero' and heroData or monsterData
-			if num <= 1 then
-				TableFunc.Push(toUse.target_table , rece_table[1])
-			else
-				toUse.target_table = rece_table
+			for i=1,num do
+				if rece_table[i] then
+					TableFunc.Push(toUse.target_table , rece_table[i])
+				end
 			end
 		end
 	end
-	--TableFunc.Dump(toUse)
 	return toUse
 end
 
 for k,v in pairs(Resource.card) do
 	local master = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
-	--print(master)
 	local card=CardAssets.instance(k,master)
-	--TableFunc.Push(card.data.atk , {from='state', value=2   }) 
-	--TableFunc.Push(card.data.atk , {from='state', value='*3'}) 
-	--TableFunc.Dump(card)
 	TableFunc.Push(test_card,card)
 end
 
@@ -64,10 +65,8 @@ local function Test()
 	for k,v in pairs(test_card) do
 		local toUse=MakeToUse(v)
 		print(v.name)
-		--StringAct.UseCard(testData,toUse)
 		StringAct.ReadEffect(testData ,machine ,v.effect,toUse ,'print_log')
 
-		--local print_key={'team_index','hp','act','atk','def','shield'}
 		for i,hero in pairs(heroData) do
 			local origin =originData.characterData.heroData[i]
 			for key,value in pairs(hero.data) do
@@ -84,12 +83,17 @@ local function Test()
 					break
 				end
 			end
+			for k,state_tab in pairs(hero.state) do
+				if #state_tab >0 then
+					print(hero.key..',state: '..k)
+					TableFunc.Dump(state_tab)
+				end
+			end
 		end
 		print('\n')
 		for i,mon in pairs(monsterData) do
 			local origin =originData.characterData.monsterData[i]
 			for key,value in pairs(mon.data) do
-				--print(type(data) ,type(origin[key]) ,key)
 				if value~=origin.data[key] and type(origin.data[key])~='table' then
 					print('name '..mon.key)
 					print('team_index '..mon.data.team_index)
@@ -97,18 +101,19 @@ local function Test()
 					print('shield '..mon.data.shield)
 					print('atk '..mon.data.atk)
 					print('def '..mon.data.def..'\n')
-					--TableFunc.Dump(mon)
 					mon[key] = origin[key]
 					break
+				end
+			end
+			for k,state_tab in pairs(mon.state) do
+				if #state_tab >0 then
+					print(mon.key..',state: '..k)
+					TableFunc.Dump(state_tab)
 				end
 			end
 		end
 	end
 end
 Test()
---[[
-測試用 英雄2隻 怪物2隻 (hp atk..等素質)按照位置全部都是 1 or 2 
-卡片預設的 master都是 英雄1號(素質全部都是 1)
-target 預設都是怪物1號(素質全部都是 1)
-]]
+
 

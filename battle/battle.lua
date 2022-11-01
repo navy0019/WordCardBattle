@@ -64,7 +64,7 @@ local function DropCard(self,originTab,card)
 		end		
 		
 	else
-		local cards = TableFunc.Copy(card)
+		local cards = TableFunc.DeepCopy(card)
 		for k,v in pairs(cards) do
 			TableFunc.Push(self.battleData.drop ,v)
 			--v.parentTab=self.battleData.drop

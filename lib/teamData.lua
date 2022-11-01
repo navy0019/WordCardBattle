@@ -92,7 +92,7 @@ end
 function TeamData.SwitchDefault(num)
 	--print(num)
 	TeamData.CurrentDeafault=num
-	TeamData.CurrentTeam=TableFunc.Copy(TeamData.DefaultTeam[num])
+	TeamData.CurrentTeam=TableFunc.DeepCopy(TeamData.DefaultTeam[num])
 	print('SwitchDefault '..#TeamData.CurrentTeam)
 	for k,v in pairs(TeamData.AllHeros) do
 		local p = TableFunc.Find(TeamData.CurrentTeam ,v.name )

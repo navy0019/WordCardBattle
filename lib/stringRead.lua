@@ -144,7 +144,8 @@ function StringRead.StrToValue(str,obj,battle)
 		end
 		local toUse={card=obj,self=obj}
 		StringAct.ReadEffect(battle ,machine ,effect , toUse )
-		local value = TableFunc.Pop(TableFunc.Pop(machine.stack))
+		local value = TableFunc.Pop(machine.stack)
+		if type(value)=='table' then value=TableFunc.Pop(value) end
 		TableFunc.Push(value_table,value)
 	end
 

@@ -3,9 +3,10 @@ local StringDecode=require('lib.StringDecode')
 
 local CardAssets =require('resource.cardAssets')
 local CharacterAssets =require('resource.characterAssets')
+local StateAssets=require('resource.StateAssets')
 local Msg = require('resource.Msg')
 
-local Resource={card={},character={},translate={},state={}}
+local Resource={card={},character={},translate={},state={},card_state={}}
 Resource.color={white={1,1,1,1},black={0,0,0,1}}
 
 local cmd = _G.CurrentOs  == 'Mac' and 'ls ' or 'dir '
@@ -19,7 +20,6 @@ local character_popen = io.popen(cmd..character_path)
 
 local translate_path = _G.path..'translate'
 local translate_popen = io.popen(cmd..translate_path)
-
 
 local state_path = _G.path..'state'
 local state_popen = io.popen(cmd..state_path)
@@ -62,7 +62,7 @@ function Resource.Init()
     Msg.Init(Resource.translate)
 
     Resource.GetAssets( state_popen ,state_path ,Resource.state)
-    Msg.Init(Resource.translate)
+    StateAssets.Init(Resource.state)
 end
 function Resource.Init_Test()
     local test_card_path = _G.path..slash..'other'..slash..'test'..slash..'card'
@@ -74,5 +74,11 @@ function Resource.Init_Test()
     local translate_popen = io.popen(cmd..translate_path)
     Resource.GetAssets( translate_popen ,translate_path ,Resource.translate)
     Msg.Init(Resource.translate)
+
+    local state_path = _G.path..slash..'other'..slash..'test'..slash..'state'
+    local state_popen = io.popen(cmd..state_path)
+    Resource.GetAssets( state_popen ,state_path ,Resource.state)
+    StateAssets.Init(Resource.state)
+
 end
 return Resource

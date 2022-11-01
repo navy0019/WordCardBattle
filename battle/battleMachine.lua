@@ -69,7 +69,7 @@ local function UpdateState(battle)
 		local originData ,key
 		if mon then
 			key =mon.key
-			originData = TableFunc.Copy(_G.Resource.character[key])
+			originData = TableFunc.DeepCopy(_G.Resource.character[key])
 			local monsterGenerator =require('battle.monsterGenerator')
 			monsterGenerator.GrowByRoomNum(originData.data )
 			
@@ -82,7 +82,7 @@ local function UpdateState(battle)
 		if hero then
 			--print('hero ',hero.state)
 			key =hero.key
-			originData = TableFunc.Copy(_G.Resource.character[key])
+			originData = TableFunc.DeepCopy(_G.Resource.character[key])
 			--StateHandler.Update(hero , hero.state.before ,battle)
 			if  hero.data.def > 0 then 
 				--StateHandler.Add(hero,'shield',originData.def)

@@ -15,7 +15,7 @@ local function GetTableSerial(t)
 end
 local function CopyTable(t)
 	local key = GetTableSerial(t)
-	local tab =TableFunc.Copy(t)
+	local tab =TableFunc.DeepCopy(t)
 	tab.key=key
 	return tab
 end
@@ -218,8 +218,8 @@ function BattleViewScenes.new(battle , scene)
 	end
 	StartRound.DoOnEnter=function(...)
 
-		--machine.copy_data.heroData=TableFunc.Copy(heroData)
-		--machine.copy_data.monsterData=TableFunc.Copy(monsterData)
+		--machine.copy_data.heroData=TableFunc.DeepCopy(heroData)
+		--machine.copy_data.monsterData=TableFunc.DeepCopy(monsterData)
 
 		--print('回合開始')
 		--machine:TransitionTo('Statusbefore')

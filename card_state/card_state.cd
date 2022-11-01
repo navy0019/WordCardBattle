@@ -1,0 +1,9 @@
+accumulation_atk
+{
+effect_on_type	= atk
+effect_on_number = 1
+update		= card , temp_data atk +1
+remove		= card , remove_temp_data	 
+}
+
+

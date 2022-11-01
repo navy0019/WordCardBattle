@@ -19,13 +19,13 @@ function CharacterAssets.Init(t)
 end
 function CharacterAssets.instance( key,index)
 
-	local o = TableFunc.Copy(_G.Resource.character[key])
+	local o = TableFunc.DeepCopy(_G.Resource.character[key])
 	o.key=key
 	--[[o.getAsset=function(o,index)
 				assert(Resource.character[o.key][index],'don\'t have key '..index) 
 				return Resource.character[o.key][index] 
 			   end]]
-	
+	o.state={round_start={}, round_end={}, every_card={} ,is_target={}}
 	local character = Character.new(o)
 	return character
 end

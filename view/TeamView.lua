@@ -96,10 +96,10 @@ function scene.Enter()
 	MakeTeam.DoOnEnter=function()
 	print('DoOnEnter')
 		local LogicScenesMgr= LogicScenesMgr.CurrentScene
-		MakeTeam.CurrentTeam=TableFunc.Copy(TeamData.CurrentTeam)
+		MakeTeam.CurrentTeam=TableFunc.DeepCopy(TeamData.CurrentTeam)
 
 		local num = TeamData.CurrentDeafault
-		MakeTeam.DefaultTeam=TableFunc.Copy(TeamData.DefaultTeam[num])
+		MakeTeam.DefaultTeam=TableFunc.DeepCopy(TeamData.DefaultTeam[num])
 		print('1~6:切換角色 d1~3:切換預設隊伍  s:儲存預設隊伍 r:切回預設隊伍 b:返回主頁面')
 
 		PrintTeamData(TeamData)

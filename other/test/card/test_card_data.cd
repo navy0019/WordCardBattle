@@ -1,10 +1,10 @@
 testCard
 {
-cost          =  1
-type          =  melee
+cost          =  3
+type          =  range
 drop_to       =  grave
-use_condition =  select 1 enemy
-data          =  atk: master.data.atk 
-effect        =  built_in_atk melee 5
+use_condition =  select 3 enemy
+data          =  atk:master.data.atk+2
+effect        =  built_in_atk melee array[4,5,6]
 }
 

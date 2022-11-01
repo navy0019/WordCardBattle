@@ -4,6 +4,7 @@ local TableFunc=require('lib.TableFunc')
 
 local CardAssets = {}
 function CardAssets.Init(card_table)
+	--print('Init card')
     for k,card in pairs(card_table) do
         for key,value in pairs(card) do
             if key =='use_condition' then            	
@@ -29,11 +30,11 @@ function CardAssets.Init(card_table)
 end
 function CardAssets.instance( key,character)
 	--print('key',key)
-	local o = TableFunc.Copy(_G.Resource.card[key])
+	local o = TableFunc.DeepCopy(_G.Resource.card[key])
 	--[[if test	then
-		o = TableFunc.Copy(_G.Resource.test_card[key])
+		o = TableFunc.DeepCopy(_G.Resource.test_card[key])
 	else
-	 	o = TableFunc.Copy(_G.Resource.card[key])
+	 	o = TableFunc.DeepCopy(_G.Resource.card[key])
 	end]]
 	--print(key,o)
 	o.key = key
