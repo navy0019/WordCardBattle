@@ -35,6 +35,13 @@ local test_card={}
 local originData =TableFunc.DeepCopy(testData)
 local heroData = testData.characterData.heroData
 local monsterData =testData.characterData.monsterData
+
+for k,v in pairs(Resource.card) do
+	local master = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
+	local card=CardAssets.instance(k,master)
+	TableFunc.Push(test_card,card)
+end
+
 local function MakeToUse(card)
 	local toUse={card=card,self=card,target_table = {}}
 
@@ -52,12 +59,6 @@ local function MakeToUse(card)
 		end
 	end
 	return toUse
-end
-
-for k,v in pairs(Resource.card) do
-	local master = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
-	local card=CardAssets.instance(k,master)
-	TableFunc.Push(test_card,card)
 end
 
 local function Test()

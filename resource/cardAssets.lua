@@ -40,6 +40,7 @@ function CardAssets.instance( key,character)
 	o.key = key
 	o.level =1
 	o.master =character
+	o.state={}
 	--print('o key',_G.Resource.translate[o.key],o.key)
 	assert(_G.Resource.translate[o.key] , 'can\'t find '..key..' in translate file ,need check translate.cd ')
 	o.name = _G.Resource.translate[o.key]['name']

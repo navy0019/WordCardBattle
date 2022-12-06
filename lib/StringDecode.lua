@@ -6,7 +6,10 @@ function StringDecode.split_by(s ,arg)
 	local t ={}
 	for v in string.gmatch(s, '[^'..arg..']*') do
 		local str=StringDecode.trim_head_tail(v)
-		TableFunc.Push(t ,str)
+		if #str > 0 then 
+			TableFunc.Push(t ,str) 
+
+		end
 	end
 	return table.unpack(t)
 end
@@ -31,7 +34,15 @@ function StringDecode.split_comma_enter( s )
 	end
 	return t
 end
-
+function StringDecode.Brackets_to_table( s )
+	local left = s:find('%[')
+	local right = StringDecode.FindCommandScope(left+1 ,s ,'[',']')
+	local tab = s:sub(left,right)
+	tab = StringDecode.trim_head_tail(tab):sub(2,#tab-1)
+	tab = {StringDecode.split_by(tab ,',')}
+	--parameter = StringDecode.TransToDic(parameter)
+	return tab
+end
 local function split_line(str)
 	local tab = {}
 	local index = 1
@@ -93,7 +104,6 @@ local function make_table(t)
 				tab[key]=value[1]
 			end
 		elseif equal and sq_brackets then
-			
 			local key = StringDecode.trim(v:sub(1,equal-1))
 			local str = StringDecode.trim_head_tail(v:sub(equal+1,#v))
 			local act ,copy_scope=StringDecode.Split_Command(str)
@@ -149,7 +159,7 @@ function StringDecode.FindCommandScope(i,s ,symbol_left ,symbol_right)
 	end
 end
 
-function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
+function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)--str1 p1~p2犯胃內的字替換成 str2
 	--print('str1',str1)
 	--將str每個字放入table -> 把要替換的範圍remove
 	function string_to_table(str,t)
@@ -157,7 +167,7 @@ function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)
 	end
 	local tab={}
 	string_to_table(str1,tab)
-	--print('p12',p1,p2)
+	--print('#',#tab ,p1 ,p2)
 	for i=1,#str1 do
 		if i >= p1 and i <=p2 then
 			table.remove(tab,p1)
@@ -238,7 +248,7 @@ function StringDecode.TransToDic(tab)
 				local new_key   =StringDecode.trim_head_tail(key)
 				local new_value =StringDecode.trim_head_tail(value)
 				new_value = tonumber(new_value) and tonumber(new_value) or new_value
-				t[key]=new_value
+				t[new_key]=new_value
 			end
 		end
 	end

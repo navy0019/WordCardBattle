@@ -3,6 +3,7 @@ local Machine = require('lib.FSMmachine')
 local StringDecode=require('lib.StringDecode')
 local StringAct=require('lib.StringAct')
 local TableFunc=require('lib.TableFunc')
+local universal_func = require('lib.command_act.universal_func')
 
 local mAI={}
 local function CheckGroupExist(battle, opt ,mon)
@@ -121,26 +122,27 @@ local function decideMachine(battle ,m ,skill_card)
 		machine:TransitionTo('ChooseSkill',battle, mon ,current)
 	end
 	ChooseSkill.DoOnEnter=function(self ,battle , mon ,current)
-	    --TableFunc.Dump(current)
 	    local card_option ={}
 	    for k,card in pairs(machine.skill_card) do
-	    	if StringAct.Match_type(current.type ,card.type)then
+	    	--print('m_AI ',TableFunc.Dump(card.type))
+	    	if universal_func.match_type(current.type ,card.type)then
 	    		TableFunc.Push(card_option , card)
 	    	end
 	    end
-
 	    local cost = 0
-	    while cost < mon.act do
+	    while cost < mon.data.act and #card_option>0 do
 	    	local index = math.random(#card_option)
+
 	    	local card =card_option[index]
-	    	if cost +card.cost <= mon.act then
+	    	assert(card,#card_option..' '..index )
+	    	if cost +card.cost <= mon.data.act then
 	    		cost = cost +card.cost
 	    		TableFunc.Push(machine.decide, card_option[index])
 	    	else
 	    		for i=#card_option, 1 ,-1 do
 	    			local card=card_option[i]
-	    			if cost +card.cost > mon.act then
-	    				TableFunc.Pop(card_option)
+	    			if cost +card.cost > mon.data.act then
+	    				table.remove(card_option ,i)
 	    			end
 	    		end
 	    		if #card_option <= 0 then

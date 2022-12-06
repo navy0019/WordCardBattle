@@ -2,18 +2,11 @@ local TableFunc = require("lib.TableFunc")
 local StringAct = require("lib.StringAct")
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
+local StateHandler = require('battle.StateHandler')
+local universal_func = require('lib.command_act.universal_func')
 
 local CardLogic={}
 
-local function AddBuff(card,buff)--{buff={atk=1,round=1},times=2}
-	for k,str in pairs(card.type) do
-		for key,value in pairs(buff.buff) do
-			if str:find(key) then
-				return
-			end
-		end
-	end
-end
 CardLogic.default={Update=Update}
 CardLogic.metatable={}
 function CardLogic.new()
@@ -55,26 +48,32 @@ function CardLogic.new()
 		machine:TransitionTo('CheckBuff',battle)
 	end
 	CheckBuff.DoOnEnter=function(self,battle,...)
-		if #machine.state_pending ==0 then
-			machine:TransitionTo('ReadEffect',battle)
-		else	
-			for k,buff in pairs(machine.state_pending) do
-				for i,card in pairs(machine.card_pending) do
-					AddBuff(card ,buff)
-				end			
-			end
+		for k=#machine.state_pending , 1, -1 do
+			local buff =machine.state_pending[k]
+			for i,toUse in pairs(machine.card_pending) do
+				local card=toUse.card
+				local bool = universal_func.match_type(buff.need_type ,card.type)
+				if bool then
+					StateHandler.Add_Card_Buff(card , buff)
+					--TableFunc.Dump(buff)
+					if buff.number <= 0 then
+						table.remove(machine.state_pending ,k)
+					end
+				end	
+			end			
 		end
+		machine:TransitionTo('ReadEffect',battle)
 		
 	end
 	ReadEffect.DoOnEnter=function(self,battle,...)
 		--print('ReadEffect!'..#machine.card_pending)
 		for i=1, #machine.card_pending do
 			local v = TableFunc.Shift(machine.card_pending)
-			--TableFunc.Dump(v)
+
 			battle.battleData.actPoint = battle.battleData.actPoint - v.card.cost
-			--StringAct.UseCard(battle,v)
 			local effect=TableFunc.DeepCopy(v.card.effect)
 			StringAct.ReadEffect(battle ,machine.act_maching,v.card.effect ,v)
+
 			battle:DropCard(battle.battleData.hand , v.card)
 			local o ={ toPending={key='AfterUseCard',arg={v ,battle }} }
 			TableFunc.Push(machine.queue , o)

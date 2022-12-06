@@ -48,7 +48,7 @@ local toUse=MakeToUse()
 
 
 local function printData()
-		for i,hero in pairs(heroData) do
+	for i,hero in pairs(heroData) do
 		local origin =originData.characterData.heroData[i]
 		for key,value in pairs(hero.data) do
 			if value~=origin.data[key] and type(origin.data[key])~='table'  then
@@ -58,8 +58,10 @@ local function printData()
 				print('shield '..hero.data.shield)
 				print('ak '..hero.data.atk)
 				print('def '..hero.data.def..'\n')
-				hero[key] = origin[key]
+				origin[key] = hero[key]
 				break
+			else
+				--print('same ',value ,origin.data[key] ,key)
 			end
 		end
 		for k,state_tab in pairs(hero.state) do
@@ -82,7 +84,7 @@ local function printData()
 				print('atk '..mon.data.atk)
 				print('def '..mon.data.def..'\n')
 
-				mon[key] = origin[key]
+				origin[key] = mon[key]
 				break
 			end
 		end
@@ -95,7 +97,7 @@ local function printData()
 	end
 end
 local function Test()
-	local effect={'target','add_buff test_state[round:1]'}-- [round:1]
+	local effect={'target','add_buff test_state[round:1]'}-- {'target','add_buff test_state[round:1]'}
 	local machine=StringAct.NewMachine()
 	StringAct.ReadEffect(testData ,machine ,effect ,toUse )
 
@@ -118,8 +120,7 @@ local function TestStateUpdate()
 	end
 	printData()
 end
-print('Add State')
 Test()
 
-print('\nUpdate State')
+print('Update State')
 TestStateUpdate()

@@ -12,7 +12,7 @@ local BattleMachine = require('battle.battleMachine')
 
 local Battle={}
 
-local function InitBattleData(battle,scene)
+function Battle.InitBattleData(battle,scene)
 	local AdvGenerator=scene.AdvGenerator
 	local seed =scene.events.ranSeed
 	math.randomseed(seed)
@@ -171,7 +171,7 @@ end
 local function Update( self,scene,dt  )
 	self.machine:Update(self,scene,dt)
 end 
-Battle.default={DealProcess=DealProcess,ClearDeath=ClearDeath,DropItem=DropItem,RemoveDeathCard=RemoveDeathCard,CheckLife=CheckLife,Reset=Reset,Update=Update, InitBattleData=InitBattleData,DropCard=DropCard ,CardWordUpdate=CardWordUpdate}
+Battle.default={DealProcess=DealProcess,ClearDeath=ClearDeath,DropItem=DropItem,RemoveDeathCard=RemoveDeathCard,CheckLife=CheckLife,Reset=Reset,Update=Update,DropCard=DropCard ,CardWordUpdate=CardWordUpdate}
 Battle.metatable={}
 
 function Battle.new(scene)
@@ -182,7 +182,7 @@ function Battle.new(scene)
 	}
 
 	--o.label=label or nil
-	InitBattleData(o ,scene)
+	--Battle.InitBattleData(o ,scene)
 	o.machine=BattleMachine.new(o,scene)
 	
 	--o.keyCtrl = scene.keyCtrl
@@ -228,8 +228,6 @@ function Battle.MonsterAct(self)
 		m.state:Update( m ,self ,num)
 	end
 end
-
-
 
 Battle.metatable.__index=function (table,key) return Battle.default[key] end
 

@@ -2,34 +2,16 @@ local StringDecode=require('lib.StringDecode')
 local TableFunc=require('lib.TableFunc')
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
-local ActMap =require('lib.actMap')
-local ActMap2 = require('lib.combine_act_map')
-TableFunc.Merge(ActMap,ActMap2)
+local Basic_act =require('lib.command_act.basic_act')
+local Combine_act = require('lib.command_act.combine_act')
+local Deck_act = require('lib.command_act.deck_act')
+TableFunc.Merge(Basic_act,Combine_act)
+TableFunc.Merge(Basic_act,Deck_act)
+
+local universal_func = require('lib.command_act.universal_func')
 
 
 local StringAct={}
-local compare_map={'>=','<=','==','>','<'}
-local calculate_map={'sum','minus','multiplie','divided'}
-local type_tab={atk={'melee','range','magic','atk'}}
-
-function StringAct.Match_type(except ,card_type)
-	for i ,card_key in pairs(card_type) do
-		for k ,tab_value in pairs(type_tab) do
-			if card_key == except then return true end
-			if type(tab_value)=='table' and TableFunc.Find(tab_value ,except) and TableFunc.Find(tab_value ,card_key) then
-				return true
-			end
-		end
-	end
-	return false
-end
-local function FindSymbol(str,t)
-	for k,v in pairs(t) do
-		if str:find(v) then
-			return k
-		end
-	end
-end
 
 local function analysis(str,machine,battle)
 
@@ -40,6 +22,7 @@ local function analysis(str,machine,battle)
 	local command = str
 	
 	if not tonumber(command) and type(command)~='table' then
+		--處理key[arg...]中間沒有空隔相連的狀況
 		if command:find('%[') then
 			local left = command:find('%[') 
 			local str_left = command:sub(1,left-1)
@@ -48,6 +31,7 @@ local function analysis(str,machine,battle)
 		end
 		arg ,copy_scope = StringDecode.Split_Command(command)
 		arg={StringDecode.split_by(arg[1],'%s')}
+
 		arg=StringDecode.Replace_copy_scope(arg,copy_scope)
 	end
 
@@ -56,8 +40,10 @@ local function analysis(str,machine,battle)
 	elseif arg then
 		command = TableFunc.Shift(arg)
 	end
+
 	if arg then
 		for i=#arg ,1 ,-1 do
+			--arg當中 被[]包含的部分會被視為前一個arg(arg[i-1])的參數
 			arg[i]=StringDecode.trim_head_tail(arg[i]) 
 			local len ,value = 0 ,arg[i]
 			local left ,right = value:find('%[') , 0
@@ -73,6 +59,7 @@ local function analysis(str,machine,battle)
 			end
 		end
 	end
+
 	return command ,arg
 end
 function StringAct.NewMachine()
@@ -103,12 +90,8 @@ function StringAct.NewMachine()
 			machine.index=machine.index+1
 			local command = machine.effect[machine.index]
 			local arg
-
 			command,arg=analysis(command , machine ,battle)
-			--print('command ',command)
-			--TableFunc.Dump(arg)
-			
-			--print('stringAct wait command',command)
+
 			if tonumber(command) then
 				TableFunc.Push(machine.stack,tonumber(command))
 
@@ -123,10 +106,10 @@ function StringAct.NewMachine()
 					table.insert(machine.effect, machine.index+1 , act[i])
 				end
 
-			elseif FindSymbol(command ,compare_map) then
+			elseif universal_func.findSymbol(command ,'compare') then
 				machine:TransitionTo('Compare',command,battle,arg)
 
-			elseif FindSymbol(command ,calculate_map) then
+			elseif universal_func.findSymbol(command ,'calculate') then
 				machine:TransitionTo('Calculate',command,battle,arg)
 			else
 				machine:TransitionTo('Normal',command,battle,arg)
@@ -142,7 +125,7 @@ function StringAct.NewMachine()
 		local num = tonumber(command:match('%d')) and tonumber(command:match('%d')) or table.unpack(arg)
 		local symbol = StringDecode.trim_head_tail(command:gsub(num,'')) 
 		--local arg = {s,num}--StringDecode.split_by(command,'%s')
-		local value = ActMap['compare'](battle,machine,symbol,num)
+		local value = Basic_act['compare'](battle,machine,symbol,num)
 		machine:TransitionTo('Wait')
 	end
 
@@ -153,7 +136,7 @@ function StringAct.NewMachine()
 		for k,v in pairs(arg) do
 			arg[k]=tonumber(v)
 		end
-		local value = ActMap['calculate'](battle,machine,command,table.unpack(arg))
+		local value = Basic_act['calculate'](battle,machine,command,table.unpack(arg))
 		machine:TransitionTo('Wait')
 	end
  
@@ -168,9 +151,9 @@ function StringAct.NewMachine()
 			TableFunc.Push(arg ,num)
 		end
 		--print('key',key)
-		assert(ActMap[key],'act['..key..'] is nil')
+		assert(Basic_act[key],'act['..key..'] is nil')
 
-		local value = ActMap[key](battle,machine,table.unpack(arg))
+		local value = Basic_act[key](battle,machine,table.unpack(arg))
 		if value =='stop' then
 			machine.stop=true
 		end
@@ -192,14 +175,5 @@ function StringAct.ReadEffect(battle ,machine ,effect ,toUse ,print_log)
 		end
 	end
 end
---[[function StringAct.UseCard(battle ,toUse)
-	local card = toUse.card
-	local effect=TableFunc.DeepCopy(card.effect)
-	--local record={}
-	--TableFunc.Dump(card)
-	local machine=StringAct.NewMachine()
 
-	StringAct.ReadEffect(battle ,machine ,effect,toUse)
-	return machine
-end]]
 return StringAct

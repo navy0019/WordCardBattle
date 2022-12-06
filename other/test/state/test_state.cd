@@ -1,11 +1,19 @@
 test_state
 {
-type   		= debuff
+type   		= buff
 data   		= round:3
-update_timing	= round_start
-update		= target , get data.hp    , self , get round , minus ,set target.data.hp
+update_timing	= round_end
 overlay 		= target , get round , self , get data.round , sum  ,set target.round		
-add		= target , get state.round_start , push self.data		  
+add		= target , get state.round_end , push self.data		  
+}
+poison
+{
+type   		= buff
+data   		= round:3
+update_timing	= round_end
+overlay 		= target , get round , self , get data.round , sum  ,set target.round		
+add		= target , get state.round_end , push self.data
+update 		= target.data.hp ,  self.data.round ,  minus  , target.data ,set hp 
 }
 
 

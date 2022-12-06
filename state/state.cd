@@ -12,16 +12,16 @@ aerolite
 type   		= buff
 data		= round:2 ,value:20
 update_timing	= round_start
-overlay		= target , get state ,get round_start ,push self.data , master ,add_buff spell [value:master.hp]	
-add		= target , get state ,get round_start ,push self.data , master ,add_buff spell [value:master.hp]
+overlay		= target , get state ,get round_start ,push self.data , master ,add_buff spell [round:2]	
+add		= target , get state ,get round_start ,push self.data , master ,add_buff spell [round:2]
 remove		= target , get hp , master , find_state spell ,			
 }
 spell
 {
 type   		= buff
-data		= round:10
 update_timing	= is_target
 update		= master , get hp, self ,get data , get value
+add		= master, get state , get is_target ,push self.data ,master , get hp, self ,get data , get value 
 }
 
 

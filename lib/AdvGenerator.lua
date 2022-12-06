@@ -94,6 +94,7 @@ function AdvGenerator.GenerateMapEvent()
 		if ran2 > 0 then
 			----battle
 			event.isBattle=true
+			
 		end	
 		
 	else

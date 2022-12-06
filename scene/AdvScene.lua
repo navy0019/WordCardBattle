@@ -51,6 +51,7 @@ function AdvScene.NewDataScene(name,events,AdvGenerator)
 
 		if scene.events.isBattle then
 			scene.battle=Battle.new(scene)
+			Battle.InitBattleData(battle ,scene)
 		end	
 		SaveMgr.Save(SaveMgr.CurrentSave  ,scene.AdvGenerator.Save)
 		

@@ -3,7 +3,7 @@ local battle={
 		monsterData = {
 			{
 				skill = {
-					"m_attack",
+					"testCard",
 				},
 				data = {
 					act = 2,
@@ -28,7 +28,7 @@ local battle={
 			},
 			{
 				skill = {
-					"m_attack",
+					"testCard",
 				},
 				data = {
 					act = 3,
@@ -49,7 +49,7 @@ local battle={
 			},
 			{
 				skill = {
-					"m_attack",
+					"testCard",
 				},
 				data = {
 					act = 4,

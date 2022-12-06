@@ -19,8 +19,7 @@ drop_to       =  grave
 use_condition =  select 1 enemy
 
 atk           =  master.data.atk + card.level 
-effect        =  target , get hp ,  card , get atk ,  range  , target ,set hp ,target 
-,get state ,add_buff poison 3 round
+effect        =  built_in_atk range card.data.atk ,target ,get state ,add_buff poison 3 round
 }
 
 defense
@@ -42,27 +41,40 @@ use_condition =  select 1 enemy ,
 data          =  atk:master.data.atk , def : 0
 effect        =  built_in_atk melee card.data.atk
 }
-attack2
+
+ignore_shield_attack
 {
 cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy 
 data          =  atk:master.data.atk , def : 0
-effect        =  target.data.hp ,  card.data.atk ,  melee  , target.data ,set hp
+effect        =  target.data.hp ,  card.data.atk ,  minus  , target.data ,set hp
 }
-origin_atk
+
+example_atk
 {
 cost          =  2
 type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy
 data          =  atk:master.atk , def : 0
-effect        =  target.data.shield,  card.data.atk , melee,
-		target.data  ,set shield,
-		target.data.shield,
-		< 0 ,boolean true[ target, get data.shield, target.data, get hp,sum ,target.data ,set hp]
+effect        =  effect        =  target , get data,get shield,  < 0 , boolean_pick true[ 0 , set target.data.shield],
+		target , get data.shield    ,  card.data.atk , copy ,
+		length ,      > 1           ,  boolean false[ fit_target_length ]   , melee ,
+		copy   , set target.data.shield ,
+		< 0    , boolean_pick true[target, get data.shield, target, get data.hp,sum , set target.data.hp] 
 		
+}
+
+random_value_atk
+{
+cost          =  3
+type          =  melee
+drop_to       =  grave
+use_condition =  select 2 enemy
+data          =  atk:[random 2~5]
+effect        =  built_in_atk magic card.data.atk
 }
 
 random_atk
@@ -72,5 +84,5 @@ type          =  melee
 drop_to       =  grave
 use_condition =  select 1 enemy
 data          =  atk:master.data.atk , def : 0
-effect.       =  loop 2 [random 1 enemy [get data.hp, > 0] ,copy ,length , >0 ,boolean true[set_target,built_in_atk melee card.data.atk] ]
+effect        =  random_atk 3 magic card.data.atk
 }
