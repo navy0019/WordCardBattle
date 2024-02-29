@@ -1,0 +1,35 @@
+first
+{
+size = 32
+normal_event = 10
+rare_event = 6
+battle = 8
+next_floor = second , jail
+specific_room = 
+}
+
+second
+{
+size = 32
+normal_event = 8
+rare_event = 4
+battle = 8
+next_floor = third
+}
+
+third
+{
+size = 20
+normal_event = 6
+rare_event = 4
+battle = 4
+}
+
+jail
+{
+size = 32
+normal_event = 8
+rare_event = 4
+battle = 8
+next_floor = third
+}

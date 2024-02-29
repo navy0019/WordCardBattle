@@ -1,0 +1,44 @@
+poison
+{
+	type   		= debuff
+	data   		= round:3 , atk:1
+	location 	= round_end
+	update_timing	= round_end
+	overlay 		= true		
+	update 		= state_atk(self.data.atk) to target
+}
+power_up
+{
+	type   		= buff
+	data   		= round:1
+	location 	= use_atk_card
+	update_timing	= trigger
+	overlay 	= true
+	update 		= calculate_value(+1) to value		
+}
+protect
+{
+	type   		= buff
+	data   		= round:1
+	location 	= protect
+	update_timing	= round_end ,trigger
+	replace 	= true
+	replace_effect	= protect to target
+}
+bait
+{
+	type		= debuff
+	data		= round:1
+	location	= round_start
+	update_timing	= round_start	
+}
+solid
+{
+	type   		= debuff
+	data   		= round:1
+	location 	= round_end
+	update_timing	= round_end
+	overlay 		= true		
+	update 		= assign_value(false ,remove_shield) to target	
+}
+

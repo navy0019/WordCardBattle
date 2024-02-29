@@ -1,0 +1,7 @@
+tresure_trap
+{
+	result_1= battle(battle_setting_1)
+	result_3= battle(battle_setting_2)
+	battle_setting_1 = monster:small ,XL , reward: money:10 ,normal_card:1
+
+}

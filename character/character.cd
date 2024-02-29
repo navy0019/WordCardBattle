@@ -1,0 +1,47 @@
+hero1
+{
+data		= hp:12 ,act:2 ,def:4 ,atk:2
+skill		= attack, attack ,
+advancedSkill	= attack,
+race		='hero'
+}
+
+hero2
+{
+data		= hp:11 ,act:2 ,def:0 ,atk:7
+skill		= attack, powerful_attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
+}
+
+hero3
+{
+data		= hp:10 ,act:5 ,def:0 ,atk:5
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
+}
+
+hero4
+{
+data		= hp:12 ,act:3 ,def:4 ,atk:1
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
+}
+
+hero5
+{
+data		= hp:12 ,act:3 ,def:0 ,atk:5
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
+}
+
+hero6
+{
+data		= hp:10 ,act:3 ,def:0 ,atk:7
+skill		= attack, attack ,
+advancedSkill	= attack, attack ,
+race		='hero'
+}
