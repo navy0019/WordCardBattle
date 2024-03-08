@@ -10,11 +10,11 @@ function CharacterAssets.Init(t)
         	local skill =v.skill
         	v.skill={skill}
         end
-        if v.data then
+        --[[if v.data then
         	v.data=StringDecode.TransToDic(v.data)
         	v.data.shield=0
         	--TableFunc.Dump(v.data)
-        end
+        end]]
         if v.think_weights and type(v.think_weights)~='table' then
         	v.think_weights={v.think_weights}
         end

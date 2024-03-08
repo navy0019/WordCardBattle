@@ -14,13 +14,11 @@ function CardAssets.Init(card_table)
                 	number = tonumber(number) and tonumber(number) or number
                 	card.use_condition[i]={select_type ,number ,race }
                 end
-           	elseif key =='data'  then
+           --[[	elseif key =='data'  then
             	StringDecode.TransToTable(card, key ,value)
 
-            	card[key]=StringDecode.TransToDic(card[key])
-            	--[[for i,t in pairs(card.data) do
-            		card.data[i]={{from='oringin',value=t }}
-            	end ]]         
+            	card[key]=StringDecode.TransToDic(card[key])]]
+        
             elseif key=='effect' or key =='type' then
             	StringDecode.TransToTable(card, key ,value)
             end
@@ -29,6 +27,7 @@ function CardAssets.Init(card_table)
 end
 function CardAssets.instance( key,character)
 	--print('key',key)
+	--print('CardAssets instance ',key)
 	local o = TableFunc.DeepCopy(_G.Resource.card[key])
 	--[[if test	then
 		o = TableFunc.DeepCopy(_G.Resource.test_card[key])

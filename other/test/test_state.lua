@@ -117,7 +117,8 @@ local function stateUpdate(character , key)
 	for timing_key,timing_tab in pairs(character.state) do
 
 		for k,state in pairs(timing_tab) do
-			local res = Resource.state[state.data.name]
+			local res = Resource.state[state.name]
+			--print('stateUpdate',state.data.name)
 			if key~=timing_key then return end
 			if not TableFunc.Find(res.update_timing ,'trigger') then
 				StateHandler.Excute(testData , character , state ,key_link)

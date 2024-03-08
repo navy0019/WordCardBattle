@@ -1,12 +1,13 @@
 local Resource = require('resource.Resource')
 local StringDecode = require('lib.StringDecode')
 local TableFunc = require('lib.TableFunc')
+local StateAssets=require('resource.stateAssets')
 
 local StateHandler={}
 local ComplexCommandMachine=require('battle.ComplexCommandMachine')
 StateHandler.machine=ComplexCommandMachine.NewMachine()
 
-local function get_parameter(key)
+--[[local function get_parameter(key)
 
 	if key:find('%(') then
 		
@@ -22,7 +23,7 @@ local function get_parameter(key)
 	else
 		return key
 	end
-end
+end]]
 
 function StateHandler.Remove( battle,character ,timing_tab ,res ,index)
 	
@@ -38,7 +39,7 @@ function StateHandler.Remove( battle,character ,timing_tab ,res ,index)
 	table.remove(timing_tab , index)
 end
 function StateHandler.Excute( battle, character ,state ,key_link ,...)
-	local name = state.data.name
+	local name = state.name
 	local res = Resource.state[name]
 	--TableFunc.Dump(res)
 	local arg = {...}
@@ -61,24 +62,24 @@ function StateHandler.Excute( battle, character ,state ,key_link ,...)
 		--TableFunc.Dump(state)
 		StateHandler.machine:ReadEffect(battle ,effect, key_link)
 		--TableFunc.Dump(StateHandler.machine.stack)
-		table.insert(t,{key='UpdateState' ,arg={state.data.name}})
+		table.insert(t,{key='UpdateState' ,arg={state.name}})
 	end
 	return t
 end
 function StateHandler.Update( battle, character ,state ,timing_key ,trigger,...)
-	local name = state.data.name
+	local name = state.name
 	local res = Resource.state[name]
 	local timing_tab = character.state[timing_key]
 	
 
-	if state.data.round and type(state.data.round )=='number' then
+	if state.round and type(state.round )=='number' then
 
 		if trigger and not TableFunc.Find(res.update_timing ,'trigger') then return end
 		if not trigger and not TableFunc.Find( res.update_timing  ,timing_key ) then return end
 		--print('State Update',timing_key ,state.data.name)
-		state.data.round=state.data.round -1 
+		state.round=state.round -1 
 		
-		if state.data.round <=0 then
+		if state.round <=0 then
 			local index = TableFunc.Find(timing_tab ,state)
 			--print('remove ',timing_key ,name ,index)
 			StateHandler.Remove( battle, character ,timing_tab ,res , index)
@@ -87,32 +88,66 @@ function StateHandler.Update( battle, character ,state ,timing_key ,trigger,...)
 end
 
 function StateHandler.AddBuff(battle,targets,key ,caster)
-	local state_key,parameter = get_parameter(key)
+	--local state_key,parameter = get_parameter(key)
 	local heroData = battle.characterData.heroData
 	local monsterData =battle.characterData.monsterData
 	--print('StateHandler targets',targets)
 	for k,target in pairs(targets) do
-		local state = TableFunc.DeepCopy(Resource.state[state_key])
+		local target_serial = TableFunc.GetSerial(target)
+		if TableFunc.MatchSerial(heroData ,target_serial) then target_serial ='hero '..target_serial else target_serial ='monster '..target_serial end
+		--local state = TableFunc.DeepCopy(Resource.state[state_key])
+		--state.target=serial
+		local state = StateAssets.instance(key ,target_serial ,caster)
+		local res = Resource.state[state.name]
 
-		local serial = TableFunc.GetSerial(target)
-		if TableFunc.MatchSerial(heroData ,serial) then serial ='hero '..serial else serial ='monster '..serial end
-		state.target=serial
+		local state_location ,name = res.location ,state.name
+		
 
-		local state_time ,name = state.location ,state.data.name
+		--[[local state_time ,name = state.location ,state.data.name
 		if parameter then
 			local new_data = TableFunc.DeepCopy(parameter)
 			for i,v in pairs(state.data) do
 				new_data[i] = new_data[i] or v
 			end
 			state.data=new_data
-		end
-		state.data.caster=caster
-		state.data.holder=serial
+		end]]
+		--state.data.caster=caster
+		--state.data.holder=target_serial
 		--print('v',v)
 		--TableFunc.Dump(v.state)
-		local index = TableFunc.Find(target.state[state_time] , name ,'name')
-
+		local index = TableFunc.Find(target.state[state_location] , name ,'name')
 		if index then
+			local target_state = target.state[state_location][index]
+			if res.overlay_effect or res.overlay then
+				for key ,value in pairs(state) do
+					if tonumber(value) then
+						target_state[key]=target_state[key]+value
+					end
+				end
+				if res.overlay_effect then
+					local effect = res.overlay_effect
+					local key_link={self = state ,target_table=target}
+					StateHandler.machine:ReadEffect(battle ,effect, key_link)
+				end
+			elseif res.replace_effect or res.replace then
+				table.remove(target.state[state_location] , index)
+				TableFunc.Push(target.state[state_location] ,state)
+				if res.replace_effect then
+					local effect = res.replace_effect
+					local key_link={self = state ,target_table=target}
+					StateHandler.machine:ReadEffect(battle ,effect, key_link)
+				end
+			end
+		else --已存在同樣state但沒定義overlay則以新增狀態處理
+
+			TableFunc.Push(target.state[state_location] ,state)
+			if res.add_effect then
+				local effect = res.add_effect
+				local key_link={self=state ,target_table=target }
+				StateHandler.machine:ReadEffect(battle ,effect, key_link)
+			end 
+		end
+		--[[if index then
 			local target_state = target.state[state_time][index]
 			if state.overlay_effect or state.overlay then
 				
@@ -135,23 +170,19 @@ function StateHandler.AddBuff(battle,targets,key ,caster)
 					StateHandler.machine:ReadEffect(battle ,effect, key_link)
 				end
 			end
-			--[[local effect = state.overlay
-			local key_link={self = state ,target_table=v.state[state_time][index]}
-			StateHandler.machine:ReadEffect(battle ,effect, key_link)]]
+
 
 		else --已存在同樣state但沒定義overlay則以新增狀態處理
-			--[[local effect = state.add
-			local key_link={self = state ,target_table=v}
-			StateHandler.machine:ReadEffect(battle ,effect, key_link)]]
+
 			TableFunc.Push(target.state[state_time] ,state)
 			if state.add_effect then
 				local effect = state.add_effect
 				local key_link={self=state ,target_table=target }
 				StateHandler.machine:ReadEffect(battle ,effect, key_link)
 			end 
-		end
+		end]]
 	end
-	--return {key='AddBuff' ,arg={state_key}}
+
 end
 
 return StateHandler

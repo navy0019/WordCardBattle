@@ -29,8 +29,8 @@ local file_popen = io.popen(cmd..file_path)
 local data = Resource.GetAssets(file_popen, file_path )
 TableFunc.Dump(data)
 
-local card_path = path..'card'
+--[[local card_path = path..'card'
 local card_popen = io.popen(cmd..card_path)
-
+      
 local card = Resource.GetAssets(card_popen, card_path )
-TableFunc.Dump(card)
+TableFunc.Dump(card)]]

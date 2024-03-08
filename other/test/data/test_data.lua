@@ -35,9 +35,9 @@ local battle={
 				key = "m_small_1",
 				dropItem = "money 100",
 				AI_act = {
-					"monster_attack to hero(state: spell)",
-					"monster_attack to hero (2)",
-					"monster_attack to enemy(1)",
+					"testCard to hero(state: spell)",
+					"testCard to hero (2)",
+					"testCard to enemy(1)",
 				},
 			},
 			{
@@ -73,7 +73,7 @@ local battle={
 				key = "m_mid_1",
 				dropItem = "money 100",
 				AI_act = {
-					"monster_attack to hero (1)",
+					"testCard to hero (1)",
 				},
 			},
 			{
@@ -109,7 +109,7 @@ local battle={
 				key = "m_XL_1",
 				dropItem = "money 100",
 				AI_act = {
-					"monster_attack to hero(state: spell)",
+					"testCard to hero(state: spell)",
 
 				},
 			},

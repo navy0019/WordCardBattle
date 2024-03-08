@@ -5,7 +5,7 @@ poison
 	location 	= round_end
 	update_timing	= round_end
 	overlay 		= true		
-	update 		= state_atk(self.data.atk) to target
+	update 		= state_atk(self.atk) to target
 }
 power_up
 {

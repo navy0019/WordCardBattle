@@ -70,20 +70,35 @@ function StringDecode.Split_comma_enter( s )
 	end
 	return t
 end
-function merge_detect(s ,t)
+local function merge_detect(s ,t ,symbol_left ,symbol_right)
+	--print()
 	--TableFunc.Dump(t)
-	--print('merge_detect')
-	--print(s)
+	local left ,right
+	if  #symbol_left > 1 then
+		left = symbol_left:sub(#symbol_left ,#symbol_left)
+		right = symbol_right:sub(#symbol_right ,#symbol_right)
+	else
+		left = symbol_left
+		right = symbol_right
+	end
 	local target_string =type(t[#t])=='string' and StringDecode.Trim_head_tail(t[#t]) or t[#t]
 	local s_head = s:sub(1,1)
-	local target_left ,target_right = StringDecode.Count_symbol(target_string ,'%(') ,StringDecode.Count_symbol(target_string,'%)')
-	if s_head =='(' or s_head ==')' or s_head:find('%p')  then
+	local s_tail = s:sub(#s , #s)
+	local target_left ,target_right = StringDecode.Count_symbol(target_string ,symbol_left) ,StringDecode.Count_symbol(target_string ,symbol_right)
+	
+	--print('target_string',target_string)
+	--print('merge_detect',s_head ,s_tail ,s_tail ==right ,symbol_right,target_left,target_right)
+
+	if s_head ==symbol_left or s_head ==right or s_head:find('%p')  then
 		return true
-	elseif target_left ~= target_right then
+	elseif target_left ~= target_right and (s_head ==left or s_tail ==right)  then
+		--print('re true')
 		return true
 	end
+	--print('merge_detect' ,s, left ,right)
 	return false
 end
+
 local function split_line(str)
 	local tab = {}
 	local index = 1
@@ -116,10 +131,54 @@ local function merge_line(t)
 	end
 	return tab
 end
+--[[local function detect_dic(value)
+	if type(value) =='table' then
+	elseif type(value)=='string' and value:find(':') and not value:find('(') then
+
+	end
+end]]
 local function decode_value( t )
-	for k,v in pairs(t) do
-		if tonumber(v) then
-			t[k]=tonumber(v)
+	for k,value in pairs(t) do
+		if tonumber(value) then
+			t[k]=tonumber(value)
+		elseif type(value)=='string' and value:find(':') and not value:find('%(') then
+			--print('str to  dic' ,value)
+			local nt = StringDecode.TransToDic({value})	
+			t[k]=nt
+		elseif type(value) =='table' then
+			local is_dic=false
+
+			--合併{}範圍內的元素
+			local nt ={value[1]}
+			for i=2,#value do
+				
+				local s = value[i]
+				if merge_detect(s ,nt ,'%{' ,'%}')  then
+					local len =#nt
+					nt[len] = nt[len]..','..s
+					nt[len] = StringDecode.Trim(nt[len] ,'{')
+					nt[len] = StringDecode.Trim(nt[len] ,'}')	
+					--print('merge',nt[len])
+
+				else		
+					TableFunc.Push(nt ,s)
+					--print('not merge',s)
+				end
+
+			end
+			--print('nt')
+			--TableFunc.Dump(nt)
+			for i,j in pairs(nt) do
+				if type(j)=='string' and j:find(':') and not j:find('%(') then
+					--print('value to dic',j)
+					is_dic=true
+					break
+				end
+			end
+			if is_dic then
+				local dic = StringDecode.TransToDic(nt)	
+				t[k]=dic
+			end			
 		end
 	end
 end
@@ -150,7 +209,7 @@ local function make_table(t)
 			for i=1,#tab[key] do
 				
 				local s = tab[key][i]
-				if merge_detect(s ,t)  then
+				if merge_detect(s ,t ,'%(' ,'%)')  then
 					local len =#t
 					t[len] = t[len]..','..s
 
@@ -297,7 +356,7 @@ function StringDecode.Trim_Command(str)
 	TableFunc.Push(complete , TableFunc.Shift(split))
 	for i=1,#split do
 		local command = StringDecode.Trim_head_tail(split[i])
-		if merge_detect(command ,complete)  then
+		if merge_detect(command ,complete ,'%(' ,'%)')  then
 			local len =#complete
 			complete[len] = complete[len]..' '..command
 					
@@ -335,15 +394,48 @@ function StringDecode.TransToTable(obj ,key ,value)
 		obj[key]={ new_value }
 	end
 end
+
 function StringDecode.TransToDic(tab)	
 	local t={}
+	local pre_key
+	--print('TransToDic')
+	--TableFunc.Dump(tab)
 	for k,v in pairs(tab) do
-		if v:find(':') then
-			for key ,value in v:gmatch('(.+):(.+)') do
+		if type(v)=='string' and v:find(':') then
+			--print('v',v)
+			local p = v:find(':')
+			local new_key   =StringDecode.Trim_head_tail(v:sub(1,p-1))
+			local new_value =StringDecode.Trim_head_tail(v:sub(p+1,#v))
+			new_value = tonumber(new_value) and tonumber(new_value) or new_value
+			--print('new')
+			--print(new_key)
+			--print(new_value)
+			if type(new_value)=='string'and new_value:find(':') then 
+				new_value = {StringDecode.Split_by(new_value ,',')}
+				t[new_key]= new_value
+				t[new_key]=StringDecode.TransToDic(t[new_key])
+			else
+				--print('the end')
+				t[new_key]=new_value
+				pre_key=new_key
+			end
+			--[[for key ,value in v:gmatch('(.+):(.+)') do
 				local new_key   =StringDecode.Trim_head_tail(key)
 				local new_value =StringDecode.Trim_head_tail(value)
+				print('match :',new_key)
 				new_value = tonumber(new_value) and tonumber(new_value) or new_value
 				t[new_key]=new_value
+				pre_key=new_key
+			end]]
+		else
+			--print('v~= string')
+			local new_value = type(v)=='string' and StringDecode.Trim_head_tail(v) or v
+			new_value = tonumber(new_value) and tonumber(new_value) or new_value
+			if type(t[pre_key]) ~= 'table' then
+				StringDecode.TransToTable(t ,pre_key ,t[pre_key])
+				TableFunc.Push(t[pre_key],new_value)
+			else
+				TableFunc.Push(t[pre_key],new_value)
 			end
 		end
 	end
@@ -368,17 +460,15 @@ function StringDecode.Decode(filename)
 			t = make_table(t)
 			--print('make_table')
 			--TableFunc.Dump(t)
-			if #scope_name> 0 then
-				tab[scope_name]={} 
-				for key,value in pairs(t) do
-					--print(scope_name,key,value)
-					tab[scope_name][key]=value
-				end
-			else
-				for key,value in pairs(t) do
-					tab[key]=value
-				end
+
+			tab[scope_name]={} 
+			for key,value in pairs(t) do
+
+				--print(scope_name,key,value)
+				local new_value = value--detect_dic(value)
+				tab[scope_name][key]=new_value
 			end
+
 			index =scope_end+1
 		else
 			index=index+1
