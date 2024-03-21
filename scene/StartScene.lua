@@ -2,7 +2,7 @@ local Scene = require('lib.scene')
 local CallBack = require("lib.callback")
 local SaveMgr=require('lib.saveManager')
 local TableFunc = require("lib.TableFunc")
-local AdvMgr = require('adv_map.AdvMgr')
+local AdvMgr = require('adv.AdvMgr')
 
 local scene = Scene.new('Start')
 

@@ -1,7 +1,8 @@
 local Scene = require('lib.scene')
 local SaveMgr=require('lib.saveManager')
 local Battle = require('battle.battle')
-local AdvData = require('adv_map.AdvData')
+local AdvData = require('adv.AdvData')
+local Dungeon_Rule = require('adv.Dungeon_Rule')
 
 local AdvMainScene ={}
 
@@ -12,10 +13,10 @@ function AdvMainScene.NewDataScene(adv_data ,save_func)
 		local arg ={...}
 		if #arg > 1 then
 			local x,y = arg[2],arg[3]
-			print('go to room ',x,y)
-			scene.adv_data.player_pos[1]=x  
-			scene.adv_data.player_pos[2]=y
-			--scene.adv_data.
+			scene.adv_data.player_pos[1]=scene.adv_data.player_pos[1]+x  
+			scene.adv_data.player_pos[2]=scene.adv_data.player_pos[2]+y
+			scene.adv_data.map_data.passed_room = scene.adv_data.map_data.passed_room +1
+			Dungeon_Rule:Check_Level(adv_data.map_data)
 		else
 			scene.switchingScene=name
 		end
@@ -23,8 +24,8 @@ function AdvMainScene.NewDataScene(adv_data ,save_func)
 	scene.funcTab = {
 		switchScene=switchScene
 	}
-	function scene.Enter()
-		print('Adv DataScene enter')
+	function scene.Enter() 
+		--print('Adv DataScene enter')
 		local adv_data = scene.adv_data
 
 		local x,y = adv_data.player_pos[1] , adv_data.player_pos[2]

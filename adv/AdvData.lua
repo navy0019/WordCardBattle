@@ -1,4 +1,4 @@
-local MapGenerator=require('adv_map.MapGenerator')
+local MapGenerator=require('adv.MapGenerator')
 local SaveMgr=require('lib.saveManager')
 local CharacterAssets = require('resource.characterAssets')
 
@@ -26,11 +26,12 @@ function AdvData.Generate_Dungeon(setting,seed,floor)
 	local setting = setting or {}
 	local advData={
 		player_pos={0,0},
+		map_setting={size=32,enter_room=1,exit_room=2,battle=6,normal_event=6,rare_event=3,
+					map_seed=seed~= nil and seed or RandomMachine:New_seed() 
+		},
 		map_data={
-			--6
-			size=32,enter_room=1,exit_room=2,battle=6,normal_event=6,rare_event=3,
-			passing_room=0,enable_effect={},dungeon_level=0,
-			map_seed=seed~= nil and seed or RandomMachine:New_seed() ,	current_floor = floor~=nil and floor and 'first'
+			passed_room=0,enable_effect={},dungeon_level=0,total_passed_room=0 ,
+			current_floor = floor~=nil and floor and 'first'
 		},
 
 	}
@@ -52,26 +53,26 @@ function AdvData.Generate_Dungeon(setting,seed,floor)
 
 	if t[floor] then
 		for key,v in pairs(t[floor] ) do
-			advData.map_data[key] = v     
+			advData.map_setting[key] = v     
 		end
 
-		advData.map_data.exit_room= t[floor]['next'] and #t[floor]['next'] or advData.map_data.exit_room
+		advData.map_setting.exit_room= t[floor]['next'] and #t[floor]['next'] or advData.map_setting.exit_room
 
 	else
 		local array =TableFunc.DicToArray(t)
 		assert(#array > 0 ,'no setting data')
 		local data = TableFunc.Shift(array)
 		for key,v in pairs(data) do
-			advData.map_data[key] = v     
+			advData.map_setting[key] = v     
 		end
 		
-		advData.map_data.exit_room= data['next'] and #data['next'] or advData.map_data.exit_room
+		advData.map_setting.exit_room= data['next'] and #data['next'] or advData.map_setting.exit_room
 		
 	end
 
-	local map_data = advData.map_data
-	local room_number = map_data.enter_room + map_data.battle + map_data.normal_event + map_data.rare_event
-	advData.map_data.empty_room = map_data.size - room_number
+	local map_setting = advData.map_setting
+	local room_number = map_setting.enter_room + map_setting.battle + map_setting.normal_event + map_setting.rare_event
+	advData.map_setting.empty_room = map_setting.size - room_number
 
 
 	advData.map ,advData.rooms= MapGenerator.New_Map(advData)

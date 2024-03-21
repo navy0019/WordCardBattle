@@ -25,6 +25,40 @@ function AdvMainView.NewViewScene( adv_data)
 	end
 	MakeBasicEvent()
 
+	local function MakeRoomButton(adv_data ,next)
+		local map = adv_data.map
+		local i,j = adv_data.player_pos[1] , adv_data.player_pos[2]
+		local current_room = map[i][j]
+
+		if j-1 > 0 and map[i][j-1].type=='room' and TableFunc.Find(current_room.connect, map[i][j-1]) then
+			scene.ButtonEvent:Register('left',function(...) scene.Machine:TransitionTo(next) end)
+			scene.Event:Emit('AddButton','left', 'a' ,'switchScene',0, -1)				
+		end
+		if j+1 <= #map and map[i][j+1].type=='room'and TableFunc.Find(current_room.connect, map[i][j+1]) then
+			scene.ButtonEvent:Register('right',function(...) scene.Machine:TransitionTo(next) end)
+			scene.Event:Emit('AddButton','right', 'd' ,'switchScene',0 , 1)	
+		end
+		if i-1 > 0 and map[i-1][j].type=='room'and TableFunc.Find(current_room.connect, map[i-1][j])then
+			scene.ButtonEvent:Register('up',function(...) scene.Machine:TransitionTo(next) end)
+			scene.Event:Emit('AddButton','up', 'w' ,'switchScene',-1 , 0)	
+		end
+		if i+1 <= #map and map[i+1][j].type=='room'and TableFunc.Find(current_room.connect, map[i+1][j])then
+			scene.ButtonEvent:Register('down',function(...) scene.Machine:TransitionTo(next) end)
+			scene.Event:Emit('AddButton','down', 's' ,'switchScene',1 , 0)	
+		end	
+		scene.ButtonEvent:Register('back',function(...) print('ViewScenes press back') end)
+		scene.Event:Emit('AddButton','back', 'back' ,'switchScene','City')	
+	end
+	local function RemoveRoomButton()
+		local remove = {}
+		for k,v in pairs(scene.ButtonEvent) do
+			TableFunc.Push(remove,k)
+		end
+		for k,v in pairs(remove) do
+			scene.Event:Emit('RemoveButton',v)			
+		end
+	end
+
 	function scene.Enter()
 		local EmptyRoom = State.new("EmptyRoom")
 		local Init = State.new("Init")
@@ -101,7 +135,9 @@ function AdvMainView.NewViewScene( adv_data)
 			scene.Event:Emit('WaitIoRead')
 		end
 		EventRoom.DoOnEnter=function()
-			local adv_data = LogicScenesMgr.CurrentScene.adv_data
+			print('Event Room')
+			MakeRoomButton(LogicScenesMgr.CurrentScene.adv_data ,'EmptyRoom')
+			scene.Event:Emit('WaitIoRead')
 
 		end
 		BattleRoom.DoOnEnter=function()
@@ -115,31 +151,13 @@ function AdvMainView.NewViewScene( adv_data)
 
 		end
 		EmptyRoom.DoOnEnter=function()
-			print('EmptyRoom')
-			local map = LogicScenesMgr.CurrentScene.adv_data.map
-			local adv_data = LogicScenesMgr.CurrentScene.adv_data
-			local i,j = adv_data.player_pos[1] , adv_data.player_pos[2]
-			local current_room = map[i][j]
-
-			if j-1 > 0 and map[i][j-1].type=='room' and TableFunc.Find(current_room.connect, map[i-1][j]) then
-				scene.ButtonEvent:Register('left',function(...) print('ViewScenes press left') scene.Machine:TransitionTo('Init') end)
-				scene.Event:Emit('AddButton','left', 'a' ,'switchScene',i, j-1)				
-			end
-			if j+1 <= #map and map[i][j+1].type=='room' then
-				scene.ButtonEvent:Register('right',function(...) print('ViewScenes press right') scene.Machine:TransitionTo('Init') end)
-				scene.Event:Emit('AddButton','right', 'd' ,'switchScene',i , j+1)	
-			end
-			if i-1 > 0 and map[i-1][j].type=='room'then
-				scene.ButtonEvent:Register('up',function(...) print('ViewScenes press up') scene.Machine:TransitionTo('Init') end)
-				scene.Event:Emit('AddButton','up', 'w' ,'switchScene',i-1 , j)	
-			end
-			if i+1 <= #map and map[i+1][j].type=='room'then
-				scene.ButtonEvent:Register('down',function(...) print('ViewScenes press down') scene.Machine:TransitionTo('Init') end)
-				scene.Event:Emit('AddButton','down', 's' ,'switchScene',i+1 , j)	
-			end	
-			scene.ButtonEvent:Register('back',function(...) print('ViewScenes press back') end)
-			scene.Event:Emit('AddButton','back', 'back' ,'switchScene','City')		
-
+			print('Empty Room')
+			MakeRoomButton(LogicScenesMgr.CurrentScene.adv_data ,'Init')
+	
+			scene.Event:Emit('WaitIoRead')
+		end
+		EmptyRoom.DoOnLeave=function()
+			RemoveRoomButton()
 		end
 
 		--[[if LogicScenesMgr.CurrentScene.events.isBattle then

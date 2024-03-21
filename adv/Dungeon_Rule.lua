@@ -35,18 +35,50 @@ Dungeon_Rule.Add_effect=function(self,map_data ,t)
 		end
 	end
 end
+
+local function next_level(map_data ,num)
+	map_data.total_passed_room = map_data.total_passed_room + num
+	map_data.passed_room = map_data.passed_room - num
+	map_data.dungeon_level = map_data.dungeon_level +1
+end
 Dungeon_Rule.Check_Level=function(self,map_data )
+
+	if map_data.dungeon_level  > #self.level_effect then
+		local next_level = (map_data.dungeon_level  - #self.level_effect )%3 +1
+		local effect = self.extra_level_effect[next_level]
+		local need_number = effect.number 
+		if map_data.passed_room >= need_number then
+			next_level(map_data ,need_number)
+			Dungeon_Rule:Add_effect(map_data , effect)
+		end
+
+		
+	else
+		local next_level = map_data.dungeon_level +1
+		local effect = self.extra_level_effect[next_level]
+		local need_number = effect.number
+		if map_data.passed_room >= need_number then
+			next_level(map_data ,need_number)
+			Dungeon_Rule:Add_effect(map_data , effect)
+		end
+
+	end
+
+end
+Dungeon_Rule.Load_Level=function(self,map_data)
 	map_data.enable_effect={}
 
 	local extra_num = 0
 	local extra_loop = 0
 	local normal_loop= map_data.dungeon_level
-	
+
+		--make effect
 	if map_data.dungeon_level  > #self.level_effect then
-		normal_loop = #self.level_effect
+		normal_loop = #self.level_effect 
 		extra_num= map_data.dungeon_level  - #self.level_effect 
 		extra_loop= math.floor(extra_num / #self.extra_level_effect)
 		extra_num=extra_num % #self.extra_level_effect		
+
 	end
 
 	for i=1 ,normal_loop do
@@ -60,7 +92,5 @@ Dungeon_Rule.Check_Level=function(self,map_data )
 	for i=1,extra_num do
 		Dungeon_Rule:Add_effect(map_data , self.extra_level_effect[i])
 	end
-
-
 end
 return Dungeon_Rule

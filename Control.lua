@@ -4,8 +4,8 @@ local TableFunc = require("lib.TableFunc")
 
 --[[
 ViewScenesMgrEvent{ Enter ,Exit }  Exit:清空全部 Enter:跟CurrentScene做連接 (在換場景時觸發這兩個)
-Event{ WaitIoRead ,RemoveButton ,AddButton} CurrentScene透過 AddButton RemoveButton 增減Button 當CurrentScene增減Button時 Control也會同步改變
-ButtonEvent{ 場景所有button }
+Event{ WaitIoRead ,RemoveButton ,AddButton} CurrentScene透過 AddButton RemoveButton 增減Button 當scene增減Button時 Control也會同步改變
+ButtonEvent{ scene所有button }
 button:{function,function....} 
 ]]
 local Control={WaitIoRead=false,Keyboard=Keyboard.new(),keyMap={},ViewScenesMgrEvent=CallBack.new(),Event=CallBack.new(),ButtonEvent=CallBack.new()}

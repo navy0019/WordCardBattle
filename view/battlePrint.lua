@@ -118,9 +118,9 @@ function BattlePrint.PrintMap(map,player_pos)
 					--print('have key')
 					t[ci][cj]='▥▥'
 
-				elseif map[i][j].event=='battle' then
+				elseif map[i][j].battle then
 					t[ci][cj]=' ☢'
-				elseif map[i][j].event=='event' then
+				elseif map[i][j].event~='empty' then
 					t[ci][cj]=' !'
 
 				else

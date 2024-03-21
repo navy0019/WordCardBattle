@@ -6,8 +6,8 @@ local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 local CallBack = require("lib.callback")
 local SaveMgr=require('lib.saveManager')
-local Item = require('adv_map.Item')
-local AdvData = require('adv_map.AdvData')
+local Item = require('adv.Item')
+local AdvData = require('adv.AdvData')
 
 local CharacterAssets = require('resource.characterAssets')
 
@@ -28,7 +28,7 @@ function AdvMgr.Save(scene)
 	local saveData 	= SaveMgr.CurrentSave
 
 	saveData.map_data = advData.map_data
-	saveData.adv_setting=advData.adv_setting
+	saveData.map_setting=advData.map_setting
 
 	saveData.CurrentTeamData={}
 	saveData.CurrentTeam={}
@@ -54,11 +54,12 @@ function AdvMgr.Load(...)
 
 	local seed = saveData.map_data.map_seed
 
-	local setting = saveData.adv_setting
+	local setting = saveData.map_setting
 	--adv_data=AdvData.Generate_Dungeon(setting ,seed)
 
 	AdvMgr.NewScene(setting,seed)
 	local adv_data = LogicScenesMgr.NormalScene['AdvStart'].adv_data
+	adv_data.map_data=saveData.map_data
 
 	local save_rooms = saveData.rooms
 	for k,room in pairs(adv_data.rooms) do

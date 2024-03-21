@@ -1,4 +1,4 @@
-local Room = require('adv_map.Room')
+local Room = require('adv.Room')
 local Kruskal = require('lib.Kruskal')
 
 local function Sort_Room_By_Dist(map ,rooms ,goal_room)
@@ -79,7 +79,7 @@ local function Make_Edge(rooms ,neighbor_map)
 	return edge
 end
 local function Set_Enter_Room(rooms)
-	print('set enter room')
+	--print('set enter room')
 	local enter_index= RandomMachine:Random(#rooms)
 	local enter_room =rooms[ enter_index]
 	enter_room:Set_Info('enter')
@@ -119,7 +119,8 @@ end
 local function Set_Room(rooms ,adv_data)
 	--TableFunc.Dump(map_data)
 	local map_data = adv_data.map_data
-	local battle  , normal_event , rare_event = map_data['battle'],map_data['normal_event'] ,map_data['rare_event']
+	local map_setting =	adv_data.map_setting		 
+	local battle  , normal_event , rare_event = map_setting['battle'],map_setting['normal_event'] ,map_setting['rare_event']
 	local t={
 		battle=battle,
 		normal_event=normal_event,
@@ -151,7 +152,7 @@ local function Set_Room(rooms ,adv_data)
       
 	for k,room in pairs(rooms) do
 		if room.event =='empty' then
-			local event = make_event(map_data)
+			local event = make_event()
 			--print('make_event',event)
 			if event and event =='battle' then
 				room.battle = true
@@ -178,7 +179,7 @@ local function Init(seed ,size)
 	local length =math.floor(math.sqrt(size))
 	local remaining = math.floor(size - math.pow(length,2))
 	local map ,neighbor_map ,rooms ,border = {} ,{} ,{} ,{}
-	print('length ',length ,size,remaining)
+	--print('length ',length ,size,remaining)
 	for i=1,length+2 do
 		map[i]={}
 		for j=1,length+2 do
@@ -233,9 +234,9 @@ local function Init(seed ,size)
 end
 local MapGenerator={}
 MapGenerator.New_Map=function(adv_data)
-print('map_seed',adv_data.map_data.map_seed)
-	local seed = adv_data.map_data.map_seed
-	local size = adv_data.map_data.size
+	print('map_seed',adv_data.map_setting.map_seed)
+	local seed = adv_data.map_setting.map_seed
+	local size = adv_data.map_setting.size
 
 	local map ,neighbor_map ,rooms = Init(seed,size)
 
@@ -265,6 +266,7 @@ print('map_seed',adv_data.map_data.map_seed)
 		end
 		print(s)
 	end]]
+	print('map' ,map)
 	return map ,rooms
 end
 return MapGenerator
