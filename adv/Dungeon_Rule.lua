@@ -44,8 +44,8 @@ end
 Dungeon_Rule.Check_Level=function(self,map_data )
 
 	if map_data.dungeon_level  > #self.level_effect then
-		local next_level = (map_data.dungeon_level  - #self.level_effect )%3 +1
-		local effect = self.extra_level_effect[next_level]
+		local next_number = (map_data.dungeon_level  - #self.level_effect )%3 +1
+		local effect = self.extra_level_effect[next_number]
 		local need_number = effect.number 
 		if map_data.passed_room >= need_number then
 			next_level(map_data ,need_number)
@@ -54,8 +54,8 @@ Dungeon_Rule.Check_Level=function(self,map_data )
 
 		
 	else
-		local next_level = map_data.dungeon_level +1
-		local effect = self.extra_level_effect[next_level]
+		local next_number = map_data.dungeon_level +1
+		local effect = self.extra_level_effect[next_number]
 		local need_number = effect.number
 		if map_data.passed_room >= need_number then
 			next_level(map_data ,need_number)

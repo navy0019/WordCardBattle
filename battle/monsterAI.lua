@@ -164,7 +164,7 @@ mAI.default={Think=Think}
 mAI.metatable={}
 
 function mAI.new(battle,m )
-	
+	--TableFunc.Dump(m)
 	local o={machine=new_machine(battle ,m )}
 	for k,v in pairs(m.AI_act) do
 		local complete = StringDecode.Trim_Command(v)

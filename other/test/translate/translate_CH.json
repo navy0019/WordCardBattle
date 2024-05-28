@@ -1,0 +1,8 @@
+{
+	"testCard":{
+		"name":"測試用卡牌",
+		"info":[
+			{"insert":"直接對 hp 造成近戰 {effect:1 ,card.data.atk} 傷害"}
+		]
+	},
+}

@@ -1,11 +1,33 @@
+local Room_Event={normal_event = _G.Resource.normal_event ,rare_event =_G.Resource.rare_event}
+
+local function NewEvent(tab_key , name)
+	local event 
+	if name then
+		event =name
+	else
+		local t ={}
+		--print('tab_key',tab_key)
+		for key,v in pairs(Room_Event[tab_key]) do
+			TableFunc.Push(t,key)
+		end
+		event = t[_G.RandomMachine:Random(#t)]
+	end
+	return event
+end
+
 local function Connect(self,target)
 	TableFunc.Push(self.connect ,target)
 	TableFunc.Push(target.connect ,self) 
 
 end
-local function Set_Info(self  ,event)
+local function Set_Info(self  ,event ,name)
 	--self.numbering=num
-	self.event=event
+	if event:find('event') then
+		self.event=NewEvent(event ,name)
+	else
+		self.event=event
+	end
+	
 end
 local function Is_connect(self , room)
 	return TableFunc.Find(self.connect ,room)

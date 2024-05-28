@@ -4,7 +4,7 @@ local CharacterAssets = require('resource.characterAssets')
 
 function Set_Adv_Character_Data(advData, CurrentSave)
 	--print('SetAdvData')
-	advData.hero_data={}
+	advData.heroData={}
 
 	for k,v in pairs(CurrentSave.CurrentTeam) do
 		local hero = CharacterAssets.instance(v,k)
@@ -13,7 +13,7 @@ function Set_Adv_Character_Data(advData, CurrentSave)
 		local current_team_data = CurrentSave.CurrentTeamData[k]
 
 		hero.data.team_index=k
-		TableFunc.Push(advData.hero_data ,hero)
+		TableFunc.Push(advData.heroData ,hero)
 	end
 end
 
@@ -31,7 +31,7 @@ function AdvData.Generate_Dungeon(setting,seed,floor)
 		},
 		map_data={
 			passed_room=0,enable_effect={},dungeon_level=0,total_passed_room=0 ,
-			current_floor = floor~=nil and floor and 'first'
+			current_floor = floor~=nil and floor or 'first'
 		},
 
 	}
@@ -48,15 +48,16 @@ function AdvData.Generate_Dungeon(setting,seed,floor)
 	local setting_popen = io.popen(_G.cmd..setting_path)
 	local t =Resource.GetAssets( setting_popen ,setting_path)
 
-	--print('setting')
+	--print('setting' ,advData.map_data.current_floor)
 	--TableFunc.Dump(t)
+	local current_floor =advData.map_data.current_floor
 
-	if t[floor] then
-		for key,v in pairs(t[floor] ) do
+	if t[current_floor] then
+		for key,v in pairs(t[current_floor] ) do
 			advData.map_setting[key] = v     
 		end
 
-		advData.map_setting.exit_room= t[floor]['next'] and #t[floor]['next'] or advData.map_setting.exit_room
+		advData.map_setting.exit_room= t[current_floor]['next'] and #t[current_floor]['next'] or advData.map_setting.exit_room
 
 	else
 		local array =TableFunc.DicToArray(t)

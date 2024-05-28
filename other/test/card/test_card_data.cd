@@ -4,6 +4,7 @@ cost          =  3
 type          =  range
 drop_to       =  grave
 use_condition =  select 1 enemy
-data          =  atk: 1
-effect        =  add_buff (poison(round:2)) to target
+data          =  atk : 1
+condition 	  =  target.data.shield <= 0
+effect        =  condition(true:atk(card.data.atk * 2) to target ,false:atk(card.data.atk/2) to target)
 }

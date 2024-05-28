@@ -23,7 +23,7 @@ local Resource = require('resource.Resource')
 local TableFunc = require('lib.TableFunc')
 
 
-local file_path = path..'event'
+local file_path = path..'normal_event'
 local file_popen = io.popen(cmd..file_path)
 
 local data = Resource.GetAssets(file_popen, file_path )

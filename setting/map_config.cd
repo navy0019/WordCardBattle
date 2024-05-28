@@ -5,7 +5,6 @@ normal_event = 10
 rare_event = 6
 battle = 8
 next_floor = second , jail
-specific_room = 
 }
 
 second

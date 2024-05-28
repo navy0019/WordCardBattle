@@ -7,15 +7,15 @@ local monsterGenerator = {}
 function CompairMin( t1,t2)
 	return t1[2] < t2[2]
 end
-function monsterGenerator.GrowByRoomNum(data )
-	local AdvGenerator = require('lib.AdvGenerator')
-	local roomNum = AdvGenerator.mapData.passedRoom
+function monsterGenerator.GrowByRoomNum(adv_data ,data )
+
+	local roomNum = adv_data.map_data.passed_room
 	local value = math.floor(roomNum/5)
 	data.hp  = data.hp  + value 
 	data.def = data.def + value
 	data.atk = data.atk + value
 end
-function monsterGenerator.RandomMonster(roomNum)
+function monsterGenerator.RandomMonster(adv_data)
 	local max = 8
 	local monsterValue = {2,2,2,4}
 	local monsterType = {'m_small_1','m_mid_1','m_mid_2','m_XL_1'}
@@ -42,7 +42,7 @@ function monsterGenerator.RandomMonster(roomNum)
 		--local m = Assets.Monsters.instance(monster[1],0,0)
 		local m = CharacterAssets.instance(monster[1],k)
 		m.data.team_index=k
-		monsterGenerator.GrowByRoomNum(m.data)
+		monsterGenerator.GrowByRoomNum(adv_data ,m.data)
 		m.state={round_start={},round_end={}, every_card={},is_target={}}
 		TableFunc.Push(monsterInstance ,m) 
 	end

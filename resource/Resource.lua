@@ -1,3 +1,4 @@
+local json = require('lib.json')
 local TableFunc=require('lib.TableFunc')
 local StringDecode=require('lib.StringDecode')
 
@@ -6,7 +7,7 @@ local CharacterAssets =require('resource.characterAssets')
 local StateAssets=require('resource.stateAssets')
 local Msg = require('resource.Msg')
 
-local Resource={card={},character={},translate={},state={},card_state={},map_config={}}
+local Resource={card={},character={},translate={},state={},card_state={},map_config={},normal_event={},rare_event={}}
 Resource.color={white={1,1,1,1},black={0,0,0,1}}
 
 cmd = _G.cmd and _G.cmd or (CurrentOs  == 'Mac' and 'ls ' or 'dir ')
@@ -24,6 +25,12 @@ local translate_popen = io.popen(_G.cmd..translate_path)
 local state_path = _G.path..'state'
 local state_popen = io.popen(_G.cmd..state_path)
 
+local normal_event_path = _G.path..'normal_event'
+local normal_event_popen = io.popen(_G.cmd..normal_event_path)
+
+local rare_event_path = _G.path..'rare_event'
+local rare_event_popen = io.popen(_G.cmd..rare_event_path)
+
 local map_config_path = _G.path..'setting'
 local map_config_popen = io.popen(_G.cmd..map_config_path)
 
@@ -38,18 +45,28 @@ function Resource.GetAssets( popen ,path ,tab)
             local dot = v:find('%.')       
             local is_cd= v:sub( dot+1 , #v) == 'cd' and true or false--#v-(#format-1)
             --print('cd? ',v:sub( dot+1 , #v) ,is_cd)
+            local p = v:find('%s[^%s]*$')
+            local file_name = p and v:sub(p+1,#v) or v 
+            local file_path =path.._G.slash..file_name   
             if is_cd then                 
                 
-                local p = v:find('%s[^%s]*$')
-                local file_name = p and v:sub(p+1,#v) or v  
-                
-                local file_path =path.._G.slash..file_name   
+                --local p = v:find('%s[^%s]*$')
+                --local file_name = p and v:sub(p+1,#v) or v
+                --print('cd',p ,file_name)                  
+                --local file_path =path.._G.slash..file_name   
                 --print('file_path',file_path) 
                 local data = StringDecode.Decode(file_path)
                 --TableFunc.Dump(data)
                 TableFunc.Merge(t ,data)
             else
-                --print('is folder')
+                --print(v:sub( dot+1 , #v))
+                --print('json',file_path)
+                local file = io.open(file_path,'r')
+                local content = file:read('*all')
+                local data = json.decode(content)
+                file:close()
+                --TableFunc.Dump(data)
+                TableFunc.Merge(t ,data)
             end
         end
         popen:close()
@@ -73,7 +90,11 @@ function Resource.Init()
     Resource.GetAssets( state_popen ,state_path ,Resource.state)
     StateAssets.Init(Resource.state)
 
+    Resource.GetAssets( normal_event_popen ,normal_event_path ,Resource.normal_event)
+    StateAssets.Init(Resource.normal_event)
 
+    Resource.GetAssets( rare_event_popen ,rare_event_path ,Resource.rare_event)
+    StateAssets.Init(Resource.rare_event)
 end
 function Resource.Init_Test()
     local test_card_path = _G.path.._G.slash..'other'.._G.slash..'test'.._G.slash..'card'

@@ -11,14 +11,14 @@ local BattleMachine = require('battle.battleMachine')
 local Battle={}
 
 function Battle.InitBattleData(battle,scene)
-	local AdvGenerator=scene.AdvGenerator
+	local adv_data=scene.adv_data
 	local seed =scene.events.ranSeed
 	--math.randomseed(seed)
 	_G.RandomMachine:Set_seed(_G.RandomMachine.seed)
 
 	local skill_card={}
-	local roomNum = AdvGenerator.mapData.passedRoom
-	battle.characterData.monsterData=MonsterGenerator.RandomMonster(roomNum)
+
+	battle.characterData.monsterData=MonsterGenerator.RandomMonster(adv_data)
 	for k,m in pairs(battle.characterData.monsterData) do
 		local holder = 'monster '..TableFunc.GetSerial(m)
 		TableFunc.Push(skill_card,{})
@@ -30,7 +30,7 @@ function Battle.InitBattleData(battle,scene)
 		m.AI = MonsterAI.new(battle ,m ,skill_card[len] ,seed)
 	end
 	
-	battle.characterData.heroData=AdvGenerator.heroData
+	battle.characterData.heroData=adv_data.heroData
 
 	for k,hero in pairs(battle.characterData.heroData) do
 		hero.data.team_index=k
@@ -121,8 +121,8 @@ local function DealProcess(battle , num)
 		end
 	end
 end
-local function Update( self,scene,dt  )
-	self.machine:Update(self,scene,dt)
+local function Update( self,scene)
+	self.machine:Update(self,scene)
 end 
 Battle.default={DealProcess=DealProcess,ClearDeath=ClearDeath,DropItem=DropItem,CheckAlive=CheckAlive,Update=Update,DropCard=DropCard}
 Battle.metatable={}

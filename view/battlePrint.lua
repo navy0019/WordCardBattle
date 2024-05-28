@@ -109,10 +109,10 @@ function BattlePrint.PrintMap(map,player_pos)
 				local cj = j*3+j-1
 				--t[ci][cj]='  '
 				if map[i][j].event=='enter' then
-					print('have enter',i,j)
+					--print('have enter',i,j)
 					t[ci][cj]=' ⍈'--웃
 				elseif map[i][j].event=='exit' then
-					print('have exit',i,j)
+					--print('have exit',i,j)
 					t[ci][cj]=' ⍈'
 				elseif map[i][j].event=='key' then
 					--print('have key')

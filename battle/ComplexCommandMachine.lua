@@ -115,12 +115,14 @@ function Complex_Command_Machine.NewMachine()
 	Excute.DoOnEnter=function(self,battle,commands,...)
 
 		for k,v in pairs(commands) do
-			--print('command',v.command)
+			print('command',v.command)
+			
 			local key ,arg = StringDecode.Split_Command_Arg(v.command)
 			--print('arg',arg)
 			--TableFunc.Dump(arg)
 			key =StringDecode.Trim_head_tail(key)
 			print('\n\nExcute: ',key ,v.command )
+			--TableFunc.Dump(v.arg)
 			--TableFunc.Dump(arg)
 			--Complex_command[key](battle , machine ,v.command  ,v.target)
 			Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))

@@ -3,8 +3,10 @@ m_mid_1
 data		= shield:0 ,hp: 1  ,def: 5 ,atk:3
 skill		= attack,
 race		= enemy,
-dropItem		= money 100,
-think_weights	= atk hero (find_state spell) ,atk hero 1
+dropItem	= money 100,
+AI_act		= attack to hero(state: spell),
+			  attack to hero (2),
+			  attack to enemy(1)
 }
 
 m_mid_2
@@ -12,8 +14,9 @@ m_mid_2
 data		= shield:0 ,hp: 1  ,def: 2 ,atk:5
 skill		= attack,
 race		= enemy,
-dropItem		= money 100,
-think_weights	= 100% atk random 1 hero
+dropItem	= money 100,
+AI_act		= attack to hero (1),
+
 }
 
 m_small_1
@@ -21,8 +24,8 @@ m_small_1
 data		= shield:0 ,hp: 1  ,def: 1 ,atk:2
 skill		= attack,
 race		= enemy,
-dropItem		= money 100
-think_weights	= 70% atk hero (find_state spell) ,30% atk hero 1
+dropItem	= money 100
+AI_act		= attack to hero(state: spell),
 }
 
 m_XL_1
@@ -30,6 +33,7 @@ m_XL_1
 data		= shield:0 ,hp: 1 ,def: 3 ,atk:4
 skill		= attack,
 race		= enemy,
-dropItem		= money 100
-think_weights	= 70% atk hero (find_state spell) ,30% atk hero 1
+dropItem	= money 100
+AI_act		= attack to hero (2),
+			  attack to enemy(1)
 }

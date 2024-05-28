@@ -1,0 +1,9 @@
+dragon
+{
+	result_1= battle(battle_setting_1)
+	battle_setting_1 = monster(XL,XL ,XL) ,
+						reward(money:100 ,rare_card:1),
+
+						
+
+}

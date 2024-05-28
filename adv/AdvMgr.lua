@@ -32,7 +32,7 @@ function AdvMgr.Save(scene)
 
 	saveData.CurrentTeamData={}
 	saveData.CurrentTeam={}
-	for k,v in pairs(advData.hero_data) do
+	for k,v in pairs(advData.heroData) do
 		TableFunc.Push(saveData.CurrentTeam 	,  v.key)
 		TableFunc.Push(saveData.CurrentTeamData	,	{}  )
 		local current =saveData.CurrentTeamData[k]
@@ -40,8 +40,9 @@ function AdvMgr.Save(scene)
 	end
 
 	saveData.rooms={}
+	print('Save room',#advData.rooms)
 	for k,room in pairs(advData.rooms) do
-		TableFunc.Push(saveData.rooms ,{event=room.event, explore=room.explore})
+		TableFunc.Push(saveData.rooms ,{event=room.event, explore=room.explore ,battle =room.battle})
 	end
 
 	saveData.CurrentScene=advData.player_pos
@@ -52,9 +53,8 @@ end
 function AdvMgr.Load(...)
 	local saveData = SaveMgr.CurrentSave
 
-	local seed = saveData.map_data.map_seed
-
 	local setting = saveData.map_setting
+	local seed = setting.map_seed
 	--adv_data=AdvData.Generate_Dungeon(setting ,seed)
 
 	AdvMgr.NewScene(setting,seed)
@@ -62,8 +62,10 @@ function AdvMgr.Load(...)
 	adv_data.map_data=saveData.map_data
 
 	local save_rooms = saveData.rooms
+	--print('Load room',#save_rooms ,#adv_data.rooms)
 	for k,room in pairs(adv_data.rooms) do
-		room.event=save_rooms[k].event
+		room.event=save_rooms[k].event 
+		room.battle = save_rooms[k].battle 
 		room.explore=save_rooms[k].explore
 	end
 	adv_data.player_pos = saveData.CurrentScene
@@ -72,7 +74,7 @@ end
 
 function AdvMgr.NewScene(setting , seed)
 
-	--print('AdvMgr.NewScene',seed)
+	--print('AdvMgr NewScene',seed)
 	local adv_data = AdvData.Generate_Dungeon(setting ,seed)
 
 	local AdvScene = require('scene.AdvMainScene')

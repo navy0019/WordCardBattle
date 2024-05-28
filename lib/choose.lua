@@ -218,12 +218,13 @@ function Choose.new(option)
 		end
 	end
 	CheckSelect.DoOnEnter =function(self,battle,...)
-		--print('check select ',#machine.target_table)
+		print('check select ',#machine.target_table)
 		for i,target in pairs(machine.target_table) do
 			--TableFunc.Dump(target)
 			for k,t in pairs(machine.target_check) do
 				--print('target race ',target.race ,t.race)
 				if target.race == t.race then
+					machine.key_linkk.current_target = target
 					if machine.card_table then
 						--print('Select TransitionTo Input')
 						local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}

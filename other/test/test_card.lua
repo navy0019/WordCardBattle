@@ -33,6 +33,7 @@ Resource.Init_Test()
 --TableFunc.Dump(Resource.state)
 local testData=require('other.test.data.test_data')
 local CardAssets=require('resource.cardAssets')
+local Preview = require('battle.card_preview')
 
 local test_card={}
 local originData =TableFunc.DeepCopy(testData)
@@ -44,12 +45,16 @@ local StateHandler = require('battle.StateHandler')
 for k,v in pairs(Resource.card) do
 	local holder = 'hero '..TableFunc.GetSerial(testData.characterData.heroData[1])
 	local card=CardAssets.instance(k,holder)
+	print('card.info ',card.info)
+	TableFunc.Dump(card.info)
 	TableFunc.Push(test_card,card)
 end
 
 local function MakeToUse(card)
 	local key_link={card=card,self=card,target_table = {}}
-
+	return key_link
+end
+local function MakeTarget(card ,key_link)
 	for k,v in pairs(card.use_condition) do
 		local choose_type=v[1]
 		local num =v[2]
@@ -60,11 +65,11 @@ local function MakeToUse(card)
 			for i=1,num do
 				if rece_table[i] then
 					TableFunc.Push(key_link.target_table , rece_table[i])
+					key_link.current_choose_target=rece_table[i]
 				end
 			end
 		end
 	end
-	return key_link
 end
 local function Add_Protect()
 	local data ={name='protect',round = 1}
@@ -100,6 +105,7 @@ local function Test()
 	for k,v in pairs(test_card) do
 		Reset_Data()
 		local key_link=MakeToUse(v)
+		MakeTarget(v ,key_link)
 
 		--ComplexCommandMachine.ReadEffect(testData ,machine ,v.effect ,key_link ,'print_log')
 		--TableFunc.Dump(key_link)

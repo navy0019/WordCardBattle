@@ -12,14 +12,22 @@ complex_command.condition=function(battle,machine,...)
 	local Complex_Command_Machine=require('battle.ComplexCommandMachine')
 	local CCMachine=Complex_Command_Machine.NewMachine()
 	--print('condition')
+	--TableFunc.Dump(arg)
 	local arg=StringDecode.TransToDic({...})	
 	local bool_target={}
 	--TableFunc.Dump(arg)
 
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	local condition = StringDecode.Trim_To_Simple_Command(key_link.card.condition) 
+	--print('condition',TableFunc.Dump(condition))
 	SCMachine:ReadEffect(battle ,condition , key_link)
 	local result = TableFunc.Pop(SCMachine.stack)
+	for k,v in pairs(result) do
+		if type(v)~='boolean' then
+			result[k]=tonumber(result[k]) > 0 and true or false
+		end
+		--print(result[k])
+	end
 
 	for key,v in pairs(arg) do
 		local complete  = StringDecode.Trim_Command(v)
@@ -77,7 +85,11 @@ complex_command.heal=function(battle,machine,...)
 	--print('complex_heal ',target , value)
 	final_process.set_hp_value(battle , machine ,target ,value ,t)
 end
-
+complex_command.set_final=function(battle,machine,...)
+	local  target ,value ,t =...
+	--print('complex_atk ',target , value)
+	final_process.set_hp_value(battle , machine ,target ,value ,t)
+end
 
 complex_command.atk=function(battle,machine,...)
 
@@ -92,11 +104,19 @@ complex_command.atk=function(battle,machine,...)
 		symbol = '-'
 	}
 	local stack  ,key_link	=machine.stack ,machine.key_link
+	
 	local  target ,value =...
-	--print('complex_atk ',target , value)
-	final_process.set_hp_value(battle , machine ,target ,value ,t)
+	print('atk ',target ,value)
+	--[[final_process.set_hp_value(battle , machine ,target ,value ,t)
 
-	--machine.state_update={'use_atk_card' ,'be_attacked' }
+	machine.state_update={'use_atk_card' ,'be_attacked' }]]
+	for k,v in pairs(t.value_state) do
+		local target_string ,state_table_string = v[1] , v[2]
+		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+	end
+	local final = value
+	--print('final',final)
+	return final
 end
 complex_command.ignore_shield_attack=function(battle,machine,...)
 	local t = 	{

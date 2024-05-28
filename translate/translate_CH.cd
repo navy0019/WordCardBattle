@@ -23,11 +23,6 @@ name  =  攻擊
 info  =  #black# 對目標造成近戰 %data.atk% 傷害
 }
 
-powerful_attack
-{
-name  =  強力攻擊
-info  =  #black# 對目標造成近戰 %data.atk% 傷害
-}
 
 defense
 {

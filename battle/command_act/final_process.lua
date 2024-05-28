@@ -3,35 +3,12 @@ local StringDecode 	= require('lib.StringDecode')
 local MathExtend 	= require('lib.math')
 local TableFunc		= require('lib.TableFunc')
 local Simple_Command_Machine=require('battle.SimpleCommandMachine')
-local Simple_Command_Machine=Simple_Command_Machine.NewMachine()
+local SCMachine=Simple_Command_Machine.NewMachine()
+
 
 local final_process ={}
 
-local function buff_value(target , key ,key_link ,value)	
-	local StateHandler = require('battle.StateHandler')
-	--print('state_table ',key)
-	--TableFunc.Dump(target)
-	local state_table = target.state[key]
-	local res_state = Resource.state
 
-	--print('state len: ',#state_table)
-	--print('buff value ',value)
-	if #state_table > 0 then
-		for i,state in pairs(state_table) do		
-			StateHandler.Excute(battle , target , state ,key_link ,value)
-
-			--local res = Resource.state[state.name]
-			--if TableFunc.Find(res.update_timing , 'trigger') then 						
-				StateHandler.Update(battle , target , state ,key ,'trigger') 
-			--end
-		end
-		local final_value = TableFunc.Pop(StateHandler.machine.stack)
-		--print('buff_value ',final_value)
-		return final_value
-	else
-		return value
-	end
-end
 local function check_protect(target ,battle)
 	local StateHandler = require('battle.StateHandler')
 	local hero_data = battle.characterData.heroData
@@ -50,6 +27,66 @@ local function check_protect(target ,battle)
 	end
 	return target
 end
+final_process.buff_value=function (battle, target_string ,state_key ,key_link ,value)	
+
+		
+	SCMachine:ReadEffect(battle ,target_string , key_link )
+	local targets =TableFunc.Pop(SCMachine.stack)
+	if TableFunc.IsDictionary(targets) then targets ={targets} end
+
+	--print('buff_value target',value)
+
+	if #targets >0 then
+		local target 
+		if #targets > 1 then 
+			target =targets[TableFunc.Find(targets , key_link.current_choose_target)] 
+		else
+			target=targets[#targets]
+		end
+
+		local StateHandler = require('battle.StateHandler')
+		local state_table = target.state[state_key]
+		if #state_table > 0 then
+			for i,state in pairs(state_table) do		
+				StateHandler.Excute(battle , target , state ,key_link ,value)
+				StateHandler.Update(battle , target , state ,state_key ,'trigger') 
+				--( battle, character ,state ,timing_key ,trigger,...)
+			end
+			local final_value = TableFunc.Pop(StateHandler.machine.stack)
+
+			return final_value
+		else
+			return value
+		end
+
+
+	end
+
+	--[[local StateHandler = require('battle.StateHandler')
+	--print('state_table ',key)
+	--TableFunc.Dump(target)
+	local state_table = target.state[key]
+	local res_state = Resource.state
+
+	--print('state len: ',#state_table)
+	--print('buff value ',value)
+
+	if #state_table > 0 then
+		for i,state in pairs(state_table) do		
+			StateHandler.Excute(battle , target , state ,key_link ,value)
+
+			--local res = Resource.state[state.name]
+			--if TableFunc.Find(res.update_timing , 'trigger') then 						
+				StateHandler.Update(battle , target , state ,key ,'trigger') 
+			--end
+		end
+		local final_value = TableFunc.Pop(StateHandler.machine.stack)
+		--print('buff_value ',final_value)
+		return final_value
+	else
+		return value
+	end]]
+end
 final_process.set_value=function(battle , machine ,...)
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	local target ,value ,info = ... 
@@ -57,8 +94,8 @@ final_process.set_value=function(battle , machine ,...)
 
 	value = math.max(0 , StringRead.StrToValue(value ,machine.key_link ,battle))
 
-	Simple_Command_Machine:ReadEffect(battle ,target , machine.key_link )
-	local targets =TableFunc.Pop(Simple_Command_Machine.stack)
+	SCMachine:ReadEffect(battle ,target , machine.key_link )
+	local targets =TableFunc.Pop(SCMachine.stack)
 	if not TableFunc.IsArray(targets) then targets ={targets} end
 	machine.key_link.target_table=targets
 
@@ -67,8 +104,8 @@ final_process.set_value=function(battle , machine ,...)
 	if info.value_state then
 		for k,v in pairs(info.value_state) do
 		 	if not map[v[1]] and v[1]~='target' then
-		 		Simple_Command_Machine:ReadEffect(battle ,v[1], machine.key_link )
-		 		local instance = TableFunc.Pop(Simple_Command_Machine.stack)
+		 		SCMachine:ReadEffect(battle ,v[1], machine.key_link )
+		 		local instance = TableFunc.Pop(SCMachine.stack)
 		 		map[v[1]] =instance
 		 	end
 		end
@@ -77,7 +114,7 @@ final_process.set_value=function(battle , machine ,...)
 	for k,target in pairs(targets) do
 		if info.value_state then
 			for i,v in pairs(info.value_state) do
-				value = MathExtend.round(buff_value(map[v[1]] , v[2],machine.key_link ,value))
+				value = MathExtend.round(final_process.buff_value(map[v[1]] , v[2],machine.key_link ,value))
 			end
 		end 
 		local arg =info.symbol..tostring(value)	
@@ -100,8 +137,8 @@ final_process.set_hp_value=function(battle , machine ,...)
 	--print('set_value',value ,target)
 
 	--print('set_value',target)
-	Simple_Command_Machine:ReadEffect(battle ,target , machine.key_link )
-	local targets =TableFunc.Pop(Simple_Command_Machine.stack)
+	SCMachine:ReadEffect(battle ,target , machine.key_link )
+	local targets =TableFunc.Pop(SCMachine.stack)
 	--print('set_value targets ',targets ,#targets)
 	if not TableFunc.IsArray(targets) then targets ={targets} end
 	machine.key_link.target_table=targets
@@ -110,8 +147,8 @@ final_process.set_hp_value=function(battle , machine ,...)
 
 	for k,v in pairs(info.value_state) do
 	 	if not map[v[1]] and v[1]~='target' then
-	 		Simple_Command_Machine:ReadEffect(battle ,v[1], machine.key_link )
-	 		local instance = TableFunc.Pop(Simple_Command_Machine.stack)
+	 		SCMachine:ReadEffect(battle ,v[1], machine.key_link )
+	 		local instance = TableFunc.Pop(SCMachine.stack)
 	 		map[v[1]] =instance
 	 	end
 	end 
@@ -130,7 +167,7 @@ final_process.set_hp_value=function(battle , machine ,...)
 
 		if info.value_state then
 			for i,v in pairs(info.value_state) do
-				value = MathExtend.round(buff_value(map[v[1]] , v[2],machine.key_link ,value))
+				value = MathExtend.round(final_process.buff_value(map[v[1]] , v[2],machine.key_link ,value))
 			end
 		end
 		print('set_value final_value',value)
@@ -175,14 +212,14 @@ final_process.set_hp_value=function(battle , machine ,...)
 end
 final_process.calculate_value=function(battle,machine,...)
 
-	Simple_Command_Machine.stack = TableFunc.DeepCopy(machine.stack)
+	SCMachine.stack = TableFunc.DeepCopy(machine.stack)
 
 	local target_string ,value =...	
 	--value = value:match('%((.-)%)')
 	--print('calculate_value ',target_string ,value )
 
-	Simple_Command_Machine:ReadEffect(battle, target_string , machine.key_link )
-	local target_entity = TableFunc.Pop(Simple_Command_Machine.stack) 
+	SCMachine:ReadEffect(battle, target_string , machine.key_link )
+	local target_entity = TableFunc.Pop(SCMachine.stack) 
 
 	if TableFunc.IsArray(target_entity) then
 		local t={}

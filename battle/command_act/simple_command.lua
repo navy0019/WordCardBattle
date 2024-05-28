@@ -214,18 +214,24 @@ simple_command.target=function(battle,machine,...)
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	--local target 		=TableFunc.Pop(stack)
 
+	local data 
+	if key_link.target_table then
+		--print('copy target')
+		data =TableFunc.ShallowCopy(key_link.target_table)
+		--print('data',#data)
+		--[[for i=#data ,1 ,-1 do
+			local v=data[i]
+			if v.data.hp <=0 then
+				table.remove(data, i)
+			end
+		end]]
 
-	local data =TableFunc.ShallowCopy(key_link.target_table)
-	--print('data',#data)
-	--[[for i=#data ,1 ,-1 do
-		local v=data[i]
-		if v.data.hp <=0 then
-			table.remove(data, i)
-		end
-	end]]
-
-	local t= transArgToCommand(key)
-	get_group(data ,stack ,t)
+		local t= transArgToCommand(key)
+		get_group(data ,stack ,t)
+	else
+		print('target is empty')
+		TableFunc.Push(stack ,{})
+	end
 end
 
 simple_command.compare=function(battle,machine,...)

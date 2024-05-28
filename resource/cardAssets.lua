@@ -27,7 +27,7 @@ function CardAssets.Init(card_table)
 end
 function CardAssets.instance( key,character)
 	--print('key',key)
-	--print('CardAssets instance ',key)
+	print('CardAssets instance ',key)
 	local o = TableFunc.DeepCopy(_G.Resource.card[key])
 	--[[if test	then
 		o = TableFunc.DeepCopy(_G.Resource.test_card[key])
@@ -40,7 +40,7 @@ function CardAssets.instance( key,character)
 	o.holder =character
 	o.state={}
 	--print('o key',_G.Resource.translate[o.key],o.key)
-	assert(_G.Resource.translate[o.key] , 'can\'t find '..key..' in translate file ,need check translate.cd ')
+	assert(_G.Resource.translate[o.key] , 'can\'t find '..key..' in translate file ,need check translate file ')
 	o.name = _G.Resource.translate[o.key]['name']
     o.info = _G.Resource.translate[o.key]['info']
 

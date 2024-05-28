@@ -9,17 +9,18 @@ race		='hero'
 hero2
 {
 data		= hp:11 ,act:2 ,def:0 ,atk:7
-skill		= attack, powerful_attack ,
+skill		= attack, ignore_shield_attack ,
 advancedSkill	= attack, attack ,
 race		='hero'
 }
 
 hero3
 {
-data		= hp:10 ,act:5 ,def:0 ,atk:5
+data		= hp:9 ,act:5 ,def:0 ,atk:4
 skill		= attack, attack ,
 advancedSkill	= attack, attack ,
 race		='hero'
+trait		='dectect'
 }
 
 hero4

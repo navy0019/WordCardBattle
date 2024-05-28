@@ -26,19 +26,21 @@ RandomMachine = require('lib.RandomMachine').new()
 local command={
 	
 	--{'1','> 0'},
+	--'target',
+	'enemy.data.hp',
 	--'enemy',
-	'enemy(1)',
+	--'enemy(1)',
 	--'enemy (hp : max)',
 	--'enemy (hp >= 3)',
 	--'enemy(state :spell)',
-	'random (10)',
-	'random (5~10) ',
-	'random(1 ,enemy (hp > 2))',
-	'random(1~2 , enemy)',
+	--'random (10)',
+	--'random (5~10) ',
+	--'random(1 ,enemy (hp > 2))',
+	--'random(1~2 , enemy)',
 	
 }
 
-local key_link ={target_table = monsterData }
+local key_link ={}--target_table = monsterData 
 local machine=Simple_Command_Machine.NewMachine()
 --TableFunc.Dump(machine)
 
@@ -47,6 +49,6 @@ for k,v in pairs(command) do
 	print('\n\teffect '..k)
 	machine:ReadEffect(testData ,effect ,key_link ,'p')
 	--print(type(machine.stack[#machine.stack]),'\n')
-	--TableFunc.Dump(machine.stack)
+	TableFunc.Dump(machine.stack)
 	machine.stack={}
 end

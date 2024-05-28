@@ -145,6 +145,7 @@ local function Set_Room(rooms ,adv_data)
 				local key =chance_type[number]
 				--print('key',key ,number)
 				t[key]=t[key]-1
+				
 				return chance_type[number]
 			end
 		end
@@ -266,7 +267,7 @@ MapGenerator.New_Map=function(adv_data)
 		end
 		print(s)
 	end]]
-	print('map' ,map)
+	--print('map' ,map)
 	return map ,rooms
 end
 return MapGenerator

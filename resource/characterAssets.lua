@@ -15,8 +15,8 @@ function CharacterAssets.Init(t)
         	v.data.shield=0
         	--TableFunc.Dump(v.data)
         end]]
-        if v.think_weights and type(v.think_weights)~='table' then
-        	v.think_weights={v.think_weights}
+        if v.AI_act and type(v.AI_act)~='table' then
+        	v.AI_act={v.AI_act}
         end
 
     end

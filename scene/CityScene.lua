@@ -12,7 +12,7 @@ local function switchScene(...)
 	local name = arg[2]
 	--print('arg' ,arg[1])
 	if name =='AdvStart' then
-		print('go to adv')
+		--print('go to adv')
 		local AdvMgr = require('adv.AdvMgr')
 		--local
 		AdvMgr.NewScene({})

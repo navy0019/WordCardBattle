@@ -10,11 +10,11 @@ poison
 solid
 {
 	type   		= buff
-	data   		= round:1
+	data   		= round:infinite
 	location 	= round
-	update_timing	= round_end
 	replace 	= true
-	replace_effect	= assign_value(false ,remove_shield) to target	
+	add_effect	= assign_value(false ,remove_shield) to target	
+	remove_effect = assign_value(true ,remove_shield) to targe
 }
 protect
 {
@@ -34,6 +34,15 @@ power_up
 	update_timing	= trigger
 	overlay 	= true
 	update 		= calculate_value(+1) to value	
+}
+
+echo
+{
+	type   		= buff
+	data   		= round:1
+	location 	= every_card
+	update_timing	= trigger
+	update 		= duplicate 		
 }
 
 

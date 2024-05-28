@@ -71,7 +71,7 @@ function StringDecode.Split_comma_enter( s )
 	return t
 end
 local function merge_detect(s ,t ,symbol_left ,symbol_right)
-	--print()
+	--print('merge_detect',s)
 	--TableFunc.Dump(t)
 	local left ,right
 	if  #symbol_left > 1 then
@@ -91,7 +91,7 @@ local function merge_detect(s ,t ,symbol_left ,symbol_right)
 
 	if s_head ==symbol_left or s_head ==right or s_head:find('%p')  then
 		return true
-	elseif target_left ~= target_right and (s_head ==left or s_tail ==right)  then
+	elseif target_left ~= target_right  then --and (s_head ==left or s_tail ==right) 
 		--print('re true')
 		return true
 	end
@@ -237,7 +237,8 @@ function StringDecode.Find_symbol_scope(i,s ,symbol_left ,symbol_right)
 	local count =0
 	local index=i
 	local symbol_right =symbol_right or symbol_left
-	--print('try find',s,i,symbol_left ,symbol_right)
+	--print('try find',s,symbol_left ,symbol_right)
+	--print('start index ',i)
 	while index <= #s do
 		local w = s:sub(index,index)
 		if w==symbol_left then			
@@ -250,6 +251,7 @@ function StringDecode.Find_symbol_scope(i,s ,symbol_left ,symbol_right)
 
 		elseif w==symbol_right then
 			if count==0 then
+				--print('re')
 				return index
 			end
 			count=count-1
@@ -372,10 +374,10 @@ function StringDecode.Split_Command_Arg(s)--將command & arg 分開
 	local command 
 	local arg = {}
 	local left = s:find('%(')
-	--print('Split_Command_Arg ',s)
+	--print('Split_Command_Arg ',#s ,s ,left)
 	if left then
 		local right =	StringDecode.Find_symbol_scope(left+1 ,s ,'(' ,')')
-		--print('right ',s,right)
+		--print('right ',s:sub(left+1,left+1) ,right)
 		command = s:sub(1,left-1)
 		arg= {StringDecode.Split_by(s:sub(left+1 , right -1) ,',') }
 		--print('Split_Command_Arg',command)
