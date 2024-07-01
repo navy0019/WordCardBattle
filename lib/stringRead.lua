@@ -129,37 +129,49 @@ function StringRead.StrToValue(str,key_link,battle)
 			--print('( ) value',value)
 			TableFunc.Push(value_table,value)
 		else
-			local arg = {StringDecode.Split_by(v,'.')}
-			local key1 =TableFunc.Shift(arg)
-			local effect={key1}
-			for k,v in pairs(arg) do
-				TableFunc.Push(effect ,'get '..v)
-			end
+			local dot = v:find('%.')
+			local left = v:sub(1,dot-1)
+			if not tonumber(left) then
+				local arg = {StringDecode.Split_by(v,'.')}
+				local key1 =TableFunc.Shift(arg)
+				local effect={key1}
+				for k,v in pairs(arg) do
+					TableFunc.Push(effect ,'get '..v)
+				end
 
-			local key_link=key_link
-			--print('string read ')
-			--TableFunc.Dump(effect)
-			key_link.holder = key_link.card and key_link.card.holder or key_link.holder
-			machine:ReadEffect(battle  ,effect , key_link )
-			local value = TableFunc.Pop(machine.stack)
-			--print('value ',value ,type(value))
-			if type(value)=='table' then value = TableFunc.Pop(value) end
-			if type(value)=='string' then value = StringRead.StrToValue(value ,key_link, battle) end
-			--print('value',value)
-			TableFunc.Push(value_table,value)
+				local key_link=key_link
+				--print('string read ')
+				--TableFunc.Dump(effect)
+				key_link.holder = key_link.card and key_link.card.holder or key_link.holder
+				machine:ReadEffect(battle  ,effect , key_link )
+				local value = TableFunc.Pop(machine.stack)
+				--print('value ',value ,type(value))
+				if type(value)=='table' then  value = TableFunc.Pop(value) end
+				if type(value)=='string' then value = StringRead.StrToValue(value ,key_link, battle) end
+				--print('value',value)
+				TableFunc.Push(value_table,value)
+			else
+				TableFunc.Push(value_table,tonumber(v))
+			end
 		end
 
 	end
 
 	-- 將數字取代文字
-	s =str		
+	s =str	
+	--print('befor gsub',s)	
 	for k,v in pairs(value_table) do
 		local pattern
 		--print('replace',word_table[k])
 		if word_table[k]:find('%(') then
-			pattern =table.unpack(StringDecode.Replace_symbol_for_find(word_table[k])) 
-			--print('pattern',pattern)
+			--[[pattern =table.unpack(StringDecode.Replace_symbol_for_find(word_table[k])) 
+			print('pattern',pattern)
 			s=s:gsub(pattern ,v)
+			print(s ,'after',v)]]
+			local p1 = word_table[k]:find('%(')
+			local p2 = StringDecode.Find_symbol_scope(p1 ,s,'(',')')
+			s = StringDecode.Gsub_by_index(s ,v,p1,p2)
+			--print(s ,'after')
 		else
 			s=s:gsub(word_table[k] ,v)
 		end

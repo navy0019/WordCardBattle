@@ -29,11 +29,12 @@ local function group_with_condition(data, act )
 	local machine=Simple_Command_Machine.NewMachine()
 	local t={}
 	local key = act[1]:match("[^%.]*$")
+	--key = act:match("[^%.]*$")
 	--print('group_with_condition',act[1],key)
 	--TableFunc.Dump(act)
 
 	machine.stack={data}				
-	machine:ReadEffect(battle  ,act )
+	machine:ReadEffect(battle  ,act ,{} )
 
 	local result =TableFunc.Pop(machine.stack)
 	if type(result)=='table' then
@@ -56,71 +57,103 @@ local function group_with_condition(data, act )
 
 	return t
 end
-
 local function get_group(data, stack ,t )
-	--print('get_group ' )
+	--print('get_group ' ,t)
 	--TableFunc.Dump(t)
-	local condition , num
-	for k,v in pairs(t) do
-		if tonumber(v) then
-			num=tonumber(v)
-		elseif v:find('%:') then
-			t[k]=t[k]:gsub('%:','')
-		else
-			condition=v
-		end
-	end
-
-	--print('get group condition',condition , num)
-	local group={}
-	if condition and not num then
-		group=group_with_condition(data, t )
-		--print('get group',#group)
-		--if #group >= 1 then
-			TableFunc.Push(stack, group)
-		--end
-	elseif not condition and num then
-		--print('get group with no condition',num )
-		if data[num] then
-
-			TableFunc.Push(group ,data[num])
-			TableFunc.Push(stack, group)
+	local group ={}
+	if type(t)=='number' then
+		if data[t] then
+			--print('data[i]')
+			TableFunc.Push(group ,data[t])
+			
 			--print('push data ',data[num] ,#stack)
 		else
+			--print('data[i] is empty')
 			group = data[#data] and data[#data] or {}
-			TableFunc.Push(stack, group)
 		end
 	else
-		TableFunc.Push(stack ,data) 
+		--print('not number',t)
+		group=group_with_condition(data, t )
+		
 	end
-	--print('get group',#stack)
+	--TableFunc.Dump(group)
+	return group
+
 end
-local function transArgToCommand(key)
+
+local function transArgToCommand(arg)--key
 	--print('transArgToCommand ',key)
 	local t={}
-	local key=key
-	if key then 
-		StringDecode.Trim(key) 
-		if key:find('%(') then key = key:sub(2,#key-1) end
+	for k,v in pairs(arg) do
+		if not tonumber(v) then
+			--print('transArgToCommand ',v)
+			if not v:find('state') then
+				local symbol = v:match('%p+')	
+				--print('symbol',symbol)
+				local compare ,index ,command ,p1,p2
+
+				if #symbol > 1 then
+					p1 ,p2 = v:find(symbol)
+					--compare = v:sub(p2+1 ,#v)
+				else
+					--print('single symbol')
+					p1 =v:find(symbol)
+					p2 =p1
+					--compare = v:sub(p2 ,#v)
+				end
+				--key:gsub(key:match('%a*'),'')	
+				compare = v:sub(p2+1 ,#v)
+				index = v:sub(1 , p1-1)--key:match('%a*')
+				--print('symbol',symbol ,compare)
+
+				if not symbol:find(':') or #symbol > 1  then
+					command = 'get '..'data.'..index..' , '..symbol..compare
+				else
+					command = 'get '..'data.'..index..' , '..compare
+				end
+
+				
+				local split ={StringDecode.Split_by(command,',')}
+				--print('transToCommand ',command ,split)
+				TableFunc.Push(t,split)
+			elseif v:find('state') then
+				local p = v:find(':')			
+				local arg = v:sub(p+1 , #v)
+				local command = 'find_state('..arg..')'
+				TableFunc.Push(t,{command})
+				--print('find state',command)
+			end
+		else
+			local number = tonumber(v)
+			TableFunc.Push(t ,number)
+		end
 	end
+
+	return t 
+end
+--[[local function transArgToCommand(key)--key
+	--print('transArgToCommand ',key)
+	local t={}
 	
 	if key and not tonumber(key) then
 		
 		if not key:find('state') then
-			local symbol = key:match('%p+')	
+
+			local symbol = key:match('%p')
 			--print('symbol',symbol)
 			local compare ,index ,command ,p1,p2
 
 			if #symbol > 1 then
+				print(symbol)
 				p1 ,p2 = key:find(symbol)
-			else
+			elseif #symbol > 0 then
 				p1 =key:find(symbol)
 				p2 =p1
 			end
 			compare = key:sub(p2+1 ,#key)--key:gsub(key:match('%a*'),'')	
 			index = key:sub(1 , p1-1)--key:match('%a*')
 
-			if #symbol > 1 then
+			if #symbol >= 1 then
 				command = 'get '..'data.'..index..' , '..symbol..compare
 			else
 				command = 'get '..'data.'..index..' , '..compare
@@ -140,7 +173,7 @@ local function transArgToCommand(key)
 	end
 
 	return t 
-end
+end]]
 simple_command.get=function(battle,machine,...)
 	local arg  			={...}
 	local key 			=TableFunc.Shift(arg)
@@ -171,65 +204,63 @@ simple_command.get=function(battle,machine,...)
 end
 
 simple_command.enemy=function(battle,machine,...)
-	local arg  			={...}
-	local key 			=TableFunc.Shift(arg)
-	local stack  ,key_link	=machine.stack ,machine.key_link
-	--local target 		=TableFunc.Pop(stack)
-
 	local data =TableFunc.ShallowCopy(battle.characterData.monsterData)
+	local arg  			={...}
+	local stack  ,key_link	=machine.stack ,machine.key_link
 
-	--[[for i=#data ,1 ,-1 do
-		local v=data[i]
-		if v.data.hp <=0 then
-			table.remove(data, i)
+	local t= transArgToCommand(arg)
+
+	if #t <= 0 then
+		TableFunc.Push(stack ,data)
+		return
+	else
+		for k,v in pairs(t) do
+			data = get_group(data ,stack ,v )
 		end
-	end]]
-
-	local t= transArgToCommand(key)
-	get_group(data ,stack ,t ,table.unpack(arg))
+		TableFunc.Push(stack ,data)
+	end
+	
 
 end
 simple_command.hero=function(battle,machine,...)
-	local arg  			={...}
-	local key 			=TableFunc.Shift(arg)
-	local stack  ,key_link	=machine.stack ,machine.key_link
-	--local target 		=TableFunc.Pop(stack)
-
 	local data =TableFunc.ShallowCopy(battle.characterData.heroData)
+	local arg  			={...}
+	local stack  ,key_link	=machine.stack ,machine.key_link
 
-	--[[for i=#data ,1 ,-1 do
-		local v=data[i]
-		if v.data.hp <=0 then
-			table.remove(data, i)
+	local t= transArgToCommand(arg)
+
+	if #t <= 0 then
+		TableFunc.Push(stack ,data)
+		return
+	else
+		for k,v in pairs(t) do
+			data = get_group(data ,stack ,v )
 		end
-	end]]
-	--print('hero ',#data)
-
-	local t= transArgToCommand(key)
-	get_group(data ,stack ,t)
+		TableFunc.Push(stack ,data)
+	end
 end
 simple_command.target=function(battle,machine,...)
 	local arg  			={...}
-	local key 			=TableFunc.Shift(arg)
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	--local target 		=TableFunc.Pop(stack)
 
 	local data 
 	if key_link.target_table then
-		--print('copy target')
-		data =TableFunc.ShallowCopy(key_link.target_table)
-		--print('data',#data)
-		--[[for i=#data ,1 ,-1 do
-			local v=data[i]
-			if v.data.hp <=0 then
-				table.remove(data, i)
-			end
-		end]]
 
-		local t= transArgToCommand(key)
-		get_group(data ,stack ,t)
+		data =TableFunc.ShallowCopy(key_link.target_table)
+		local t= transArgToCommand(arg)
+
+		if #t <= 0 then
+			TableFunc.Push(stack ,data)
+			return
+		else
+			for k,v in pairs(t) do
+				data = get_group(data ,stack ,v )
+			end
+			TableFunc.Push(stack ,data)
+		end
 	else
-		print('target is empty')
+		--print('target is empty')
 		TableFunc.Push(stack ,{})
 	end
 end
@@ -318,7 +349,7 @@ simple_command.holder=function(battle,machine,...)--取得card 或state 的持�
 	end
 	--print('holder')
 	--TableFunc.Dump(holder)
-	TableFunc.Push(stack ,holder)
+	TableFunc.Push(stack ,{holder})
 	--[[if holder.data.hp > 0 then
 		TableFunc.Push(stack ,holder)
 	else
@@ -353,7 +384,7 @@ simple_command.min=function(battle,machine,...)
 end
 simple_command.value=function(battle,machine,...)
 	local stack  ,key_link	=machine.stack ,machine.key_link
-	--print('value?')
+	--print('value?',stack[#stack])
 	--local value=TableFunc.Pop(stack)
 end
 simple_command.random=function(battle,machine,...)

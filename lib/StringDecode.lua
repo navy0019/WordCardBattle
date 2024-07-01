@@ -5,33 +5,42 @@ function StringDecode.Split_math_symbol(str)
     local parts = {}
     local stack = {}
     local currentPart = ""
+    local count =0
 
     for i = 1, #str do
         local char = str:sub(i, i)
 
         if char == "(" then
-            table.insert(stack, "(")
+        	count = count+1
+            --table.insert(stack, "(")
             currentPart = currentPart .. char
         elseif char == ")" then
-            table.remove(stack)
+            --table.remove(stack)
+            count = count-1
             currentPart = currentPart .. char
-            if #stack == 0 then
+            if count==0 then--#stack == 0 then
+            	--print('current part is empty')
                 table.insert(parts, currentPart)
                 currentPart = ""
             end
-        elseif #stack > 0 then
-            currentPart = currentPart .. char
+        --elseif #stack > 0 then
+            --currentPart = currentPart .. char
         elseif char:match("[%+%-%*/]") then
-            if currentPart ~= "" then
+            if currentPart ~= "" and count==0 then
                 table.insert(parts, currentPart)
+                currentPart = ""
+            elseif currentPart ~= "" and count~=0 then
+            	currentPart = currentPart .. char
             end
             --table.insert(parts, char)
-            currentPart = ""
+            
         else
             currentPart = currentPart .. char
         end
+        currentPart = StringDecode.Trim(currentPart)
     end
-
+    
+    
     if currentPart ~= "" then
         table.insert(parts, currentPart)
     end
@@ -245,16 +254,19 @@ function StringDecode.Find_symbol_scope(i,s ,symbol_left ,symbol_right)
 			if symbol_left~= symbol_right then
 				count=count+1
 				index=index+1
+				--print('count++',count)
 			elseif count==0 then
+				--print('count 0')
 					return index
 			end
 
 		elseif w==symbol_right then
+			count=count-1
 			if count==0 then
 				--print('re')
 				return index
 			end
-			count=count-1
+
 			index=index+1
 		else
 			index=index+1
@@ -270,6 +282,8 @@ function StringDecode.Gsub_by_index(str1 ,str2,p1,p2)--str1 p1~p2犯胃內的字
 	end
 	local tab={}
 	string_to_table(str1,tab)
+	--print('string_to_table')
+	--TableFunc.Dump(tab)
 	--print('#',#tab ,p1 ,p2)
 	for i=1,#str1 do
 		if i >= p1 and i <=p2 then
@@ -334,9 +348,12 @@ function StringDecode.Replace_symbol_for_find(str)
 end
 function StringDecode.Trim_To_Simple_Command(str)
 	local split ={StringDecode.Split_by(str ,'%s')}
+	--print(str)
+	--TableFunc.Dump(split)
 	local t={}
 	for k,v in pairs(split) do
 		if not v:find('%.') and v:find('%p') then
+			--print('push')
 			TableFunc.Push(t ,','..split[k]..split[k+1])
 			break
 		elseif tonumber(v) then
@@ -374,12 +391,16 @@ function StringDecode.Split_Command_Arg(s)--將command & arg 分開
 	local command 
 	local arg = {}
 	local left = s:find('%(')
-	--print('Split_Command_Arg ',#s ,s ,left)
+	--print('Split_Command_Arg ' ,s ,left)
 	if left then
-		local right =	StringDecode.Find_symbol_scope(left+1 ,s ,'(' ,')')
+		local right =	StringDecode.Find_symbol_scope(left ,s ,'(' ,')')
 		--print('right ',s:sub(left+1,left+1) ,right)
 		command = s:sub(1,left-1)
 		arg= {StringDecode.Split_by(s:sub(left+1 , right -1) ,',') }
+		local other = s:sub(  right + 1 , #s )
+		if other and #other >0 then
+			TableFunc.Push(arg ,other)
+		end
 		--print('Split_Command_Arg',command)
 		--TableFunc.Dump(arg)
 	else
@@ -451,7 +472,7 @@ function StringDecode.Decode(filename)
 	while index <= #content do
 		local scope_start =content:find('{',index)
 		if scope_start then
-			local scope_end = StringDecode.Find_symbol_scope(scope_start+1,content ,'{' ,'}')
+			local scope_end = StringDecode.Find_symbol_scope(scope_start,content ,'{' ,'}')
 			local scope_name = StringDecode.Trim_head_tail(content:sub(index,scope_start-1))
 			local str = content:sub(scope_start+1 ,scope_end-1)
 			--print('Decode ',str)

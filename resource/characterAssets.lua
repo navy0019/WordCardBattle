@@ -38,7 +38,7 @@ function CharacterAssets.instance( key,index)
 			use_atk_card={},
 			be_attacked={},
 			use_debuff_card={},
-			be_debuff={},
+			receive_debuff={},
 			protect={},
 			dead={}
 		}

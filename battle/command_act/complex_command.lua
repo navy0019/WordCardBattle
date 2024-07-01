@@ -11,11 +11,9 @@ TableFunc.Merge(complex_command,final_process)
 complex_command.condition=function(battle,machine,...)
 	local Complex_Command_Machine=require('battle.ComplexCommandMachine')
 	local CCMachine=Complex_Command_Machine.NewMachine()
-	--print('condition')
-	--TableFunc.Dump(arg)
+
 	local arg=StringDecode.TransToDic({...})	
-	local bool_target={}
-	--TableFunc.Dump(arg)
+	local bool_target,t={},{}
 
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	local condition = StringDecode.Trim_To_Simple_Command(key_link.card.condition) 
@@ -29,115 +27,171 @@ complex_command.condition=function(battle,machine,...)
 		--print(result[k])
 	end
 
-	for key,v in pairs(arg) do
-		local complete  = StringDecode.Trim_Command(v)
-		local target_string = complete[#complete]
-
-		SCMachine:ReadEffect(battle ,target_string , key_link)
-		local target = TableFunc.Pop(SCMachine.stack)
-		bool_target[key] = target
-	end
-	--[[ result & bool_target可能的結果:
-			result & bool_target長度一致  ->依照result 分別執行
-			#result ==1 -> 取 result 的結果來執行
-		]]
-
 	for k,v in pairs(result) do
 
 		local bool =tostring(v)
-		if arg[bool] and #result == #bool_target[bool] then
-			--print('bool type 1 :',bool ,#bool_target[bool] ,bool_target[bool][k]  )
+		if arg[bool] and #result > 1 then
 			local command =arg[bool]
+			local target_string = command:match('(%a+)$')
+			local new_target = target_string
+
+			if not target_string:find('%(') then
+				new_target = target_string..'('..k..')'
+			else
+				
+			end
+			
+			command = command:gsub(target_string ,new_target)
+			--print('condition command',new_target ,command)
+			SCMachine:ReadEffect(battle ,new_target , key_link)
+			local target = TableFunc.Pop(SCMachine.stack)
 			local temp_key_link = TableFunc.ShallowCopy(key_link)
-			temp_key_link.target_table ={bool_target[bool][k]}
-			CCMachine:ReadEffect(battle , command ,temp_key_link)
-		elseif arg[bool] and #result==1 then
+			temp_key_link.target_table =target
+			--CCMachine:ReadEffect(battle , command ,temp_key_link)
+			CCMachine:ReadEffect(battle , command ,temp_key_link,'p')
+			local result=TableFunc.Pop(CCMachine.result) 
+			--print('result',result)
+			--TableFunc.Dump(result)
+
+			if TableFunc.IsDictionary(result) then
+				TableFunc.Push(t ,result)
+			else
+
+			end
+			--print('t',t)
+			--TableFunc.Dump(t)
+		elseif arg[bool] then
 			--print('bool type 2 :',bool  )
 			local command =arg[bool]
 			CCMachine:ReadEffect(battle , command ,key_link)
+			t=TableFunc.Pop(CCMachine.result)
 		end
 	end
+	return t
 end
 
 complex_command.state_atk=function(battle,machine,...)
 	local t = 	{
-		value_state={
-			{'holder', 'use_debuff_card'} ,
-			{'target', 'be_debuff' } ,
-		},
-		key = 'hp',
-		symbol = '-'
+		key ='set_hp_value',
+		value=0,
+		value_state={}
 	}
-	local  target ,value =...
-	--print('complex_state_atk ',target , value)
-	final_process.set_hp_value(battle , machine ,target ,value ,t)
+	local stack  ,key_link	=machine.stack ,machine.key_link	
+	local value  ={...}
+	local target_string = TableFunc.Shift(value)
+
+	--print('value!',value)
+	--TableFunc.Dump(value)
+	for k,v in pairs(value) do
+		value[k] = v *-1
+	end
+	t.value = value
+	t.target = target_string
+
+	return t
+
 end
 complex_command.heal=function(battle,machine,...)
 	local t = 	{
+		key ='set_hp_value',
+		value=0,
 		value_state={
 			{'holder', 'use_buff_card'} ,
 			{'target', 'buff' } ,
-		},
-		key = 'hp',
-		symbol = '+'
+		}
 	}
-	local  target ,value =...
-	--print('complex_heal ',target , value)
-	final_process.set_hp_value(battle , machine ,target ,value ,t)
-end
-complex_command.set_final=function(battle,machine,...)
-	local  target ,value ,t =...
-	--print('complex_atk ',target , value)
-	final_process.set_hp_value(battle , machine ,target ,value ,t)
+	local stack  ,key_link	=machine.stack ,machine.key_link	
+	local value  ={...}
+	local target_string = TableFunc.Shift(value)
+
+	--print('atk target_string',target_string)
+	--print('before buff_value')
+	--TableFunc.Dump(value)
+	for k,v in pairs(t.value_state) do
+		local target_string ,state_table_string  = v[1] , v[2] 
+		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+	end
+	--print('value!',value)
+	--TableFunc.Dump(value)
+	for k,v in pairs(value) do
+		value[k] = v *-1
+	end
+	t.value = value
+	t.target = target_string
+
+	return t
+
 end
 
 complex_command.atk=function(battle,machine,...)
-
 	local t = 	{
 		protect = true,
 		shield  = true,
+		key ='set_hp_value',
+		value=0,
 		value_state={
 			{'holder', 'use_atk_card'} ,
 			{'target', 'be_attacked' } ,
-		},
-		key = 'hp',
-		symbol = '-'
+		}
 	}
-	local stack  ,key_link	=machine.stack ,machine.key_link
-	
-	local  target ,value =...
-	print('atk ',target ,value)
-	--[[final_process.set_hp_value(battle , machine ,target ,value ,t)
+	local stack  ,key_link	=machine.stack ,machine.key_link	
+	local value  ={...}
+	local target_string = TableFunc.Shift(value)
 
-	machine.state_update={'use_atk_card' ,'be_attacked' }]]
+	--print('atk target_string',target_string)
+	--print('before buff_value')
+	--TableFunc.Dump(value)
 	for k,v in pairs(t.value_state) do
-		local target_string ,state_table_string = v[1] , v[2]
+		local target_string ,state_table_string  = v[1] , v[2] 
 		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
 	end
-	local final = value
-	--print('final',final)
-	return final
+	--print('value!',value)
+	--TableFunc.Dump(value)
+	for k,v in pairs(value) do
+		value[k] = v *-1
+	end
+	t.value = value
+	t.target = target_string
+
+	return t
 end
 complex_command.ignore_shield_attack=function(battle,machine,...)
 	local t = 	{
 		protect = true,
 		shield  = false,
+		key ='set_hp_value',
+		value=0,
 		value_state={
 			{'holder', 'use_atk_card'} ,
 			{'target', 'be_attacked' } ,
-		},
-		key = 'hp',
-		symbol = '-'
+		}
 	}
-	local stack  ,key_link	=machine.stack ,machine.key_link
-	local  target ,value =...
-	--print('complex_atk ',target , value)
-	final_process.set_hp_value(battle , machine ,target ,value ,t)
+	local stack  ,key_link	=machine.stack ,machine.key_link	
+	local value  ={...}
+	local target_string = TableFunc.Shift(value)
 
-	--machine.state_update={'use_atk_card' ,'be_attacked' }
+	--print('atk target_string',target_string)
+	--print('before buff_value')
+	--TableFunc.Dump(value)
+	for k,v in pairs(t.value_state) do
+		local target_string ,state_table_string  = v[1] , v[2] 
+		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+	end
+	--print('value!',value)
+	--TableFunc.Dump(value)
+	for k,v in pairs(value) do
+		value[k] = v *-1
+	end
+	t.value = value
+	t.target = target_string
+
+	return t
+
 end
 complex_command.protect=function(battle,machine,...)
-
+	local t = 	{
+		key ='protect',
+	}
 	SCMachine.stack = TableFunc.DeepCopy(machine.stack)
 	local  target ,value =...
 	SCMachine:ReadEffect(battle ,target , machine.key_link )
@@ -151,6 +205,7 @@ complex_command.protect=function(battle,machine,...)
 			TableFunc.Push(state_table , machine.key_link.card.holder)
 		end
 	end	
+	return t
 end
 complex_command.push=function(battle,machine,...)
 
@@ -238,8 +293,28 @@ complex_command.add_buff=function(battle,machine,...)
 	local key_link ,stack = machine.key_link ,machine.stack 
 	local target ,key = ...
 
-	print('add_buff',target , key)
-	SCMachine:ReadEffect(battle ,'holder', machine.key_link )
+	local t ={		
+		value_state={
+			{'holder', 'use_debuff_card'} ,
+			{'target', 'receive_debuff'} ,
+		},
+		
+	}
+	
+	local value_key = key:match("%((.-)%)")
+	value_key = value_key:sub(value_key:find(':')+1,#value_key)
+
+	local t_key =value_key:match("[^%.]*$")
+	
+	
+	--local value =value_key:match("[^%.]*$")
+	print('add_buff',target  ,value_key ,t_key )
+	for k,v in pairs(t.value_state) do
+		local target_string ,state_table_string = v[1] , v[2]
+		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+	end
+	t.value_key = value
+	--[[SCMachine:ReadEffect(battle ,'holder', machine.key_link )
 	local holder = TableFunc.Pop(SCMachine.stack)
 
 	--print('complex_command target2 ',target)
@@ -248,7 +323,7 @@ complex_command.add_buff=function(battle,machine,...)
 
 	local race = TableFunc.Find(battle.characterData.heroData , holder) and 'hero ' or 'monster '
 	local caster = race..TableFunc.GetSerial(holder)
-	StateHandler.AddBuff(battle ,targets ,key ,caster)
+	StateHandler.AddBuff(battle ,targets ,key ,caster)]]
 end
 
 return complex_command

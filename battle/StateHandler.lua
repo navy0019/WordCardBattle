@@ -61,6 +61,7 @@ function StateHandler.Excute( battle, character ,state ,key_link ,...)
 		--print('StateHandler Excute ',state.name)
 		--TableFunc.Dump(state)
 		StateHandler.machine:ReadEffect(battle ,effect, key_link)
+		--print('StateHandler Update ',#StateHandler.machine.stack)
 		--TableFunc.Dump(StateHandler.machine.stack)
 		table.insert(t,{key='UpdateState' ,arg={state.name}})
 	end
@@ -74,10 +75,20 @@ function StateHandler.Update( battle, character ,state ,timing_key ,trigger,...)
 
 	if state.round and type(state.round )=='number' then
 
-		if trigger and not TableFunc.Find(res.update_timing ,'trigger') then return end
+		--[[if trigger and not TableFunc.Find(res.update_timing ,'trigger') then return end
 		if not trigger and not TableFunc.Find( res.update_timing  ,timing_key ) then return end
-		--print('State Update',timing_key ,state.data.name)
+		--print('State Update',timing_key ,state.data.name)]]
+		--print('State Update',timing_key ,trigger)
+		if trigger and not TableFunc.Find(res.update_timing ,trigger) then 
+			--print('trigger and not find') 
+			return 
+		end
+		if not trigger and not TableFunc.Find( res.update_timing  ,timing_key ) then
+			--print('not trigger and not find') 
+			return 
+		end
 		state.round=state.round -1 
+
 		
 		if state.round <=0 then
 			local index = TableFunc.Find(timing_tab ,state)
@@ -147,40 +158,7 @@ function StateHandler.AddBuff(battle,targets,key ,caster)
 				StateHandler.machine:ReadEffect(battle ,effect, key_link)
 			end 
 		end
-		--[[if index then
-			local target_state = target.state[state_time][index]
-			if state.overlay_effect or state.overlay then
-				
-				for key ,value in pairs(state.data) do
-					if tonumber(value) then
-						target_state[key]=target_state[key]+value
-					end
-				end
-				if state.overlay_effect then
-					local effect = state.overlay_effect
-					local key_link={self = state ,target_table=target}
-					StateHandler.machine:ReadEffect(battle ,effect, key_link)
-				end
-			elseif state.replace_effect or state.replace then
-				table.remove(target.state[state_time] , index)
-				TableFunc.Push(target.state[state_time] ,state)
-				if state.replace_effect then
-					local effect = state.replace_effect
-					local key_link={self = state ,target_table=target}
-					StateHandler.machine:ReadEffect(battle ,effect, key_link)
-				end
-			end
 
-
-		else --已存在同樣state但沒定義overlay則以新增狀態處理
-
-			TableFunc.Push(target.state[state_time] ,state)
-			if state.add_effect then
-				local effect = state.add_effect
-				local key_link={self=state ,target_table=target }
-				StateHandler.machine:ReadEffect(battle ,effect, key_link)
-			end 
-		end]]
 	end
 
 end

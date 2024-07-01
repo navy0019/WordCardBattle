@@ -3,8 +3,8 @@ testCard
 cost          =  3
 type          =  range
 drop_to       =  grave
-use_condition =  select 1 enemy
-data          =  atk : 1
+use_condition =  select 2 enemy
+data          =  atk: 1 ,round:2
 condition 	  =  target.data.shield <= 0
-effect        =  condition(true:atk(card.data.atk * 2) to target ,false:atk(card.data.atk/2) to target)
+effect        =  condition (true:atk((card.data.atk * 2)+1) to target ,false:atk(card.data.atk / 2) to target)
 }

@@ -187,7 +187,42 @@ function TableFunc.Merge(targetTab, tab )
 		end
 	end
 end
+function TableFunc.MergeDifferent(targetTab, value )
+	function comapre(t ,value)
+		if TableFunc.IsArray(value) then
+			if #t ~= #value then return true end
+			for k,v in pairs(t) do				
+				local current = value[k]
+				if current == v then 
+					return false
+				end
+				
+			end
+			return true
+		else
+			for k,v in pairs(t) do
+				if v == value then
 
+					return false
+				end
+			end
+			return true
+		end
+	end
+	if #targetTab ==0 then
+		TableFunc.Push(targetTab,value)
+	else
+		
+		for k,t in pairs(targetTab) do
+			local result = comapre(t ,value)
+
+			if not result then return end
+		end
+		TableFunc.Push(targetTab ,value)
+		
+	end
+
+end
 
 function TableFunc.Shift(tab)
 	local v = tab[1]

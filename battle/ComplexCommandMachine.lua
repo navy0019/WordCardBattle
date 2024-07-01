@@ -50,11 +50,13 @@ function Complex_Command_Machine.NewMachine()
 			{state=Wait,global=true,self=true},
 			{state=Make_Loop,global=true,self=true},
 			{state=Excute,global=true,self=true},						
-		}
+		},
+		
 	})
 	machine.stack={}
 	machine.record={}
 	machine.index=0
+	machine.result={}
 
 	Wait.Do=function(self,battle,...)
 		
@@ -115,7 +117,7 @@ function Complex_Command_Machine.NewMachine()
 	Excute.DoOnEnter=function(self,battle,commands,...)
 
 		for k,v in pairs(commands) do
-			print('command',v.command)
+			--print('command',v.command)
 			
 			local key ,arg = StringDecode.Split_Command_Arg(v.command)
 			--print('arg',arg)
@@ -125,10 +127,12 @@ function Complex_Command_Machine.NewMachine()
 			--TableFunc.Dump(v.arg)
 			--TableFunc.Dump(arg)
 			--Complex_command[key](battle , machine ,v.command  ,v.target)
-			Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))
+			local result =Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))
+			TableFunc.Push(machine.result ,result)
 		end
 
 		machine:TransitionTo('Wait')
+
 	end
 
 
@@ -147,6 +151,7 @@ function Complex_Command_Machine.NewMachine()
 				--print(TableFunc.Print_one_line(self.stack),'\n')
 			end
 		end
+		--TableFunc.Dump(machine.result)
 	end
 	return machine
 

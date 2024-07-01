@@ -13,30 +13,54 @@ local Basic_act =require('battle.command_act.simple_command')
 
 local Simple_Command_Machine={}
 
-local function analysis(str)
+local function analysis( str , machine ,battle)
 	--print('str ',str)
 	local complete ,split = StringDecode.Trim_Command(str)
 	local command = TableFunc.Shift(complete)
-	local arg
+	local arg ,left ,right ,other
 
-	--print('command',command)
+	--print('SCM analysis ',command)
 	--TableFunc.Dump(complete)	
 
-	if command:find('%(') then
-
+	if command and command:find('%(') then
+		left = command:find('%(')
+		right = StringDecode.Find_symbol_scope(left ,command ,'(' ,')')
+		--print('find scope',right)
+		other = command:sub(right+1 ,#command)
+		command = command:sub(1,right)
 		command ,arg = StringDecode.Split_Command_Arg(command)
 		for k,v in pairs(arg) do
 			TableFunc.Push(complete ,v)
 		end
+		if other:find('%.')then
+			print('find .', other)
+			local StringRead = require('lib.StringRead')
+			other=other:gsub('%.',' ,get ')
+			local act = {StringDecode.Split_by(other,',')}
+			for i=#act,1,-1 do
+				table.insert(machine.commands, machine.index+1 , act[i])
+			end
+		end
 		
 	end
+	--print('SCM analysis ',command ,other)
+	--TableFunc.Dump(complete)
+	--TableFunc.Dump(machine.commands)	
 
 	return command ,complete
 
 end
+local calculate_map={'+','-','*','/'}
 local compare_map={'>=','<=','==','>','<'}
 
 local function	find_compare_symbol(str)
+	for k,v in pairs(compare_map) do
+		if str:find(v) then
+			return k
+		end
+	end
+end	
+local function	find_calculate_symbol(str)
 	for k,v in pairs(compare_map) do
 		if str:find(v) then
 			return k
@@ -70,6 +94,7 @@ function Simple_Command_Machine.NewMachine()
 		local command = machine.commands[machine.index] 
 		local arg
 
+		--print('SCM current',command)
 		command,arg=analysis(command , machine ,battle)
 		command= StringDecode.Trim_head_tail(command)
 		--print('SCM command',command)
@@ -81,8 +106,10 @@ function Simple_Command_Machine.NewMachine()
 		elseif type(command)=='table' then
 
 			TableFunc.Push(machine.stack,command)
+		--elseif find_calculate_symbol(command) then
 
-		elseif command:find('(%a+%.%a+)')then
+		elseif command:find('%.')then
+			--print('find .')
 			local StringRead = require('lib.StringRead')
 			command=command:gsub('%.',' ,get ')
 			local act = {StringDecode.Split_by(command,',')}
@@ -94,7 +121,7 @@ function Simple_Command_Machine.NewMachine()
 			machine:TransitionTo('Compare',command,battle,arg)
 
 		else
-
+			--print('SCM transTo normal')
 			machine:TransitionTo('Normal',command,battle,arg)
 		end
 

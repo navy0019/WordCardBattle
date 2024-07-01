@@ -12,7 +12,8 @@ power_up
 	type   		= buff
 	data   		= round:1
 	location 	= use_atk_card
-	update_timing	= trigger
+	effect_number  	= multi
+	update_timing	= every_card
 	overlay 	= true
 	update 		= calculate_value(+1) to value		
 }
@@ -41,4 +42,13 @@ solid
 	overlay 		= true		
 	update 		= assign_value(false ,remove_shield) to target	
 }
-
+break
+{
+	type   		= buff
+	data   		= round:1
+	location 	= use_atk_card
+	effect_number  	= single
+	update_timing	= every_card
+	overlay 	= true
+	update 		= calculate_value(*1.5) to value			
+}

@@ -52,12 +52,12 @@ effect        =  ignore_shield_attack(card.data.atk) to target
 
 wealness_attack
 {
-	cost 		  =  2
-	drop_to       =  grave
-	use_condition =  select 1 enemy
-	data          =  atk:2
-	condition 	  =  target.data.shield <= 0
-	effect        =  condition (true:atk(card.data.atk * 2) to target ,false:atk(card.data.atk / 2) to target)
+cost 		  =  2
+drop_to       =  grave
+use_condition =  select 1 enemy
+data          =  atk:2
+condition 	  =  target.data.shield <= 0
+effect        =  condition (true:atk(card.data.atk * 2) to target ,false:atk(card.data.atk / 2) to target)
 }
 rapid_fire
 {
