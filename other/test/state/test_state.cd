@@ -50,5 +50,5 @@ break
 	effect_number  	= single
 	update_timing	= every_card
 	overlay 	= true
-	update 		= calculate_value(*1.5) to value			
+	update 		= calculate_value(*2) to value			
 }

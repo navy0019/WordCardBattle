@@ -50,23 +50,7 @@ local function analysis( str , machine ,battle)
 	return command ,complete
 
 end
-local calculate_map={'+','-','*','/'}
-local compare_map={'>=','<=','==','>','<'}
-
-local function	find_compare_symbol(str)
-	for k,v in pairs(compare_map) do
-		if str:find(v) then
-			return k
-		end
-	end
-end	
-local function	find_calculate_symbol(str)
-	for k,v in pairs(compare_map) do
-		if str:find(v) then
-			return k
-		end
-	end
-end																																																																																																																
+																																																																																																															
 function Simple_Command_Machine.NewMachine()
 	local Wait = State.new("Wait")
 	local Compare = State.new("Compare")
@@ -117,7 +101,7 @@ function Simple_Command_Machine.NewMachine()
 				table.insert(machine.commands, machine.index+1 , act[i])
 			end
 
-		elseif find_compare_symbol(command) then
+		elseif StringDecode.Find_compare_symbol(command) then
 			machine:TransitionTo('Compare',command,battle,arg)
 
 		else

@@ -234,6 +234,23 @@ local function make_table(t)
 	decode_value(tab)
 	return tab
 end
+local calculate_map={'+','-','*','/'}
+local compare_map={'>=','<=','==','>','<'}
+
+function StringDecode.Find_compare_symbol(str)
+	for k,v in pairs(compare_map) do
+		if str:find(v) then
+			return k
+		end
+	end
+end	
+function StringDecode.Find_calculate_symbol(str)
+	for k,v in pairs(calculate_map) do
+		if str:find(v) then
+			return k
+		end
+	end
+end	
 function StringDecode.Count_symbol(s , pattern)
 	local count =0
 	for v in s:gmatch(pattern) do

@@ -60,7 +60,7 @@ local function MakeTarget(card ,key_link)
 		local choose_type=v[1]
 		local num =v[2]
 		local race=v[3]
-		print('need: ',choose_type , num ,race)
+		--print('need: ',choose_type , num ,race)
 		if choose_type =='select' then
 			local rece_table = race=='hero' and heroData or monsterData
 			for i=1,num do
@@ -87,9 +87,9 @@ local function Add_Power_up()
 end
 local function Add_Break()
 	local data ={name='break',round=1}
-	local serial = 'monster '..TableFunc.GetSerial(monsterData[2])
+	local serial = 'hero '..TableFunc.GetSerial(heroData[1])
 	data.caster=serial
-	TableFunc.Push(monsterData[2].state.be_attacked ,data)
+	TableFunc.Push(monsterData[3].state.be_atk ,data)
 end
 local function Reset_Data()
 	for i,hero in pairs(heroData) do
@@ -109,20 +109,36 @@ local function Test()
 	local machine=ComplexCommandMachine.NewMachine()
 	local SCM = SimpleCommandMachine.NewMachine()
 
-	--Add_Protect()
+	Add_Protect()
 	Add_Power_up()
 	Add_Break()
-	for k,v in pairs(test_card) do
+	for k,card in pairs(test_card) do
 		Reset_Data()
-		local key_link=MakeToUse(v)
-		MakeTarget(v ,key_link)
+		local key_link=MakeToUse(card)
+		MakeTarget(card ,key_link)
 
 		--ComplexCommandMachine.ReadEffect(testData ,machine ,v.effect ,key_link ,'print_log')
 		--TableFunc.Dump(key_link)
-		machine:ReadEffect(testData ,v.effect ,key_link )
-		--TableFunc.Dump(v.effect)
-		print('card result',#machine.result ,v.effect)
-		TableFunc.Dump(machine.result)
+		machine:ReadEffect(testData ,card.effect ,key_link )
+		--TableFunc.Dump(card.effect)
+		print('card result',#machine.result ,card.effect)
+		--TableFunc.Dump(machine.result)
+		for k,v in pairs(machine.result) do
+			print('[')
+			for key,value in pairs(v) do
+				if key~='target' then
+					if type(value)=='table'then
+						TableFunc.Dump(value)
+					else
+						print('\t'..key,value)
+					end
+				end
+			end
+			for key,value in pairs(v.target) do
+				print('\tteam_index: '..value.data.team_index)
+			end
+			print(']')
+		end
 
 		local state_update ={}
 		for k,v in pairs(machine.result) do

@@ -9,9 +9,46 @@ local TableFunc = require('lib.TableFunc')
 TableFunc.Merge(Basic_act,Complex_command)
 TableFunc.Merge(Basic_act,Deck_act)
 
-local LoopMap = require('battle.LoopMap')
-local Complex_Command_Machine={}
+local loop_map={
+	jump=function(battle , key_link)
+		--print('key_link',key_link.self)
+		--TableFunc.Dump(key_link.self)
+		local card = key_link.self
+		local basic_number ,race
+		for k,v in pairs(card.use_condition) do
+			if not v[3]:find('card') then
+				basic_number = v[2]
+				race =v[3]
+				break
+			end
 
+		end
+		--TableFunc.Dump(card.use_condition)
+		--print(basic_number ,race)
+		local command ='random ('..basic_number..' ,'..race ..'(hp > 0))'
+		print('jump ',command)
+		return command
+		--[[for k,mon in pairs(battle.characterData.monsterData) do
+			for i,target in pairs(key_link.target_table) do
+				if mon == target then
+					return 'random ('..basic_number..' ,enemy (hp > 0))'
+				end
+			end
+		end
+		for k,hero in pairs(battle.characterData.heroData) do
+			for i,target in pairs(key_link.target_table) do
+				if hero == target then
+					return 'random (1 ,hero (hp > 0))'
+				end
+			end
+		end]]
+	end,
+	loop=function(battle , key_link)
+		return 'target (hp > 0)'
+	end
+}
+
+local Complex_Command_Machine={}
 
 local function analysis(str)
 	--print('CCM analysis' ,str)
@@ -24,7 +61,7 @@ local function analysis(str)
 			loop_type =loop_type:gsub('%(.%)','')
 		end
 	end]]
-	if LoopMap[split[1]:match('%a+')] then loop_type = split[1]:match('%a+') end
+	if loop_map[split[1]:match('%a+')] then loop_type = split[1]:match('%a+') end
 
 
 	--[[TableFunc.Dump(complete)
@@ -94,11 +131,12 @@ function Complex_Command_Machine.NewMachine()
 				TableFunc.Push(commands, {command=complete[2] , arg = {} })
 			else
 				if loop_type=='jump' and i > 1 then
-					TableFunc.Push(commands, {command=complete[2] , arg = {LoopMap[loop_type](battle , key_link)} })
+					TableFunc.Push(commands, {command=complete[2] , arg = {loop_map[loop_type](battle , key_link)} })
 					--TableFunc.Push(commands, {command=complete[2] , target = LoopMap[loop_type](battle , key_link) })
 				elseif loop_type=='jump' and i == 1 then
 					if #key_link.target_table > 1 then
-						TableFunc.Push(commands, {command=complete[2], arg = {'random 1 target (hp > 0)'} })
+						TableFunc.Push(commands, {command=complete[2], arg = {'random('..#key_link.target_table..',target (hp > 0))'} })
+						print()
 						--TableFunc.Push(commands, {command=complete[2], target = 'random 1 target (hp > 0)' })
 					else
 						TableFunc.Push(commands, {command=complete[2] , arg = {'target'} })
@@ -137,12 +175,13 @@ function Complex_Command_Machine.NewMachine()
 
 
 	function machine:ReadEffect(battle ,command ,key_link ,print_log)
+		--print('card.effect' , card.effect)
 		local commands = type(command)=='table' and command or {command}
 		self.key_link=key_link
 
 		self.commands=TableFunc.DeepCopy(commands)
-		--print('commands ',#commands)
-		--TableFunc.Dump(commands)
+		--print('commands ',#self.commands)
+		--TableFunc.Dump(self.commands)
 		self.index=0
 		while  self.index < #self.commands do
 			self:Update(battle)

@@ -8,6 +8,33 @@ local final_process = require('battle.command_act.final_process')
 local complex_command={}
 TableFunc.Merge(complex_command,final_process)
 
+local function check_protect(targets ,battle , info)
+	local StateHandler = require('battle.StateHandler')
+	local hero_data = battle.characterData.heroData
+	local monster_data = battle.characterData.monsterData
+	--local target =target
+	local t ={}
+	for k,target in pairs(targets) do
+		if #target.state.protect > 0 then
+			local serial_type ,serial = StringDecode.Split_by(target.state.protect[1].caster ,'%s') 
+			local target_data = serial_type=='hero' and hero_data or monster_data	 
+			--print('serial ',serial_type ,serial)
+			local i = TableFunc.MatchSerial(target_data ,serial)
+			if i and target_data[i].data.hp>0 then 
+				--local state = target.state.protect[1]
+				--StateHandler.Update(battle , target , state ,'protect' ,'trigger')
+				--return target_data[k]
+				--print('change target!!')
+				t[k]=target_data[i]
+			end
+		else
+			t[k]=target
+		end
+	end
+
+	return t--targets
+end
+
 complex_command.condition=function(battle,machine,...)
 	local Complex_Command_Machine=require('battle.ComplexCommandMachine')
 	local CCMachine=Complex_Command_Machine.NewMachine()
@@ -131,19 +158,37 @@ complex_command.atk=function(battle,machine,...)
 		value=0,
 		value_state={
 			{'holder', 'use_atk_card'} ,
-			{'target', 'be_attacked' } ,
+			{'target', 'be_atk' } ,
 		}
 	}
 	local stack  ,key_link	=machine.stack ,machine.key_link	
 	local value  ={...}
 	local target_string = TableFunc.Shift(value)
 
+	SCMachine:ReadEffect(battle ,target_string , key_link )
+	local targets =TableFunc.Pop(SCMachine.stack)
+	if TableFunc.IsDictionary(targets) then targets ={targets} end
+	--print('target_string',target_string ,#targets)
+	t.target = targets
 	--print('atk target_string',target_string)
 	--print('before buff_value')
 	--TableFunc.Dump(value)
 	for k,v in pairs(t.value_state) do
-		local target_string ,state_table_string  = v[1] , v[2] 
-		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+		local target_string ,state_table_string  = v[1] , v[2]
+
+		SCMachine:ReadEffect(battle ,target_string , key_link )
+		targets =TableFunc.Pop(SCMachine.stack)
+
+		if state_table_string=='be_atk' and t.protect then
+			targets = check_protect(targets ,battle)
+			t.target = targets
+			--[[for i,j in pairs(targets) do
+				print(j.data.team_index)
+			end]]
+		end
+
+		--print('value_state' ,target_string ,state_table_string)
+		value = final_process.buff_value(battle ,targets ,state_table_string ,key_link ,value)	--target_string
 	end
 	--print('value!',value)
 	--TableFunc.Dump(value)
@@ -151,7 +196,7 @@ complex_command.atk=function(battle,machine,...)
 		value[k] = v *-1
 	end
 	t.value = value
-	t.target = target_string
+	
 
 	return t
 end
@@ -163,7 +208,7 @@ complex_command.ignore_shield_attack=function(battle,machine,...)
 		value=0,
 		value_state={
 			{'holder', 'use_atk_card'} ,
-			{'target', 'be_attacked' } ,
+			{'target', 'be_atk' } ,
 		}
 	}
 	local stack  ,key_link	=machine.stack ,machine.key_link	
@@ -187,6 +232,29 @@ complex_command.ignore_shield_attack=function(battle,machine,...)
 
 	return t
 
+end
+complex_command.def=function(battle,machine,...)
+	local stack  ,key_link	=machine.stack ,machine.key_link	
+	local value  ={...}
+	local target_string = TableFunc.Shift(value)
+	local t = 	{
+		key = 'set_value',
+		sub_key={'shield','0~999'},
+		value=0,
+		value_state={
+			{'holder', 'use_def_card'} ,
+			{'target', 'be_def' } ,
+		}
+	}
+	for k,v in pairs(t.value_state) do
+		local target_string ,state_table_string  = v[1] , v[2] 
+		value = final_process.buff_value(battle ,target_string ,state_table_string ,key_link ,value)	
+	end
+
+	t.value = value
+	t.target = target_string
+
+	return t
 end
 complex_command.protect=function(battle,machine,...)
 	local t = 	{
@@ -245,15 +313,7 @@ complex_command.pull=function(battle,machine,...)
 		end
 	end
 end
-complex_command.def=function(battle,machine,...)
-	local  target ,value =...
-	local t = 	{
-		key = 'shield',
-		symbol = '+'
-	}
-	print('complex_def ',target , value)	
-	final_process.set_value(battle , machine ,target ,value ,t)
-end
+
 complex_command.assign_value=function(battle,machine,...)
 	local bool_map={}
 	bool_map["true"]	=true
