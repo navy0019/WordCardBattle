@@ -102,7 +102,7 @@ function StringRead.StrToValue(str,key_link,battle)
 	--將特定文字轉成數字 ex:(holder.data.atk + card.level)*2 -->return (10 + 3)*2
 	--擷取特定文字片段 word_table == {holder.atk ,card.level}
 	--print('StrToValue' , str)
-	local word_table=StringDecode.Split_math_symbol(str ,'%+%-%*/')--split_part(str)
+	local word_table=StringDecode.Split_math_symbol(str )--split_part(str)
 	--TableFunc.Dump(word_table)
 	local value_table ={}
 
@@ -160,6 +160,7 @@ function StringRead.StrToValue(str,key_link,battle)
 	-- 將數字取代文字
 	s =str	
 	--print('befor gsub',s)	
+	--TableFunc.Dump(word_table)
 	for k,v in pairs(value_table) do
 		local pattern
 		--print('replace',word_table[k])
@@ -168,9 +169,16 @@ function StringRead.StrToValue(str,key_link,battle)
 			print('pattern',pattern)
 			s=s:gsub(pattern ,v)
 			print(s ,'after',v)]]
-			local p1 = word_table[k]:find('%(')
-			local p2 = StringDecode.Find_symbol_scope(p1 ,s,'(',')')
-			s = StringDecode.Gsub_by_index(s ,v,p1,p2)
+			local p =word_table[k]:find('%(')
+			local w = word_table[k]:sub(1,p)
+			if w:find('%a+') then
+
+				s = StringDecode.Gsub_by_index(s ,v,1, #word_table[k])
+			else
+				local p1 = word_table[k]:find('%(')
+				local p2 = StringDecode.Find_symbol_scope(p1 ,s,'(',')')
+				s = StringDecode.Gsub_by_index(s ,v,p1,p2)
+			end
 			--print(s ,'after')
 		else
 			s=s:gsub(word_table[k] ,v)

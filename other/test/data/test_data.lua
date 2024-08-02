@@ -6,6 +6,7 @@ local battle={
 					"testCard",
 				},
 				data = {
+					race = "monster",
 					act = 2,
 					def = 2,
 					shield = 2,
@@ -15,7 +16,7 @@ local battle={
 					atk = 2,
 					remove_shield=true
 				},
-				race = "enemy",
+				
 				state={
 					round_start={}, 
 					round_end={}, 
@@ -25,9 +26,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -47,6 +51,7 @@ local battle={
 					"testCard",
 				},
 				data = {
+					race = "monster",
 					act = 3,
 					def = 3,
 					shield = 3,
@@ -56,7 +61,7 @@ local battle={
 					atk = 3,
 					remove_shield=true
 				},
-				race = "enemy",
+				
 				state={
 					round_start={}, 
 					round_end={}, 
@@ -66,9 +71,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -85,6 +93,7 @@ local battle={
 					"testCard",
 				},
 				data = {
+					race = "monster",
 					act = 4,
 					def = 4,
 					shield = 4,
@@ -94,7 +103,7 @@ local battle={
 					atk = 4,
 					remove_shield=true
 				},
-				race = "enemy",
+				
 				state={
 					round_start={}, 
 					round_end={}, 
@@ -104,9 +113,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -127,6 +139,7 @@ local battle={
 					"attack2",
 				},
 				data = {
+					race = "hero",
 					atk = 2,
 					def = 2,
 					shield = 2,
@@ -136,7 +149,7 @@ local battle={
 					act = 2,
 					remove_shield=true
 				},
-				race = "'hero'",
+				
 				key = "hero1",
 				state={	
 					round_start={}, 
@@ -147,9 +160,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -163,6 +179,7 @@ local battle={
 					"attack2",
 				},
 				data = {
+					race = "hero",
 					atk = 3,
 					def = 3,
 					shield = 3,
@@ -172,7 +189,7 @@ local battle={
 					act = 3,
 					remove_shield=true
 				},
-				race = "'hero'",
+				
 				key = "hero2",
 				state={
 					round_start={}, 
@@ -183,9 +200,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -202,6 +222,7 @@ local battle={
 					"attack",
 				},
 				data = {
+					race = "hero",
 					atk = 4,
 					def = 4,
 					shield = 4,
@@ -211,7 +232,7 @@ local battle={
 					act = 4,
 					remove_shield=true
 				},
-				race = "'hero'",
+				
 				key = "hero3",
 				state={
 					round_start={}, 
@@ -222,9 +243,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},
@@ -241,6 +265,7 @@ local battle={
 					"attack",
 				},
 				data = {
+					race = "hero",
 					atk = 5,
 					def = 5,
 					shield = 5,
@@ -250,7 +275,7 @@ local battle={
 					act = 5,
 					remove_shield=true
 				},
-				race = "'hero'",
+				
 				key = "hero4",
 				state={
 					round_start={}, 
@@ -261,9 +286,12 @@ local battle={
 					be_atk={},
 					use_def_card={},
 					be_def={},
-					use_debuff_card={},
-					use_buff_card={},
+					use_heal_card={},
+					be_heal={},
+					use_debuff_card={},					
 					receive_debuff={},
+					use_buff_card={},
+					receive_buff={},
 					protect={},
 					buff={} ,
 					dead={},

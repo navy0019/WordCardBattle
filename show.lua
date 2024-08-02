@@ -25,7 +25,7 @@ function Show.PrintEvent(event)
 		campfire =Msg.msg('campfire'),
 		potionTable =Msg.msg('potionTable')
 	}
-	w='\n'	
+	local w='\n'	
 	local keynum = 1
 	local door = #event.door >0 and event.door[1] or false
 	if door then		
@@ -40,7 +40,7 @@ function Show.PrintEvent(event)
 	print(w)
 end
 function Show.PrintTeamData(TeamData)
-	w='\n'
+	local w='\n'
 	w =w..'CurrentTeam: '
 	for k,v in pairs(TeamData.CurrentTeam) do
 		w=w..v..', '

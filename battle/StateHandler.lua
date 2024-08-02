@@ -58,14 +58,14 @@ function StateHandler.Excute( battle, character ,state ,key_link ,...)
 		key_link.self = state 
 		key_link.target_table=TableFunc.IsArray(character) and character or {character}
 
-		--print('StateHandler Excute ',state.name)
+		--print('StateHandler Excute ',state.name ,effect)
 		--TableFunc.Dump(state)
 		StateHandler.machine:ReadEffect(battle ,effect, key_link)
 		--print('StateHandler Update ',#StateHandler.machine.stack)
 		--TableFunc.Dump(StateHandler.machine.stack)
-		table.insert(t,{key='UpdateState' ,arg={state.name}})
+		--table.insert(t,{key='UpdateState' ,arg={state.name}})
 	end
-	return t
+	--return machine.result
 end
 function StateHandler.Update( battle, character ,state ,timing_key ,trigger,...)
 	local name = state.name
@@ -98,34 +98,19 @@ function StateHandler.Update( battle, character ,state ,timing_key ,trigger,...)
 	end
 end
 
-function StateHandler.AddBuff(battle,targets,key ,caster)
+function StateHandler.AddBuff(battle,target,key ,caster)--targets
 	--local state_key,parameter = get_parameter(key)
 	local heroData = battle.characterData.heroData
 	local monsterData =battle.characterData.monsterData
 	--print('StateHandler targets',targets)
-	for k,target in pairs(targets) do
+	--for k,target in pairs(targets) do
 		local target_serial = TableFunc.GetSerial(target)
 		if TableFunc.MatchSerial(heroData ,target_serial) then target_serial ='hero '..target_serial else target_serial ='monster '..target_serial end
-		--local state = TableFunc.DeepCopy(Resource.state[state_key])
-		--state.target=serial
+
 		local state = StateAssets.instance(key ,target_serial ,caster)
 		local res = Resource.state[state.name]
-
 		local state_location ,name = res.location ,state.name
 		
-
-		--[[local state_time ,name = state.location ,state.data.name
-		if parameter then
-			local new_data = TableFunc.DeepCopy(parameter)
-			for i,v in pairs(state.data) do
-				new_data[i] = new_data[i] or v
-			end
-			state.data=new_data
-		end]]
-		--state.data.caster=caster
-		--state.data.holder=target_serial
-		--print('v',v)
-		--TableFunc.Dump(v.state)
 		local index = TableFunc.Find(target.state[state_location] , name ,'name')
 		if index then
 			local target_state = target.state[state_location][index]
@@ -153,14 +138,19 @@ function StateHandler.AddBuff(battle,targets,key ,caster)
 
 			TableFunc.Push(target.state[state_location] ,state)
 			if res.add_effect then
+				--print('StateHandler add_effect')
+				--TableFunc.Dump(res.add_effect)
 				local effect = res.add_effect
 				local key_link={self=state ,target_table=target }
 				StateHandler.machine:ReadEffect(battle ,effect, key_link)
+				--print('AddBuff effect',#StateHandler.machine.result)
+				--TableFunc.Dump(StateHandler.machine.result)
+
 			end 
 		end
 
-	end
-
+	--end
+		--return machine.result
 end
 
 return StateHandler

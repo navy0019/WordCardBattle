@@ -33,7 +33,6 @@ Resource.Init_Test()
 --TableFunc.Dump(Resource.state)
 local testData=require('other.test.data.test_data')
 local CardAssets=require('resource.cardAssets')
-local Preview = require('battle.card_preview')
 
 local test_card={}
 local originData =TableFunc.DeepCopy(testData)
@@ -85,11 +84,17 @@ local function Add_Power_up()
 	data.caster=serial
 	TableFunc.Push(heroData[1].state.use_atk_card ,data)
 end
-local function Add_Break()
-	local data ={name='break',round=1}
+local function Add_Fragile()
+	local data ={name='fragile',round=1}
 	local serial = 'hero '..TableFunc.GetSerial(heroData[1])
 	data.caster=serial
 	TableFunc.Push(monsterData[3].state.be_atk ,data)
+end
+local function Add_State_Buff()
+	local data ={name='bless',round=2}
+	local serial = 'hero '..TableFunc.GetSerial(heroData[1])
+	data.caster=serial
+	TableFunc.Push(heroData[1].state.use_buff_card ,data)
 end
 local function Reset_Data()
 	for i,hero in pairs(heroData) do
@@ -105,90 +110,119 @@ local function Reset_Data()
 		end
 	end
 end
+
+local function merge_state(t1,t2)
+	function trigger_test(main ,current)
+		if main.trigger and current.trigger then
+			if main.trigger == current.trigger then
+				return true
+			end
+			return false
+		else
+			return true
+		end
+	end
+	local t ={}
+	for k,current in pairs(t2) do
+		--print('merge k?',k)
+		local test =true
+		for i,main in pairs(t1) do
+			--print('merge i?',i)
+			if main.target == current.target and main.state_key == current.state_key and trigger_test(main ,current) then
+				test = false
+			end
+		end
+		if test then
+			--print('merge!!',current.target.key , current.state_key)
+			TableFunc.Push(t ,current)
+		end
+	end
+	--print('merge_state',#t)
+	for k,v in pairs(t) do
+		TableFunc.Push(t1 , v)
+	end
+
+end
 local function Test()
 	local machine=ComplexCommandMachine.NewMachine()
-	local SCM = SimpleCommandMachine.NewMachine()
 
+	--Add_State_Buff()
 	Add_Protect()
-	Add_Power_up()
-	Add_Break()
+	--Add_Power_up()
+	--Add_Fragile()
 	for k,card in pairs(test_card) do
 		Reset_Data()
 		local key_link=MakeToUse(card)
 		MakeTarget(card ,key_link)
-
 		--ComplexCommandMachine.ReadEffect(testData ,machine ,v.effect ,key_link ,'print_log')
 		--TableFunc.Dump(key_link)
 		machine:ReadEffect(testData ,card.effect ,key_link )
 		--TableFunc.Dump(card.effect)
-		print('card result',#machine.result ,card.effect)
+		--print('card result',#machine.result ,card.effect)	
 		--TableFunc.Dump(machine.result)
+
+		key_link.target_table={}
+
 		for k,v in pairs(machine.result) do
-			print('[')
-			for key,value in pairs(v) do
-				if key~='target' then
-					if type(value)=='table'then
-						TableFunc.Dump(value)
-					else
-						print('\t'..key,value)
-					end
+			if TableFunc.IsDictionary(v) then machine.result[k]={v} end		
+			--[[for i,t in pairs(machine.result[k]) do
+				print('[')
+				for key ,value in pairs(t) do
+						if key=='target' then
+							for index=1,#value do
+								if not TableFunc.Find(key_link.target_table, value[index]) then
+									TableFunc.Push(key_link.target_table ,value[index])
+								end
+								print('\tteam_index: ',value[index].data.team_index)
+							end
+						elseif key =='state_update' then
+							for index=1,#value do
+								print('\tstate_update: ',value[index].target.key ,value[index].state_key)
+							end							
+						elseif type(value)=='table' then
+							print('\t'..key..': ')
+							TableFunc.Dump(value)
+						else
+							print('\t'..key..': ',value)
+						end												
 				end
-			end
-			for key,value in pairs(v.target) do
-				print('\tteam_index: '..value.data.team_index)
-			end
-			print(']')
+				print(']\n')
+			end]]		
 		end
 
 		local state_update ={}
-		for k,v in pairs(machine.result) do
-			--TableFunc.Dump(v.value)
-			if TableFunc.IsDictionary(v) then
-				local key =v.key
-				--print('result key',key)
-				if final_process[key] then 
-					final_process[key](testData , machine,v) 
-					--TableFunc.Push(state_update, v.value_state)
-					for i,t in pairs(v.value_state) do
-						TableFunc.MergeDifferent(state_update,t)
-					end
-				end
-			else
+		for k,v in pairs(machine.result) do --實現階段 + 整合會用到的state update
+
 				for i,t in pairs(v) do
 					local key =t.key
-					if final_process[key] then 
+					--print('result final_process ',key ,final_process[key])
+					if final_process[key] then 					
 						final_process[key](testData , machine,t)
-						--TableFunc.Push(state_update, t.value_state) 
-						for j,tab in pairs(t.value_state) do
-							TableFunc.MergeDifferent(state_update,tab)
-						end
+					end
+
+					if i >=2 then
+						local main = v[1].state_update
+						local current = v[i].state_update
+						merge_state(main ,current)
+						v[i].state_update={}
+					end
+
+					for j,s in pairs(t.state_update) do
+						local state_table = s.target.state[s.state_key]
+						for i,state in pairs(state_table) do		
+							StateHandler.Update( testData, s.target ,state ,s.state_key ,'every_card')
+						end	
+					
 					end
 				end
-			end
-			
+	
 		end
-		--local map={target = targets ,holder =holder}
-		--print('every_card state_update',#state_update)
-		--TableFunc.Dump(state_update)
-		for i,info in pairs(state_update) do
-			
-				local target_string ,state_table_string  = info[1] , info[2] 
-				SCM:ReadEffect(testData ,target_string , key_link )
-				local targets =TableFunc.Pop(SCM.stack)
-				for k,target in pairs(targets) do
-					local state_table = target.state[state_table_string]
-					for i,state in pairs(state_table) do		
-						StateHandler.Update( testData, target ,state ,state_table_string ,'every_card')
-						--StateHandler.Update(battle , target , state ,state_key ,'trigger') 
-					end	
-				end
-			
-		end
+
 
 		for i,hero in pairs(heroData) do
 			local origin =originData.characterData.heroData[i]
-			for key,value in pairs(hero.data) do
-
+			--print(hero.key ,hero.data.remove_shield)
+			for key,value in pairs(hero.data) do			
 				if value~=origin.data[key] and type(origin.data[key])~='table'  then
 					print('name '..hero.key)
 					print('team_index '..hero.data.team_index)
@@ -230,6 +264,7 @@ local function Test()
 					print(mon.key..',state: '..k)
 					TableFunc.Dump(state_tab)
 				end
+
 			end
 		end
 	end

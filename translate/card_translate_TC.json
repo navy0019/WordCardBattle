@@ -8,7 +8,7 @@
 	"poison_arrow":{
 		"name":"毒箭",
 		"info":[
-			{"insert":"對目標造成 {effect:1 ,card.data.atk} 傷害,施加 {effect:2 ,card.data.layer} 層"},
+			{"insert":"對目標造成 {effect:1 ,card.data.atk} 傷害,施加 {effect:2 ,card.data.round} 層"},
 			{"attributes":{"color":"#007308","link":"poison"},"insert":" 中毒"}
 		]
 	},

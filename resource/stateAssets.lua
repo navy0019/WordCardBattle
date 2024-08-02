@@ -19,8 +19,11 @@ function StateAssets.Init(tab)
                end
           end
           if state.add_effect then
-               local w = state.add_effect
-               assert(not w:find('add_buff') ,'state\'s add_effect can\'t use add_buff command') 
+               for index, command in ipairs(state.add_effect) do
+                    assert(not command:find('add_buff') ,'為避免無限迴圈，state effect 不能使用add_effect 作為指令') --'state\'s add_effect can\'t use add_buff command'
+               end
+
+               
           end
 
      end

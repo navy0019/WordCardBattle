@@ -325,6 +325,8 @@ end
 simple_command.holder=function(battle,machine,...)--取得card 或state 的持有者
 	local stack  ,key_link	=machine.stack ,machine.key_link
 	local holder
+	--print('get holder')
+	--TableFunc.Dump(key_link)
 	if key_link.self.holder  then
 		assert( type(key_link.self.holder) =='string' ,'holder\'s data type not string' )
 		local type , serial = StringDecode.Split_by(key_link.self.holder ,'%s')
@@ -425,13 +427,14 @@ simple_command.random=function(battle,machine,...)
 
 	elseif tonumber(num) and  obj_string then
 		local effect = obj_string --and {obj..' '..obj_arg} or{obj}
-		--print('random arg ',effect )				
+		print('random arg ',tonumber(num) ,effect )				
 		local result = excute_arg(battle ,effect,key_link)
 		local t={}
 		if #result>0 then
+			print('#result',#result)
 			for i=1,num do
 				local ran = _G.RandomMachine:Random(#result)
-				--print('RandomMachine target ',ran)
+				print('RandomMachine target ',ran)
 				TableFunc.Push(t ,result[ran])
 			end
 			TableFunc.Push(machine.stack ,t)

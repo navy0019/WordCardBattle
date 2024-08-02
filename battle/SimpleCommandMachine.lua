@@ -79,6 +79,8 @@ function Simple_Command_Machine.NewMachine()
 		local arg
 
 		--print('SCM current',command)
+		--TableFunc.Dump(machine.stack)
+
 		command,arg=analysis(command , machine ,battle)
 		command= StringDecode.Trim_head_tail(command)
 		--print('SCM command',command)

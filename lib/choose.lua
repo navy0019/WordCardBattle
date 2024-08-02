@@ -224,7 +224,7 @@ function Choose.new(option)
 			for k,t in pairs(machine.target_check) do
 				--print('target race ',target.race ,t.race)
 				if target.race == t.race then
-					machine.key_linkk.current_target = target
+					machine.key_link.current_target = target
 					if machine.card_table then
 						--print('Select TransitionTo Input')
 						local o= {toViewScene={key='TransitionTo' ,arg={'ExtraInput'} }}

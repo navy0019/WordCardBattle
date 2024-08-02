@@ -1,48 +1,42 @@
 hero1
 {
-data		= hp:12 ,act:2 ,def:4 ,atk:2
+data		= hp:12 ,act:2 ,def:4 ,atk:2 ,race:hero
 skill		= attack, attack ,
 advancedSkill	= attack,
-race		='hero'
 }
 
 hero2
 {
-data		= hp:11 ,act:2 ,def:0 ,atk:7
+data		= hp:11 ,act:2 ,def:0 ,atk:7 ,race:hero
 skill		= attack, ignore_shield_attack ,
 advancedSkill	= attack, attack ,
-race		='hero'
 }
 
 hero3
 {
-data		= hp:9 ,act:5 ,def:0 ,atk:4
+data		= hp:9 ,act:5 ,def:0 ,atk:4 ,race:hero
 skill		= attack, attack ,
 advancedSkill	= attack, attack ,
-race		='hero'
 trait		='dectect'
 }
 
 hero4
 {
-data		= hp:12 ,act:3 ,def:4 ,atk:1
+data		= hp:12 ,act:3 ,def:4 ,atk:1 ,race:hero
 skill		= attack, attack ,
 advancedSkill	= attack, attack ,
-race		='hero'
 }
 
 hero5
 {
-data		= hp:12 ,act:3 ,def:0 ,atk:5
+data		= hp:12 ,act:3 ,def:0 ,atk:5 ,race:hero
 skill		= attack, attack ,
 advancedSkill	= attack, attack ,
-race		='hero'
 }
 
 hero6
 {
-data		= hp:10 ,act:3 ,def:0 ,atk:7
+data		= hp:10 ,act:3 ,def:0 ,atk:7 ,race:hero
 skill		= attack, attack ,
 advancedSkill	= attack, attack ,
-race		='hero'
 }

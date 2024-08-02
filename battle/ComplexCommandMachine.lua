@@ -4,6 +4,7 @@ local Machine = require('lib.FSMmachine')
 local Basic_act =require('battle.command_act.simple_command')
 local Complex_command = require('battle.command_act.complex_command')
 local Deck_act = require('battle.command_act.deck_act')
+local CC_T=require('battle.command_act.cc_t')
 
 local TableFunc = require('lib.TableFunc')
 TableFunc.Merge(Basic_act,Complex_command)
@@ -24,24 +25,13 @@ local loop_map={
 
 		end
 		--TableFunc.Dump(card.use_condition)
-		--print(basic_number ,race)
+		
+		local data = race =='enemy' and battle.characterData.monsterData or battle.characterData.heroData 
+		--print( race ,#data)
 		local command ='random ('..basic_number..' ,'..race ..'(hp > 0))'
-		print('jump ',command)
+		--print('jump ',command)
 		return command
-		--[[for k,mon in pairs(battle.characterData.monsterData) do
-			for i,target in pairs(key_link.target_table) do
-				if mon == target then
-					return 'random ('..basic_number..' ,enemy (hp > 0))'
-				end
-			end
-		end
-		for k,hero in pairs(battle.characterData.heroData) do
-			for i,target in pairs(key_link.target_table) do
-				if hero == target then
-					return 'random (1 ,hero (hp > 0))'
-				end
-			end
-		end]]
+
 	end,
 	loop=function(battle , key_link)
 		return 'target (hp > 0)'
@@ -50,10 +40,11 @@ local loop_map={
 
 local Complex_Command_Machine={}
 
-local function analysis(str)
+local function analysis(str,machine)
 	--print('CCM analysis' ,str)
 	local complete ,split = StringDecode.Trim_Command(str)
 	--TableFunc.Dump(complete)
+	--TableFunc.Dump(machine.stack)
 	local loop_type
 	--[[if #complete> 3 then
 		loop_type = split[1]
@@ -62,8 +53,6 @@ local function analysis(str)
 		end
 	end]]
 	if loop_map[split[1]:match('%a+')] then loop_type = split[1]:match('%a+') end
-
-
 	--[[TableFunc.Dump(complete)
 	print('split ')
 	TableFunc.Dump(split)
@@ -99,9 +88,27 @@ function Complex_Command_Machine.NewMachine()
 		
 		machine.index=machine.index+1
 		local command = machine.commands[machine.index]
-		local complete , loop_type=analysis(command)
+		local complete , loop_type=analysis(command ,machine)
 		--print(complete , loop_type ,#complete)
 		--TableFunc.Dump(complete)
+		local target_string = complete[#complete]
+		local key ,nextkey
+		if loop_type then
+			key =complete[2]
+		else
+			key =complete[1]
+		end
+		if machine.index+1 <= #machine.commands then
+			nextkey = machine.commands[machine.index+1]
+		end
+
+		--[[if (target_string:find('%.') and not key:find('set_value')) or (nextkey and not nextkey:find('set_value'))  then
+			
+			--complete[#complete]= target_string:sub(1 , target_string:find('%.')-1)
+			print('insert set_value')
+			table.insert(machine.commands ,machine.index+1 ,'set_value(value) to '..target_string )
+		end]]
+
 		local commands={}
 
 		if loop_type then
@@ -131,14 +138,26 @@ function Complex_Command_Machine.NewMachine()
 				TableFunc.Push(commands, {command=complete[2] , arg = {} })
 			else
 				if loop_type=='jump' and i > 1 then
+					print('jump > 1')
 					TableFunc.Push(commands, {command=complete[2] , arg = {loop_map[loop_type](battle , key_link)} })
 					--TableFunc.Push(commands, {command=complete[2] , target = LoopMap[loop_type](battle , key_link) })
 				elseif loop_type=='jump' and i == 1 then
 					if #key_link.target_table > 1 then
-						TableFunc.Push(commands, {command=complete[2], arg = {'random('..#key_link.target_table..',target (hp > 0))'} })
-						print()
+						local card = key_link.self
+						local basic_number ,race
+						for k,v in pairs(card.use_condition) do
+							if not v[3]:find('card') then
+								basic_number = v[2]
+								race =v[3]
+								break
+							end
+				
+						end
+						print('jump == 1 & #key_link.target_table > 1')
+						TableFunc.Push(commands, {command=complete[2], arg = {'random('..basic_number..',target (hp > 0))'} })
 						--TableFunc.Push(commands, {command=complete[2], target = 'random 1 target (hp > 0)' })
 					else
+						print('jump == 1')
 						TableFunc.Push(commands, {command=complete[2] , arg = {'target'} })
 						--TableFunc.Push(commands, {command=complete[2] , target = 'target' })
 					end
@@ -162,10 +181,19 @@ function Complex_Command_Machine.NewMachine()
 			--TableFunc.Dump(arg)
 			key =StringDecode.Trim_head_tail(key)
 			print('\n\nExcute: ',key ,v.command )
+			--TableFunc.Dump(machine.stack)
 			--TableFunc.Dump(v.arg)
 			--TableFunc.Dump(arg)
 			--Complex_command[key](battle , machine ,v.command  ,v.target)
-			local result =Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))
+			--local result =Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))
+			local result 
+			--[[if key:find('condition') then
+				result =Complex_command[key](battle , machine ,table.unpack(v.arg) ,table.unpack(arg))
+			else]]
+				result=Complex_command.preview(battle , machine ,key ,table.unpack(v.arg) ,table.unpack(arg))
+			--end
+			--print('result',result)
+			--TableFunc.Dump(result)
 			TableFunc.Push(machine.result ,result)
 		end
 
@@ -178,7 +206,8 @@ function Complex_Command_Machine.NewMachine()
 		--print('card.effect' , card.effect)
 		local commands = type(command)=='table' and command or {command}
 		self.key_link=key_link
-
+		self.result={}
+		--print('key_link!!' ,key_link)
 		self.commands=TableFunc.DeepCopy(commands)
 		--print('commands ',#self.commands)
 		--TableFunc.Dump(self.commands)
