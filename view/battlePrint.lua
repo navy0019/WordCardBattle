@@ -1,5 +1,6 @@
 local TableFunc = require("lib.TableFunc")
 local StringRead = require('lib.StringRead')
+local StringDecode=require('lib.StringDecode')
 
 local BattlePrint={}
 local function MakeState(char)
@@ -230,7 +231,9 @@ function BattlePrint.PrintCharacter(battle)
 			empty=FillEmpty(num)
 			if mon.AI.machine.decide then
 				--print('HAVE DECIDE')
-				thinkStr[i]=thinkStr[i]..empty..'決定對 '..mon.AI.machine.decide.target[1]..' 使用 '..mon.AI.machine.decide.card.key..'\n\n'
+				local complete = StringDecode.Trim_Command(mon.AI.machine.decide)
+				--TableFunc.Dump(complete)
+				thinkStr[i]=thinkStr[i]..empty..'決定對 '..complete[#complete]..' 使用 '..complete[1]..'\n\n'
 			end
 		else
 			stateStr[i]=stateStr[i]..'\n'
@@ -260,7 +263,7 @@ function BattlePrint.PrintCard( battle )
 	print(tab..battleData)
 
 	local hand = '  '
-	local choose = battle.machine.choose
+	local choose = battle.input_machine.choose
 	local currentCard = choose[1]
 
 	for k,card in pairs(battle.battleData.hand) do
@@ -301,9 +304,11 @@ function BattlePrint.PrintCard( battle )
 	local info ={}
 	for k,card in pairs(battle.battleData.hand) do
 		info[k] = StringRead.StrPrintf(card.info ,card ,battle)
+		
+		--print('battle print',info[k])
 		local temp = ''
-		for index=2,#info[k],2 do
-			temp=temp..info[k][index]
+		for index=2,#info[k],2 do 
+			temp = temp..info[k][index]
 		end
 		info[k]=StrToTab(temp,5)--temp
 	end

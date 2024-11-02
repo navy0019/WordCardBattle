@@ -1,0 +1,72 @@
+{
+    "exceed": {
+        "info": [
+            {
+                "insert": "超出 {number}  張,重新選取"
+            },
+        ]
+    },
+    "need": {
+        "info": [
+            {
+                "insert": "需要選擇 {number} 張"
+            }
+        ]
+    },
+    "can_need": {
+        "info": [
+            {
+                "insert": "可再選擇 {number} 張"
+            }
+        ]
+    },
+    "need_target": {
+        "info": [
+            {
+                "insert": "請選擇目標 "
+            }
+        ]
+    },
+    "error_target": {
+        "info": [
+            {
+                "insert": "錯誤目標,清空選擇"
+            }
+        ]
+    },
+    "actpoint_not_enough": {
+        "info": [
+            {
+                "insert": "行動點數不足"
+            }
+        ]
+    },
+    "press_any": {
+        "info": [
+            {
+                "insert": "按任意鍵繼續"
+            }
+        ]
+    },
+    "choose_save_data": {
+        "info": [
+            {
+                "insert": "選擇存擋"
+            }
+        ]
+    },
+    "team_need_exit": {
+        "info": [
+            {
+                "insert": "隊伍須滿四人才能退出"
+            }
+        ]
+    },
+    "team_need_save": {
+        "info": [
+            {
+                "insert": "隊伍須滿四人才能儲存"
+            }
+        ]
+    },
+}

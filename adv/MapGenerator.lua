@@ -127,7 +127,7 @@ local function Set_Room(rooms ,adv_data)
 		rare_event=rare_event,
 	}
 	--print(battle_room ,empty_room, money_room , rare_room)
-	function make_event()
+	local function make_event()
 		local chance_type={}
 		if t['battle'] >0 then
 			TableFunc.Push(chance_type,'battle')
@@ -178,7 +178,7 @@ local function Set_Room(rooms ,adv_data)
 end
 local function Init(seed ,size)
 	local length =math.floor(math.sqrt(size))
-	local remaining = math.floor(size - math.pow(length,2))
+	local remaining = math.floor(size - (length^2) )--math.pow(length,2)
 	local map ,neighbor_map ,rooms ,border = {} ,{} ,{} ,{}
 	--print('length ',length ,size,remaining)
 	for i=1,length+2 do

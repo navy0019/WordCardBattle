@@ -57,7 +57,7 @@ end
 function scene.Update(dt)
 	--print('Main scene Update')
 	local dataScene = LogicScenesMgr.CurrentScene
-	scene:FromLogic(dataScene)
+	scene:FromData(dataScene)
 	scene:ViewPending()
 	scene.Machine:Update()
 

@@ -27,7 +27,7 @@ function CardAssets.Init(card_table)
 end
 function CardAssets.instance( key,character)
 	--print('key',key)
-	print('CardAssets instance ',key)
+	--print('CardAssets instance ',key)
 	local o = TableFunc.DeepCopy(_G.Resource.card[key])
 	--[[if test	then
 		o = TableFunc.DeepCopy(_G.Resource.test_card[key])

@@ -44,8 +44,8 @@ function AdvData.Generate_Dungeon(setting,seed,floor)
 		print('Generate_Dungeon new seed',advData.map_data.map_seed)
 	end]]
 	setmetatable(advData ,AdvData.metatable)
-	local setting_path = _G.path..'setting'
-	local setting_popen = io.popen(_G.cmd..setting_path)
+	local setting_path = _G.Path..'setting'
+	local setting_popen = io.popen(_G.Cmd..setting_path)
 	local t =Resource.GetAssets( setting_popen ,setting_path)
 
 	--print('setting' ,advData.map_data.current_floor)

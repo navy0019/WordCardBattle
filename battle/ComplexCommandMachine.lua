@@ -127,7 +127,7 @@ function Complex_Command_Machine.NewMachine()
 	end
 
 	Make_Loop.DoOnEnter=function(self,battle,complete,loop_type,...)
-		key_link=machine.key_link
+		local key_link=machine.key_link
 		--TableFunc.Dump(complete)
 		local num = complete[1]:match('%d+')
 		--print('Make_Loop ',num ,#complete ,loop_type)

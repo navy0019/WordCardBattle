@@ -88,9 +88,7 @@ local function Unlock( self)
 end
 
 
-Card.default={Lock=Lock,Unlock=Unlock,LockSwitch=LockSwitch,
-				Check=Check
-}--Update=Update,MoveDrawOrder=MoveDrawOrder,CheckMouseRange=CheckMouseRange,OnHold=OnHold,OnRelease=OnRelease,OnClick=OnClick,
+Card.default={Lock=Lock,Unlock=Unlock,LockSwitch=LockSwitch}--Update=Update,MoveDrawOrder=MoveDrawOrder,CheckMouseRange=CheckMouseRange,OnHold=OnHold,OnRelease=OnRelease,OnClick=OnClick,
 Card.metatable={}
 function Card.new(o)--effectOn,targetNum,holder,Effect,name,numbering,info,dropTo,cardtype,cost,motionType
 	--[[local o = {sprite=nil,color={1,1,1,1},handPos=1,isLock=false,level=1, 

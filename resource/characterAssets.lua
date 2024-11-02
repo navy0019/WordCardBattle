@@ -24,8 +24,8 @@ end
 function CharacterAssets.instance( key,index)
 
 	local o = TableFunc.DeepCopy(_G.Resource.character[key])
+	o.data.shield=0
 	o.key=key
-	o.value_request={}
 	--[[o.getAsset=function(o,index)
 				assert(Resource.character[o.key][index],'don\'t have key '..index) 
 				return Resource.character[o.key][index] 

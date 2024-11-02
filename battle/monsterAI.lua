@@ -8,8 +8,8 @@ local CardAssets=require('resource.cardAssets')
 local mAI={}
 local function Check_group_exist(battle, command )
 	local machine=Simple_Command_Machine.NewMachine()
-	
-	machine:ReadEffect(battle ,command  )
+	--print('Check_group_exist',command)
+	machine:ReadEffect(battle , command )--,temp_key_link
 	--print('machine.stack ',#machine.stack)
 	local result =TableFunc.Pop(machine.stack)
 	--print('Check_group_exist ',command ,#result)
@@ -63,20 +63,20 @@ local function new_machine(battle ,m )
 	machine.card_tab={}
 
 	MakeOptions.DoOnEnter=function(self ,battle, mon )--遍歷選項 設置current_index
-
+		--print('AI make option')
 		for k,v in pairs(mon.AI_act) do
 			local complete = StringDecode.Trim_Command(v)
 			--TableFunc.Dump(complete)
 			--print('\n\n')
 			TableFunc.Push(machine.target_tab ,complete[#complete])
 		end
-
+		--print('AI make option',#machine.target_tab)
 		machine:TransitionTo('Decide',battle ,mon )
 	end
 
 	Decide.DoOnEnter=function(self ,battle , mon )
-		print('Decide!')
-		function detect_all()
+		--print('Decide!')
+		local function detect_all()
 			for k,command in pairs(machine.target_tab) do
 				local exist=Check_group_exist(battle, command )
 				if exist then
@@ -91,25 +91,25 @@ local function new_machine(battle ,m )
 		for i=machine.current_index ,#machine.target_tab do
 			local command = machine.target_tab[i]
 			local exist=Check_group_exist(battle, command )
-			print('Decide ',exist )
+			--print('Decide ',exist )
 			if exist then
-				print('exist!',i)
+				--print('exist!',i)
 				machine.current_index = i
 				break
 			elseif i ==#machine.target_tab then
-				print('not exist')
+				--print('not exist')
 				local result = detect_all()
 				if result then
-					print('Decide detect_all',result)
+					--print('Decide detect_all',result)
 					machine.current_index = result
 					break
 				else
-					print('Decide detect_all',0)
+					--print('Decide detect_all',0)
 					machine.current_index = 0
 					break
 				end
 			end
-			print('\n')
+			--print('\n')
 		end
 		if machine.current_index > 0 then
 			machine.decide = mon.AI_act[machine.current_index]
@@ -121,9 +121,8 @@ local function new_machine(battle ,m )
 	end
 
 	Act.DoOnEnter=function(self ,battle , mon )
-
 		local SCM_machine=Simple_Command_Machine.NewMachine()
-		local target = SCM_machine:ReadEffect(testData ,machine.target_tab[machine.current_index] )
+		local target = SCM_machine:ReadEffect(battle ,machine.target_tab[machine.current_index] )
 		local card = machine.card_tab[machine.current_index]
 		local key_link ={card = card,self=card,target_table=target}
 
@@ -146,14 +145,14 @@ local function new_machine(battle ,m )
 end
 
 function Think(self ,battle, mon )--每一個動作後(玩家出牌,buff的效果) 都會確認一次 
-	print('Think!!')
+	--print('Think!!')
 	local target
 	if self.machine.current_index > 0 then
 		target = self.machine.target_tab[ self.machine.current_index ]
 		--print('Think ',target ,self.machine.current_index )
 		local exist=Check_group_exist(battle, target )
 		if not exist then
-			print('Think ',target ,'not exist' )
+			--print('Think ',target ,'not exist' )
 			self.machine.current_index =math.min(4 , self.machine.current_index +1) 
 			self.machine:TransitionTo('Decide',battle, mon )
 		end

@@ -4,11 +4,11 @@ local Machine = require('lib.FSMmachine')
 local TableFunc = require('lib.TableFunc')
 local CallBack = require("lib.callback")
 
-local function Enter( ... )
+local function Enter(...)
 end
-local function Update( ... )
+local function Update(...)
 end
-local function Exit( ... )
+local function Exit(...)
 end
 
 --[[local MouseAct = {}
@@ -36,7 +36,7 @@ function MouseAct.new()
 					end
 
 				elseif Mouse.current.name == 'OnHold' then
-					if v:Check(mx,my) and v.isLock==false    then 
+					if v:Check(mx,my) and v.isLock==false    then
 						v:OnHold(currentChoose,...)
 					end
 					if len >0 and #currentChoose.choose >0 then
@@ -46,7 +46,7 @@ function MouseAct.new()
 				elseif Mouse.current.name == 'OnRelease' then
 					if v:Check(mx,my) and v.isLock==false  then
 						v:OnRelease(currentChoose,...)
-					end 
+					end
 					if len >0 and #currentChoose.choose >0 then
 						currentChoose:OnRelease(...)
 					end
@@ -67,14 +67,14 @@ function MouseAct.new()
 					end
 
 				elseif Mouse.current.name == 'OnHold' then
-					if v:Check(mx,my) and v.isLock==false    then 
+					if v:Check(mx,my) and v.isLock==false    then
 						v:OnHold(currentChoose,...)
 					end
 
 				elseif Mouse.current.name == 'OnRelease' then
 					if v:Check(mx,my) and v.isLock==false  then
 						v:OnRelease(currentChoose,...)
-					end 
+					end
 				end
 			end
 		end
@@ -103,96 +103,163 @@ end
 
 ]]
 
-local function InsertResult(s , result )
+local function InsertResult(scene, result)
 	--TableFunc.Dump(result)
-	if type(result)~='boolean' and result.toViewScene then
-		--TableFunc.Dump(result.toViewScene)
-		--print('Unshift')
-		TableFunc.Unshift(s.toViewScene , result.toViewScene)
+	if type(result) ~= 'boolean' and result.toView then
+		TableFunc.Push(scene.toView, result.toView)
+		print('InsertResult', scene, #scene.toView, scene.toView, result.toView.key)
+		--TableFunc.Dump(scene.toView)
 	end
-	if type(result)~='boolean' and result.toPending then
+	if type(result) ~= 'boolean' and result.toBattleView then
+		--TableFunc.Dump(result.toSceneBattleView)
+		TableFunc.Push(scene.toSceneBattleView, result.toBattleView)
+		print('InsertResult toBattleView', result.toBattleView.key)
+	end
+	if type(result) ~= 'boolean' and result.toPending then
 		--print('Push toPending')
-		TableFunc.Push(s.pending , result.toPending)
+		TableFunc.Push(scene.pending, result.toPending)
 	end
-	return true
 end
 local function DataPending(scene)
-	local funcTab = scene.battle and scene.battle.machine.funcTab or scene.funcTab
-	local self_pending = scene.battle and scene.battle.machine.pending or scene.pending
-
-	if #self_pending > 0 then
-		local command = TableFunc.Shift(self_pending)
-		--print('data pending ',command.key)	
-		local result = funcTab[command.key](table.unpack(command.arg))
-
-		if result then
-			local s = scene.battle and scene.battle.machine or scene
-			InsertResult(s , result)
-		end
-	end
-	if scene.battle then
-		scene.battle:Update(scene)						
-	end
-end
-local function FromCtrl(scene)--執行button
-	local self_pending = not scene.battle and  scene.pending or scene.battle.pending --scene.battle.machine.pending 
-
-	--有battle的話 轉交至battle內處理
-	if #scene.pending >0 and scene.battle then
-		for i=#scene.pending,1,-1 do
+	if #scene.pending > 0 then
+		--print('data pending > 0')
+		for i = #scene.pending, 1, -1 do
 			local command = TableFunc.Shift(scene.pending)
-			TableFunc.Unshift(command.arg,scene.battle)
-			TableFunc.Push(self_pending,command) 
+
+			local result = scene.funcTab[command.key](table.unpack(command.arg))
+
+			if result then
+				--print('data pending ', command.key)
+				InsertResult(scene, result)
+			end
 		end
 	end
+	if #scene.pending == 0 and scene.Current_Room and scene.Current_Room.battle then
+		for i = #scene.Current_Room.battle.pending, 1, -1 do
+			local command = TableFunc.Shift(scene.Current_Room.battle.pending)
+			--print('data battle pending ',command.key)	
+			assert(scene.Current_Room.battle.func_tab[command.key], "Data Pending " .. command.key .. " not exist")
+			local result = scene.Current_Room.battle.func_tab[command.key](table.unpack(command.arg))
 
+			if result then
+				InsertResult(scene, result)
+			end
+		end
+	end
+	--print('Data Pending', scene.toView, #scene.toView)
+	--[[if scene.battle then
+		scene.battle:Update(scene)						
+	end]]
+end
+local function FromCtrl(scene) --執行button
+	--轉交至battle內處理的判定
+	for i = #scene.pending, 1, -1 do
+		local command = scene.pending[i]
+		if not scene.funcTab[command.key] then
+			--print('transfer ctrl cmd')
+			--TableFunc.Dump(command)
+			--battle, input_machine做為參數傳入
+			TableFunc.Unshift(command.arg, scene.Current_Room.battle.input_machine)
+			TableFunc.Unshift(command.arg, scene.Current_Room.battle)
 
+			TableFunc.Unshift(scene.Current_Room.battle.pending, command)
+			table.remove(scene.pending, i)
+		end
+	end
+	--print('FromCtrl', scene.toView, #scene.toView)
 end
 
 local function ViewPending(scene)
-	local funcTab = scene.battle and scene.BattleMachineView.drawCommand or scene.drawCommand
-	local self_pending = scene.battle and scene.BattleMachineView.pending or scene.pending
-	for i=#self_pending, 1 ,-1 do
-		local v = self_pending[i]
-		assert(v ,'error '..i..'  '..#self_pending..'   '..tostring(v))
-
-		local key = v.key
-		local arg = v.arg
-		local viewState = v.viewState or false
-		assert(funcTab[key],'don\'t have drawCommand '..key)
-
-		local result =funcTab[key](scene,table.unpack(arg))--注意drawCommand 是否有return true
-			TableFunc.Pop(self_pending)		
-
-	end
-end
-local function FromLogic(scene, dataScene)--view scene使用
-	local from_data= scene.battle and dataScene.battle.machine.toViewScene or dataScene.toViewScene
-	local self_pending = scene.battle and scene.BattleMachineView.pending or scene.pending
-	if #from_data > 0 then
-
-		for i=#from_data ,1 ,-1  do
-			local v = TableFunc.Pop(from_data)	
-			TableFunc.Unshift(self_pending ,v)--.command
+	if #scene.pending > 0 then
+		--print('View Scene Pending')
+		--TableFunc.Dump(scene.pending)
+		for i = #scene.pending, 1, -1 do
+			local v = TableFunc.Pop(scene.pending) --scene.pending[i]
+			local key = v.key
+			local arg = v.arg
+			print('view scene pending', key)
+			--TableFunc.Dump(arg)
+			local result = scene.drawCommand[key](scene, table.unpack(arg)) --注意drawCommand 是否有return
 		end
-
+	elseif #scene.pending == 0 and scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
+		local pending = scene.Current_Room.BattleRoundMachineView.pending
+		--print('View Battle Pending')
+		--TableFunc.Dump(pending)
+		for i = #pending, 1, -1 do
+			local v = TableFunc.Pop(pending) --scene.pending[i]
+			local key = v.key
+			local arg = v.arg
+			--print('view scene pending', key)
+			--TableFunc.Dump(arg)
+			local result = scene.Current_Room.BattleRoundMachineView.drawCommand[key](scene, table.unpack(arg))
+		end
 	end
+end
+local function FromData(scene, dataScene) --view scene使用
+	print('FromData', dataScene, #dataScene.toView, dataScene.toView)
+	--TableFunc.Dump(dataScene.toView)
+
+	for i = 1, #dataScene.toView do
+		--print(#dataScene.toView)
+		local v = TableFunc.Shift(dataScene.toView)
+		--print('get from data ')
+		--TableFunc.Dump(v)
+
+		TableFunc.Push(scene.pending, v)
+	end
+
+	--[[if scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
+		for i = 1, #dataScene.toBattleView do
+			--print(#dataScene.toView)
+			local v = TableFunc.Shift(dataScene.toBattleView)
+			--print('get from data ')
+			--TableFunc.Dump(v)
+			local pending = scene.Current_Room.BattleRoundMachineView.pending
+			TableFunc.Push(pending, v)
+		end
+	end]]
+	--[[if scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
+		if #dataScene.toSceneBattleView > 0 then print('have data to view', #dataScene.toSceneBattleView) end
+		for i = 1, #dataScene.toSceneBattleView do
+			print('get from data battle', #dataScene.toSceneBattleView)
+			local v = TableFunc.Pop(dataScene.toSceneBattleView)
+			TableFunc.Dump(v)
+			TableFunc.Unshift(scene.Current_Room.BattleRoundMachineView.pending, v)
+		end
+	end]]
 end
 
 
-local Scene={}
-Scene.default={events={door={},eventImg={},eventButton={},isBattle=false,ranState=nil,ranSeed=nil},
-				ViewPending=ViewPending,DataPending=DataPending,FromLogic=FromLogic,FromCtrl=FromCtrl,InsertResult=InsertResult,
-				Enter=Enter,Update=Update,Exit=Exit}--,MouseAct=MouseAct.new()
+local Scene = {}
+Scene.default = {
+	events = { door = {}, eventImg = {}, eventButton = {}, isBattle = false, ranState = nil, ranSeed = nil },
+	ViewPending = ViewPending,
+	DataPending = DataPending,
+	FromData = FromData,
+	FromCtrl = FromCtrl,
+	InsertResult = InsertResult,
+	Enter = Enter,
+	Update = Update,
+	Exit = Exit
+} --,MouseAct=MouseAct.new()
 
 
 
-Scene.metatable={}
+Scene.metatable = {}
 function Scene.new(name)
-	local o={battle=nil,toViewScene={},pending={},Event=CallBack.new(),ButtonEvent=CallBack.new(),name=name}
-	setmetatable(o,Scene.metatable)
+	local o = {
+		battle = nil,
+		pending = {},
+		toView = {},
+		Event = CallBack.new(),
+		ButtonEvent = CallBack.new(),
+		name =
+			name
+	}
+	setmetatable(o, Scene.metatable)
 	return o
 end
-Scene.metatable.__index=function (table,key) return Scene.default[key] end
+
+Scene.metatable.__index = function(table, key) return Scene.default[key] end
 
 return Scene

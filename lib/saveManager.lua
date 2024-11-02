@@ -6,7 +6,7 @@ function SaveMgr.LoadFileList()
 	--print('check save')
 	SaveMgr.SaveData={}
 	for i=1,2 do
-		local check=io.open(_G.path..'save/savedata_'..i..'.json', "r")
+		local check=io.open(_G.Path..'save/savedata_'..i..'.json', "r")
 		if check then
 			local data = SaveMgr.Load('savedata_'..i)
 			TableFunc.Push(SaveMgr.SaveData , data)
@@ -37,11 +37,14 @@ function SaveMgr.Encode(data)
 	return str
 end
 function SaveMgr.WriteToFile(str,fileName)
-	local file = io.open(_G.path..'save/'..fileName..'.json','w+')
-	file:write('{\n')
-	file:write(str)
-	file:write('\n}')
-	file:close()
+	local file = io.open(_G.Path..'save/'..fileName..'.json','w+')
+	if  file then
+		file:write('{\n')
+		file:write(str)
+		file:write('\n}')
+		file:close()
+	end
+
 end
 function SaveMgr.Save(func ,...)
 	local data
@@ -63,10 +66,10 @@ function SaveMgr.Save(func ,...)
 
 end
 function SaveMgr.Decode(filename)
-	local file = io.open(_G.path..'save'.._G.slash..filename..'.json','r')
-	local content = file:read('*all')
+	local file = io.open(_G.Path..'save'.._G.Slash..filename..'.json','r')
+	local content = file and file:read('*all')
 	local data = json.decode(content)
-	file:close()
+	if file then file:close()end
 	return data
 end
 function SaveMgr.Load(filename)
@@ -95,7 +98,7 @@ end
 function SaveMgr.DeleteSaveFile(saveNum)
 	--local path = love.filesystem.getRealDirectory("/save/savedata_"..saveNum..".json")
 	SaveMgr.SaveData[saveNum] = 'Empty'
-	os.remove(_G.path..'save/savedata_'..saveNum..'.json')
+	os.remove(_G.Path..'save/savedata_'..saveNum..'.json')
 end
 
 return SaveMgr

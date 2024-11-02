@@ -15,7 +15,7 @@ package.path = package.path..';'..path..'?.lua'
 local GetOs=require('lib.get_os_name')
 CurrentOs= GetOs.get_os_name()
 
-cmd = CurrentOs  == 'Mac' and 'ls ' or 'dir '
+Cmd = CurrentOs  == 'Mac' and 'ls ' or 'dir '
 slash = CurrentOs  == 'Mac' and '/' or '\\' 
 
 local StringDecode = require('lib.StringDecode')
@@ -24,13 +24,13 @@ local TableFunc = require('lib.TableFunc')
 
 
 local file_path = path..'normal_event'
-local file_popen = io.popen(cmd..file_path)
+local file_popen = io.popen(Cmd..file_path)
 
 local data = Resource.GetAssets(file_popen, file_path )
 TableFunc.Dump(data)
 
 --[[local card_path = path..'card'
-local card_popen = io.popen(cmd..card_path)
+local card_popen = io.popen(Cmd..card_path)
       
 local card = Resource.GetAssets(card_popen, card_path )
 TableFunc.Dump(card)]]
