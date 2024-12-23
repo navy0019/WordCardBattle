@@ -1,5 +1,5 @@
-local states={
-    fragile = {
+local states = {
+	fragile = {
 		update = "calculate_value(*2) to value",
 		overlay = true,
 		effect_number = "single",
@@ -71,7 +71,7 @@ local states={
 			"trigger",
 		},
 		data = {
-			round = 1,
+			round = 2,
 		},
 	},
 	solid = {

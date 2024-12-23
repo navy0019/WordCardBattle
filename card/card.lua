@@ -28,7 +28,7 @@ local cards = {
         type          = 'melee',
         drop_to       = 'grave',
         use_condition = { 'select 1 enemy' },
-        data          = { atk = 3 },
+        data          = { atk = 'holder.data.atk ' },
         effect        = { 'atk(card.data.atk) to target' },
     },
     ignore_shield_attack = {
@@ -61,8 +61,8 @@ local cards = {
         type          = 'melee',
         drop_to       = 'grave',
         use_condition = { 'select 1 enemy' },
-        data          = { atk = 2 },
-        effect        = { 'atk(random(1~3)) to target' },
+        data          = { atk = 5 },
+        effect        = { 'atk(random(1~card.data.atk)) to target' },
     },
     solid                = {
         cost          = 1,
@@ -71,6 +71,15 @@ local cards = {
         use_condition = { 'select 1 hero' },
         data          = { atk = 2 },
         effect        = { 'add_buff (solid(round:2)) to target' },
+    },
+    grow_up_and_atk      = {
+        cost          = 1,
+        type          = 'melee',
+        drop_to       = 'grave',
+        use_condition = { 'select 1 hero' },
+        data          = { atk = 'holder.data.atk' },
+        effect        = { 'assign_value(holder.data.atk+1 ,atk) to holder',
+            'atk()' },
     },
 }
 return cards

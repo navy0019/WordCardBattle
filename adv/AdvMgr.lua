@@ -19,7 +19,19 @@ function AdvMgr:ResetHeroData(...)
 		v.data = {}
 		local originData = TableFunc.DeepCopy(_G.Resource.character[key])
 		v.data = TableFunc.DeepCopy(originData)
-		v.state = { round_start = {}, round_end = {}, every_card = {} }
+		v:ResetState()
+		--[[v.state = {
+			round_start = {},
+			round_end = {},
+			every_card = {},
+			is_target = {},
+			use_atk_card = {},
+			be_attacked = {},
+			use_debuff_card = {},
+			receive_debuff = {},
+			protect = {},
+			dead = {}
+		}]]
 	end
 end
 

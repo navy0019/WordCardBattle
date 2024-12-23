@@ -107,13 +107,13 @@ local function InsertResult(scene, result)
 	--TableFunc.Dump(result)
 	if type(result) ~= 'boolean' and result.toView then
 		TableFunc.Push(scene.toView, result.toView)
-		print('InsertResult', scene, #scene.toView, scene.toView, result.toView.key)
+		--print('InsertResult', scene, #scene.toView, scene.toView, result.toView.key)
 		--TableFunc.Dump(scene.toView)
 	end
 	if type(result) ~= 'boolean' and result.toBattleView then
 		--TableFunc.Dump(result.toSceneBattleView)
-		TableFunc.Push(scene.toSceneBattleView, result.toBattleView)
-		print('InsertResult toBattleView', result.toBattleView.key)
+		TableFunc.Push(scene.toBattleView, result.toBattleView)
+		--print('InsertResult toBattleView', result.toBattleView.key)
 	end
 	if type(result) ~= 'boolean' and result.toPending then
 		--print('Push toPending')
@@ -174,10 +174,10 @@ local function ViewPending(scene)
 		--print('View Scene Pending')
 		--TableFunc.Dump(scene.pending)
 		for i = #scene.pending, 1, -1 do
-			local v = TableFunc.Pop(scene.pending) --scene.pending[i]
+			local v = TableFunc.Shift(scene.pending) --scene.pending[i]
 			local key = v.key
 			local arg = v.arg
-			print('view scene pending', key)
+			--print('view scene pending', key)
 			--TableFunc.Dump(arg)
 			local result = scene.drawCommand[key](scene, table.unpack(arg)) --注意drawCommand 是否有return
 		end
@@ -185,18 +185,21 @@ local function ViewPending(scene)
 		local pending = scene.Current_Room.BattleRoundMachineView.pending
 		--print('View Battle Pending')
 		--TableFunc.Dump(pending)
-		for i = #pending, 1, -1 do
-			local v = TableFunc.Pop(pending) --scene.pending[i]
-			local key = v.key
-			local arg = v.arg
-			--print('view scene pending', key)
-			--TableFunc.Dump(arg)
-			local result = scene.Current_Room.BattleRoundMachineView.drawCommand[key](scene, table.unpack(arg))
+		if #pending > 0 then
+			--print('view scene battle pending', #pending)
+			for i = #pending, 1, -1 do
+				local v = TableFunc.Shift(pending) --scene.pending[i]
+				local key = v.key
+				local arg = v.arg
+				--print('view scene battle pending', key, #pending)
+				--TableFunc.Dump(v)
+				local result = scene.Current_Room.BattleRoundMachineView.drawCommand[key](scene, table.unpack(arg))
+			end
 		end
 	end
 end
 local function FromData(scene, dataScene) --view scene使用
-	print('FromData', dataScene, #dataScene.toView, dataScene.toView)
+	--print('FromData', dataScene, #dataScene.toView, dataScene.toView)
 	--TableFunc.Dump(dataScene.toView)
 
 	for i = 1, #dataScene.toView do
@@ -208,7 +211,7 @@ local function FromData(scene, dataScene) --view scene使用
 		TableFunc.Push(scene.pending, v)
 	end
 
-	--[[if scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
+	if scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
 		for i = 1, #dataScene.toBattleView do
 			--print(#dataScene.toView)
 			local v = TableFunc.Shift(dataScene.toBattleView)
@@ -217,7 +220,7 @@ local function FromData(scene, dataScene) --view scene使用
 			local pending = scene.Current_Room.BattleRoundMachineView.pending
 			TableFunc.Push(pending, v)
 		end
-	end]]
+	end
 	--[[if scene.Current_Room and scene.Current_Room.BattleRoundMachineView then
 		if #dataScene.toSceneBattleView > 0 then print('have data to view', #dataScene.toSceneBattleView) end
 		for i = 1, #dataScene.toSceneBattleView do

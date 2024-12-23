@@ -41,16 +41,16 @@ local monsterData = testData.characterData.monsterData
 
 local test_num = 2
 local function MakeToUse(state)
-	local key_link = { target_table = {}, self = state }
+	local key_dic = { target_table = {}, self = state }
 	for i = 1, test_num do
 		if heroData[i] then
-			TableFunc.Push(key_link.target_table, heroData[i])
+			TableFunc.Push(key_dic.target_table, heroData[i])
 		end
 	end
 
-	return key_link
+	return key_dic
 end
---TableFunc.Dump(key_link)
+--TableFunc.Dump(key_dic)
 
 local function printData()
 	for i, hero in pairs(heroData) do
@@ -130,8 +130,8 @@ local function stateUpdate(character, key, machine)
 			if key ~= timing_key then return end
 			if not TableFunc.Find(res.update_timing, 'trigger') then
 				print("Excute", state.name)
-				machine.key_link = MakeToUse(state)
-				StateHandler.Excute(testData, character, state, machine.key_link)
+				machine.key_dic = MakeToUse(state)
+				StateHandler.Excute(testData, character, state, machine.key_dic)
 				StateHandler.Update(testData, character, state, key)
 
 				for i, result in ipairs(StateHandler.machine.result) do
@@ -181,6 +181,6 @@ end
 
 TestAddBuff()
 local machine = ComplexCommandMachine.NewMachine()
-machine.key_link = key_link
+--machine.key_dic = key_dic
 print('Update State')
 TestStateUpdate(machine)

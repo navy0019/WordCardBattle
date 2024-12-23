@@ -15,17 +15,17 @@ local function switchHero(num)
 	--已在隊伍內->移除
 	local hero = TeamData.AllHeros[num]
 	TeamData.Switch(hero)
-	return true
+	--return true
 end
 local function saveTeamToDefault(...)
 	local empty = TeamData.CheckEmpty()
 	if not empty then
-		SaveMgr.Save(SaveMgr.CurrentSave, TeamData.SaveTeam)
+		SaveMgr.Save(TeamData.SaveTeam) --SaveMgr.Save
 	else
 		local s = Msg.msg('team_need_save')
 		return { toView = { key = 'WaitIoRead', arg = { s } } }
 	end
-	return true
+	--return true
 end
 local function resetTeam(...)
 	TeamData.ResetTeam()
@@ -39,15 +39,16 @@ local function back(...)
 		scene.switchingScene = 'City'
 	else
 		scene.switchingScene = nil
-		local s = Msg.msg('team_need')
+		local s = Msg.msg('team_need_exit')
 		return { toView = { key = 'WaitIoRead', arg = { s } } }
 	end
 	return true
 end
 local function switchDefault(key)
-	local num = tonumber(string.sub(key, 2))
+	local s = key:sub(2, #key)
+	local num = tonumber(s)
 	TeamData.SwitchDefault(num)
-	return true
+	--return true
 end
 scene.funcTab = {
 	--errorMsg=errorMsg,

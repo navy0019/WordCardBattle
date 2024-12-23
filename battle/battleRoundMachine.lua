@@ -1,10 +1,15 @@
 local State = require('lib.FSMstate')
 local Machine = require('lib.FSMmachine')
 
+local StateHandler = require('battle.StateHandler')
 local TableFunc = require("lib.TableFunc")
+local CardPending = require('battle.cardPending')
 
+local function UpdateState()
+
+end
 local BattleMachine = {}
-function BattleMachine.new()
+function BattleMachine.new(toView)
 	--local PreState = State.new("PreState")
 	local Empty = State.new("Empty")
 	local RoundStart = State.new("RoundStart")
@@ -25,9 +30,9 @@ function BattleMachine.new()
 		events = {
 			--[[  WaitEnding(global)
 
-			      						/-->PlayerAct --\							
-			RoundStart--> State_RoundStart--                 -->State_RoundEnd--> RoundEnd
-										\-->MonsterAct--/       					 				]]
+			      			/-->PlayerAct --\							
+			RoundStart-->                 		--> RoundEnd
+							\-->MonsterAct--/       					 				]]
 
 			--{state=PreState,to='Empty'},							
 			{ state = Empty,      to = 'RoundStart' },
@@ -49,8 +54,9 @@ function BattleMachine.new()
 		}
 	})
 
-	machine.card_queue = {}
 	machine.record = {}
+	machine.toView = toView
+	machine.card_pending = CardPending.new(toView)
 
 	--[[PreState.Do=function(...)
 		print('Pre to Empty')
@@ -63,11 +69,11 @@ function BattleMachine.new()
 		if scene.events.battle_state then
 			battle.characterData.monsterData = {}
 			battle.endingItem = scene.events.endingItem
-			TableFunc.Push(scene.toBattleView, { key = 'TransitionTo', arg = { 'WaitEnding' } })
+			TableFunc.Push(machine.toView, { key = 'TransitionTo', arg = { 'WaitEnding' } })
 
 			machine:TransitionTo('WaitEnding', battle, scene, ...)
 		else
-			TableFunc.Push(scene.toBattleView, { key = 'TransitionTo', arg = { 'RoundStart' } })
+			TableFunc.Push(machine.toView, { key = 'TransitionTo', arg = { 'RoundStart' } })
 			machine:TransitionTo('RoundStart', battle, scene, ...)
 		end
 	end
@@ -79,12 +85,10 @@ function BattleMachine.new()
 		for i = 1, 4 do
 			local mon = battle.characterData.monsterData[i]
 			local hero = battle.characterData.heroData[i]
-			local originData, key
 
 			if mon then
 				if mon.data.def > 0 then
 					local serial = 'monster ' .. TableFunc.GetSerial(mon)
-					--print('mon',mon)
 					if mon.data.remove_shield then
 						mon.data.shield = mon.data.def
 					else
@@ -93,16 +97,15 @@ function BattleMachine.new()
 					TableFunc.Push(t.arg[1].target, mon.key)
 					TableFunc.Push(t.arg[1].value, mon.data.shield)
 				end
+				for key, state in pairs(mon.state['round_start']) do
+					local key_dic = { self = state }
+					StateHandler.Excute(battle, mon, state, key_dic)
+					StateHandler.Update(battle, mon, state, 'round_start')
+				end
 				mon.AI.machine:TransitionTo('MakeOptions', battle, mon)
-				mon.AI:Think(battle, mon)
-				--print('monster['..i..'] think:'..mon.AI.machine.decide)
 			end
 			if hero then
 				if hero.data.def > 0 then
-					--local serial = 'hero '..TableFunc.GetSerial(hero)	
-					--print('hero')
-					--TableFunc.Dump(hero)
-					--StateHandler.AddBuff(battle,{hero},'shield')
 					if hero.data.remove_shield then
 						hero.data.shield = hero.data.def
 					else
@@ -111,12 +114,17 @@ function BattleMachine.new()
 					TableFunc.Push(t.arg[1].target, hero.key)
 					TableFunc.Push(t.arg[1].value, hero.data.shield)
 				end
+				for key, state in pairs(hero.state['round_start']) do
+					local key_dic = { self = state }
+					StateHandler.Excute(battle, hero, state, key_dic)
+					StateHandler.Update(battle, hero, state, 'round_start')
+				end
 			end
 		end
-		TableFunc.Push(scene.toBattleView, t)
+		TableFunc.Push(toView, t)
 
-		--print('RoundStart Data toBattleView', scene.toBattleView, #scene.toBattleView)
-		--print('RoundStart Data toView', scene.toView, #scene.toView)
+		--Update state
+		--TableFunc.Push(toView,{})
 	end
 	RoundStart.Do = function(self, battle, scene, ...)
 		machine:TransitionTo('PlayerAct', battle, scene, ...)
@@ -140,11 +148,15 @@ function BattleMachine.new()
 			battle.battleData.actPoint = battle.battleData.actPoint + hero.data.act
 		end
 		battle:DealProcess()
-		TableFunc.Push(scene.toBattleView, { key = 'TransitionTo', arg = { 'PlayerAct' } })
+		print('RoundMachine scene', scene)
+		TableFunc.Push(machine.toView, { key = 'TransitionTo', arg = { 'PlayerAct' } })
 		--print('PlayerAct Data DoOnEnter', scene.toBattleView, #scene.toBattleView)
 		--TableFunc.Dump(scene.toBattleView)
-		print('PlayerAct Data toView', scene.toView, #scene.toView)
-		assert(nil)
+		--print('PlayerAct Data toView', scene.toView, #scene.toView)
+		--assert(nil)
+	end
+	PlayerAct.Do = function(self, battle, scene, ...)
+		machine.card_pending:Update(battle, scene)
 	end
 	MonsterAct.DoOnEnter = function(self, battle, scene, ...)
 		for k, mon in pairs(battle.characterData.monsterData) do
@@ -159,12 +171,10 @@ function BattleMachine.new()
 		--local mon=battle.characterData.monsterData[1]
 	end
 	MonsterAct.Do = function(self, battle, scene, ...)
-		local card_queue = machine.card_queue
-		--print('M Act ',#card_logic.card_pending,#card_logic.state_pending,#card_logic.queue)
-		if #card_logic.pending <= 0 and #card_logic.card_pending <= 0 and #card_logic.queue <= 0 and #machine.pending <= 0 then
-			--print('trans to state_end')
+		machine.card_pending:Update(battle, scene)
+		if #machine.card_pending.pending <= 0 then
 			machine:TransitionTo('RoundEnd', battle)
-			table.insert(machine.toSceneBattleView, 1, { key = 'TransitionTo', arg = { 'RoundEnd' } })
+			table.insert(machine.toView, 1, { key = 'TransitionTo', arg = { 'RoundEnd' } })
 		end
 		--print(#machine.monster_cardLogic.pending , #machine.monster_cardLogic.card_pending ,#machine.monster_cardLogic.state_pending)
 

@@ -21,6 +21,8 @@ Resource = require('resource.Resource')
 Resource.Init_Test()
 --TableFunc.Dump(Resource.card)
 --TableFunc.Dump(Resource.translate)
+RandomMachine = require('lib.RandomMachine').new()
+
 local testData = require('other.test.data.test_data')
 local monsterAI = require('battle.monsterAI')
 local CardAssets = require('resource.cardAssets')
@@ -35,17 +37,17 @@ local skill_card = {}
 for i = 1, #monsterData do
 	local v = monsterData[i]
 
-	local holder = 'monster ' .. TableFunc.GetSerial(testData.characterData.monsterData[1])
+	--[[local holder = 'monster ' .. TableFunc.GetSerial(testData.characterData.monsterData[1])
 	TableFunc.Push(skill_card, {})
 	local len = #skill_card
 
 	for i, skill in pairs(v.skill) do
 		local mon_skill_card = CardAssets.instance(skill, holder)
 		TableFunc.Push(skill_card[len], mon_skill_card)
-	end
+	end]]
 
 	--print('monster think ',i)
-	v.AI = monsterAI.new(testData, v, skill_card[len])
+	v.AI = monsterAI.new(testData, v)
 	v.AI.machine:TransitionTo('MakeOptions', testData, v)
 	v.AI:Think(testData, v)
 

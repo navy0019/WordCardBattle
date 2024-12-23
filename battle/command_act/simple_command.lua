@@ -6,10 +6,10 @@ local map            = {
 
 }
 local simple_command = {}
-local function excute_arg(battle, command, key_link)
+local function excute_arg(battle, command, key_dic)
 	local Simple_Command_Machine = require('battle.SimpleCommandMachine')
 	local machine = Simple_Command_Machine.NewMachine()
-	machine:ReadEffect(battle, command, key_link)
+	machine:ReadEffect(battle, command, key_dic)
 	local result = TableFunc.Pop(machine.stack)
 	--print(result ,#result)
 	return result
@@ -127,13 +127,13 @@ local function transArgToCommand(arg) --key
 end
 
 simple_command.get = function(battle, machine, ...)
-	local arg             = { ... }
-	local key             = TableFunc.Shift(arg)
-	local stack, key_link = machine.stack, machine.key_link
-	local target          = TableFunc.Pop(stack)
+	local arg            = { ... }
+	local key            = TableFunc.Shift(arg)
+	local stack, key_dic = machine.stack, machine.key_dic
+	local target         = TableFunc.Pop(stack)
 	--print('SCM get',key)
 	--TableFunc.Dump(target)
-	local t               = {}
+	local t              = {}
 
 	if key:find('%.') then
 		nextkey = key:sub(key:find('%.') + 1, #key)
@@ -154,11 +154,11 @@ simple_command.get = function(battle, machine, ...)
 end
 
 simple_command.enemy = function(battle, machine, ...)
-	local data            = TableFunc.ShallowCopy(battle.characterData.monsterData)
-	local arg             = { ... }
-	local stack, key_link = machine.stack, machine.key_link
+	local data           = TableFunc.ShallowCopy(battle.characterData.monsterData)
+	local arg            = { ... }
+	local stack, key_dic = machine.stack, machine.key_dic
 
-	local t               = transArgToCommand(arg)
+	local t              = transArgToCommand(arg)
 
 	if #t <= 0 then
 		TableFunc.Push(stack, data)
@@ -171,11 +171,11 @@ simple_command.enemy = function(battle, machine, ...)
 	end
 end
 simple_command.hero = function(battle, machine, ...)
-	local data            = TableFunc.ShallowCopy(battle.characterData.heroData)
-	local arg             = { ... }
-	local stack, key_link = machine.stack, machine.key_link
+	local data           = TableFunc.ShallowCopy(battle.characterData.heroData)
+	local arg            = { ... }
+	local stack, key_dic = machine.stack, machine.key_dic
 
-	local t               = transArgToCommand(arg)
+	local t              = transArgToCommand(arg)
 
 	if #t <= 0 then
 		TableFunc.Push(stack, data)
@@ -188,13 +188,13 @@ simple_command.hero = function(battle, machine, ...)
 	end
 end
 simple_command.target = function(battle, machine, ...)
-	local arg             = { ... }
-	local stack, key_link = machine.stack, machine.key_link
+	local arg            = { ... }
+	local stack, key_dic = machine.stack, machine.key_dic
 	--local target 		=TableFunc.Pop(stack)
 
 	local data
-	if key_link.target_table then
-		data = TableFunc.ShallowCopy(key_link.target_table)
+	if key_dic.target_table then
+		data = TableFunc.ShallowCopy(key_dic.target_table)
 		local t = transArgToCommand(arg)
 
 		if #t <= 0 then
@@ -221,7 +221,7 @@ simple_command.compare = function(battle, machine, ...)
 		function(a, b) return a < b end
 	}
 	local arg = { ... }
-	local key_link = machine.key_link
+	local key_dic = machine.key_dic
 	local stack = machine.stack
 	local key = arg[1]
 	local value = TableFunc.Pop(stack)
@@ -259,37 +259,37 @@ simple_command.compare = function(battle, machine, ...)
 	end
 end
 simple_command.card = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
-	TableFunc.Push(stack, key_link.card)
+	local stack, key_dic = machine.stack, machine.key_dic
+	TableFunc.Push(stack, key_dic.card)
 end
 simple_command.self = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
-	assert(key_link.self, 'key_link don\'t have key \"self\"')
-	TableFunc.Push(stack, key_link.self)
+	local stack, key_dic = machine.stack, machine.key_dic
+	assert(key_dic.self, 'key_dic don\'t have key \"self\"')
+	TableFunc.Push(stack, key_dic.self)
 end
 simple_command.holder = function(battle, machine, ...) --取得card 或state 的持有者
-	local stack, key_link = machine.stack, machine.key_link
+	local stack, key_dic = machine.stack, machine.key_dic
 	local holder
-	--print('get holder')
-	--TableFunc.Dump(key_link)
-	if key_link.self.holder then
-		assert(type(key_link.self.holder) == 'string', 'holder\'s data type not string')
-		local type, serial = StringDecode.Split_by(key_link.self.holder, '%s')
+	--print('get holder', key_dic.card, key_dic.self)
+	--TableFunc.Dump(key_dic)
+	local function serial_to_character(str)
+		local type, serial = StringDecode.Split_by(str, '%s')
 		local tab = type == 'hero' and battle.characterData.heroData or battle.characterData.monsterData
 		local index = TableFunc.MatchSerial(tab, serial)
-		holder = tab[index]
-	elseif key_link.holder then
-		assert(type(key_link.holder) == 'string', 'holder\'s data type not string')
-		local type, serial = StringDecode.Split_by(key_link.holder, '%s')
-		local tab = type == 'hero' and battle.characterData.heroData or battle.characterData.monsterData
-		local index = TableFunc.MatchSerial(tab, serial)
-		holder = tab[index]
-	elseif key_link.self.data.holder then
-		assert(type(key_link.self.data.holder) == 'string', 'holder\'s data type not string')
-		local type, serial = StringDecode.Split_by(key_link.self.data.holder, '%s')
-		local tab = type == 'hero' and battle.characterData.heroData or battle.characterData.monsterData
-		local index = TableFunc.MatchSerial(tab, serial)
-		holder = tab[index]
+		return tab[index]
+	end
+	if key_dic.self.holder then
+		assert(type(key_dic.self.holder) == 'string', 'holder\'s data type not string')
+		holder = serial_to_character(key_dic.self.holder)
+	elseif key_dic.holder then
+		assert(type(key_dic.holder) == 'string', 'holder\'s data type not string')
+		holder = serial_to_character(key_dic.holder)
+	elseif key_dic.self.data and key_dic.self.data.holder then
+		assert(type(key_dic.self.data.holder) == 'string', 'holder\'s data type not string')
+		holder = serial_to_character(key_dic.self.data.holder)
+	elseif key_dic.card then
+		assert(type(key_dic.card.holder) == 'string', 'holder\'s data type not string')
+		holder = serial_to_character(key_dic.card.holder)
 	else
 		assert(nil, 'data don\'t have holder')
 	end
@@ -303,12 +303,12 @@ simple_command.holder = function(battle, machine, ...) --取得card 或state 的
 	end]]
 end
 simple_command.caster = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
-	TableFunc.Push(key_link.self.caster)
+	local stack, key_dic = machine.stack, machine.key_dic
+	TableFunc.Push(key_dic.self.caster)
 end
 
 simple_command.max = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
+	local stack, key_dic = machine.stack, machine.key_dic
 	local t = TableFunc.Pop(stack)
 	local current = 1
 	local compare_value = t[1]
@@ -318,7 +318,7 @@ simple_command.max = function(battle, machine, ...)
 	TableFunc.Push(stack, compare_value)
 end
 simple_command.min = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
+	local stack, key_dic = machine.stack, machine.key_dic
 	local t = TableFunc.Pop(stack)
 	local current = 1
 	local compare_value = t[1]
@@ -328,10 +328,15 @@ simple_command.min = function(battle, machine, ...)
 	TableFunc.Push(stack, compare_value)
 end
 simple_command.value = function(battle, machine, ...)
-	local stack, key_link = machine.stack, machine.key_link
-	--print('SCM value?', #stack)
+	local stack, key_dic = machine.stack, machine.key_dic
+	--print('SCM value?', #stack, key_dic)
 	--TableFunc.Dump(stack)
 	--local value=TableFunc.Pop(stack)
+	--[[if key_dic.mapping then
+		--print('key_dic have value')
+		--TableFunc.Dump(key_dic.mapping)
+		TableFunc.Push(stack, key_dic.mapping)
+	end]]
 end
 simple_command.random = function(battle, machine, ...)
 	local StringRead = require('lib.StringRead')
@@ -339,13 +344,30 @@ simple_command.random = function(battle, machine, ...)
 	local arg = { ... }
 	--print('random')
 	--TableFunc.Dump(arg)
-	local key_link, stack, effect = machine.key_link, machine.stack, machine.effect
+	local key_dic, stack, effect = machine.key_dic, machine.stack, machine.effect
 
 	local num = TableFunc.Shift(arg)
-	--print('num',num)
+
 	if not num:find('~') and num:find('%.') then
-		num = StringRead.StrToValue(num, key_link, battle)
+		num = StringRead.StrToValue(num, key_dic, battle)
+	elseif num:find('~') and num:find('%.') then
+		local dot = num:find('%.')
+		local tilde = num:find('~')
+		local dot_str
+		--print('find dot & tilde')
+		if dot > tilde then
+			dot_str = num:sub(tilde + 1, #num)
+			--print('dot_str', dot_str)
+			local value = StringRead.StrToValue(dot_str, key_dic, battle)
+			num = StringDecode.Gsub_by_index(num, value, tilde + 1, #num)
+		else
+			dot_str = num:sub(1, tilde - 1)
+			--print('dot_str', dot_str)
+			local value = StringRead.StrToValue(dot_str, key_dic, battle)
+			num = StringDecode.Gsub_by_index(num, value, 1, tilde - 1)
+		end
 	end
+	--print('num', num)
 	local obj_string = TableFunc.Shift(arg)
 
 	if tonumber(num) and not obj_string then
@@ -357,27 +379,29 @@ simple_command.random = function(battle, machine, ...)
 		local a, b = StringDecode.Split_by(num, '~')
 
 		if a:find('%.') then
-			a = StringRead.StrToValue(a, key_link, battle)
-		elseif b:find('%.') then
-			b = StringRead.StrToValue(b, key_link, battle)
+			a = StringRead.StrToValue(a, key_dic, battle)
+		end
+		if b:find('%.') then
+			b = StringRead.StrToValue(b, key_dic, battle)
 		end
 		a, b = tonumber(a), tonumber(b)
 
 		local min = a < b and a or b
 		local max = a > b and a or b
-		num = _G.RandomMachine:Random(a, b)
-		--print('random ~ ',num)
+		num = _G.RandomMachine:Random(min, max)
+		--print('random ~ ', num)
 		TableFunc.Push(machine.stack, num)
 	elseif tonumber(num) and obj_string then
 		local effect = obj_string --and {obj..' '..obj_arg} or{obj}
-		print('random arg ', tonumber(num), effect)
-		local result = excute_arg(battle, effect, key_link)
+		--print('random arg ', tonumber(num), effect)
+		local result = excute_arg(battle, effect, key_dic)
 		local t = {}
 		if #result > 0 then
-			print('#result', #result)
+			--print('#result', #result)
 			for i = 1, num do
 				local ran = _G.RandomMachine:Random(#result)
-				print('RandomMachine target ', ran)
+				_G.RandomMachine:New_seed()
+				--print('RandomMachine target ', ran)
 				TableFunc.Push(t, result[ran])
 			end
 			TableFunc.Push(machine.stack, t)
@@ -387,22 +411,24 @@ simple_command.random = function(battle, machine, ...)
 	elseif num:find('~') and obj_string then
 		local a, b = StringDecode.Split_by(num, '~')
 		if a:find('%.') then
-			a = StringRead.StrToValue(a, key_link, battle)
-		elseif b:find('%.') then
-			b = StringRead.StrToValue(b, key_link, battle)
+			a = StringRead.StrToValue(a, key_dic, battle)
+		end
+		if b:find('%.') then
+			b = StringRead.StrToValue(b, key_dic, battle)
 		end
 		a, b = tonumber(a), tonumber(b)
 
 		local min = a < b and a or b
 		local max = a > b and a or b
-		num = _G.RandomMachine:Random(a, b)
+		num = _G.RandomMachine:Random(min, max)
 
 		local effect = obj_string --and {obj..' '..obj_arg} or{obj}				
-		local result = excute_arg(battle, effect, key_link)
+		local result = excute_arg(battle, effect, key_dic)
 		local t = {}
 		if #result > 0 then
 			for i = 1, num do
 				local ran = _G.RandomMachine:Random(#result)
+				_G.RandomMachine:New_seed()
 				TableFunc.Push(t, result[ran])
 			end
 			TableFunc.Push(machine.stack, t)
@@ -412,10 +438,10 @@ simple_command.random = function(battle, machine, ...)
 	end
 end
 simple_command.find_state = function(battle, machine, ...)
-	local arg             = ...
-	local stack, key_link = machine.stack, machine.key_link
-	local target          = TableFunc.Pop(stack)
-	local t               = {}
+	local arg            = ...
+	local stack, key_dic = machine.stack, machine.key_dic
+	local target         = TableFunc.Pop(stack)
+	local t              = {}
 	for k, obj in pairs(target) do
 		for i, state_table in pairs(obj.state) do
 			if TableFunc.Find(state_table, arg, 'name') then

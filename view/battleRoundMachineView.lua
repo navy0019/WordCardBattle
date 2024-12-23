@@ -11,7 +11,6 @@ local BattleViewScenes = {}
 local drawCommand = {
 	TransitionTo = function(scene, nextState, ...)
 		print('BMV TransitionTo', nextState)
-		local viewState = ...
 		local machine = scene.Current_Room.BattleRoundMachineView
 		--[[if type(viewState)~='boolean' and machine.current.name == viewState then
 			machine:TransitionTo(nextState)
@@ -35,7 +34,7 @@ local drawCommand = {
 		end
 	end,
 	WaitIoRead = function(scene, ...)
-		print('view waitIO')
+		--print('view waitIO')
 		local str = ...
 		if str then
 			local s = ''
@@ -57,9 +56,9 @@ local drawCommand = {
 		local str = ...
 		print(str[2])
 	end,
-	ViewUseCard = function(scene, battle, card, t, ...)
-		--print('UseCard!!',#t)
-		for k, v in pairs(t) do
+	ViewUseCard = function(scene, ...)
+		--print('UseCard!!')
+		--[[for k, v in pairs(t) do
 			local type, serial = StringDecode.Split_by(card.holder, '%s')
 			local tab = type == 'hero' and battle.characterData.heroData or battle.characterData.monsterData
 			local index = TableFunc.MatchSerial(tab, serial)
@@ -69,6 +68,11 @@ local drawCommand = {
 
 		local machine = scene.BattleMachineView
 		if battle.machine.current.name == 'PlayerAct' then
+			machine:TransitionTo('PlayerAct')
+		end]]
+		local machine = scene.Current_Room.BattleRoundMachineView
+		local battle = scene.Current_Room.battle
+		if battle.round_machine.current.name == 'PlayerAct' then
 			machine:TransitionTo('PlayerAct')
 		end
 		--TableFunc.Dump(machine.copy_data)
@@ -180,16 +184,16 @@ function BattleViewScenes.new(battle, scene)
 	end
 	ExtraInput.DoOnEnter = function(...)
 		print('1:確認選取  2:取消  ')
-		local choose = LogicScenesMgr.CurrentScene.battle.machine.choose
+		local choose = LogicScenesMgr.CurrentScene.battle.input_machine.choose
 		local hand = battle.battleData.hand
 		for k, v in pairs(hand) do
 			if v ~= choose.card then
 				scene.ButtonEvent:Register('c' .. k, function(...) end) --print('ViewScenes press c'..k) scene.Event:Emit('WaitIoRead')
-				scene.Event:Emit('AddButton', 'c' .. k, 'c' .. k, 'LoopAdd')
+				scene.Event:Emit('AddButton', 'c' .. k, 'c' .. k, 'LoopAddCard')
 			end
 		end
 		scene.ButtonEvent:Register('CheckChooseButton', function(...) end)
-		scene.Event:Emit('AddButton', 'CheckChooseButton', 1, 'CheckInput', 'enforce', battle)
+		scene.Event:Emit('AddButton', 'CheckChooseButton', 1, 'CheckSelectCard', 'enforce')
 
 		scene.ButtonEvent:Register('CancelChooseButton', function(...) end)
 		scene.Event:Emit('AddButton', 'CancelChooseButton', 2, 'CancelInput')

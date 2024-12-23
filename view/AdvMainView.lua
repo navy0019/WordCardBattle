@@ -21,7 +21,7 @@ function AdvMainView.NewViewScene(adv_data)
 			scene.Machine:TransitionTo('Wait')
 		end,
 		SceneTransitionTo = function(scene, nextState, ...)
-			print('BMV TransitionTo', nextState)
+			print('ADVScene TransitionTo', nextState)
 			local viewState = ...
 			local machine = scene.Machine
 			if type(viewState) ~= 'boolean' and machine.current.name == viewState then
@@ -112,8 +112,8 @@ function AdvMainView.NewViewScene(adv_data)
 		end
 		Wait.Do = function()
 			local dataScene = LogicScenesMgr.CurrentScene
-			assert(dataScene, 'dataScene not exist')
-			print('ADV ViewScene Wait ', dataScene, #dataScene.toView, dataScene.toView)
+			--assert(dataScene, 'dataScene not exist')
+			--print('ADV ViewScene Wait ', dataScene, #dataScene.toView, dataScene.toView)
 
 			local adv_data = LogicScenesMgr.CurrentScene.adv_data
 			local map = adv_data.map
@@ -134,7 +134,7 @@ function AdvMainView.NewViewScene(adv_data)
 			RemoveRoomButton()
 		end
 		BattleRoom.DoOnEnter = function()
-			print('BattleRoom View Enter') --, LogicScenesMgr.CurrentScene
+			--print('BattleRoom View Enter') --, LogicScenesMgr.CurrentScene
 			scene.Current_Room.battle = LogicScenesMgr.CurrentScene.Current_Room.battle
 			scene.Current_Room.BattleRoundMachineView = BattleRoundMachineView.new(scene.Current_Room.battle, scene)
 		end

@@ -81,6 +81,8 @@ function Resource.GetAssets(popen, path, tab)
     else
         print("failed to read " .. path)
     end
+    StringDecode.TransDataType(t)
+    --TableFunc.Dump(t)
     if not tab then return t end
 end
 

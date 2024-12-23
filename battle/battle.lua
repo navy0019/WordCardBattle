@@ -125,6 +125,22 @@ local function DealProcess(battle, num)
 		end
 	end
 end
+local function ClearDeath(battle)
+	local heroData = battle.characterData.heroData
+	local monsterData = battle.characterData.monsterData
+	for i = #heroData, 1, -1 do
+		local character = heroData[i]
+		if character.data.hp <= 0 then
+			table.remove(heroData, i)
+		end
+	end
+	for i = #monsterData, 1, -1 do
+		local character = monsterData[i]
+		if character.data.hp <= 0 then
+			table.remove(monsterData, i)
+		end
+	end
+end
 local function Update(self, scene)
 	--print('battle update',self , scene)
 	self.round_machine:Update(self, scene)
@@ -135,8 +151,7 @@ Battle.default = {
 	ClearDeath = ClearDeath,
 	DropItem = DropItem,
 	CheckAlive = CheckAlive,
-	Update =
-		Update,
+	Update = Update,
 	DropCard = DropCard
 }
 Battle.metatable = {}
@@ -150,8 +165,8 @@ function Battle.new(scene)
 	}
 	o.pending = {}
 
-	o.round_machine = BattleRoundMachine.new()
-	o.input_machine = BattleInput.new()
+	o.round_machine = BattleRoundMachine.new(scene.toBattleView)
+	o.input_machine = BattleInput.new(scene.toBattleView)
 
 	o.func_tab = {}
 	TableFunc.Merge(o.func_tab, o.input_machine.funcTab)

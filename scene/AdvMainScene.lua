@@ -99,10 +99,10 @@ function AdvMainScene.NewDataScene(adv_data, save_func)
 		BattleRoom.DoOnEnter = function()
 			scene.Current_Room.battle = Battle.new(scene)
 			Battle.InitBattleData(scene.Current_Room.battle, scene)
-			print('BattleRoom Data Init', scene.Current_Room.battle)
+			--print('BattleRoom Data Init', scene.Current_Room.battle)
 		end
 		BattleRoom.Do = function()
-			print('BattleRoom Data Update')
+			--print('BattleRoom Data Update')
 			scene.Current_Room.battle:Update(scene)
 		end
 		EmptyRoom.DoOnEnter = function()

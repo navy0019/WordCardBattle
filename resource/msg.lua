@@ -3,7 +3,7 @@ local Resource     = require('resource.Resource')
 local StringDecode = require('lib.StringDecode')
 
 local Msg          = {}
-function Msg.msg(key, key_link, ...)
+function Msg.msg(key, key_dic, ...)
 	local translate = Resource.translate
 	--TableFunc.Dump(translate)
 	local info      = translate[key].info
@@ -21,7 +21,7 @@ function Msg.msg(key, key_link, ...)
 			--print('arg', v)
 			TableFunc.Unshift(StringRead.machine.stack, TableFunc.Shift(arg))
 			local value_str = StringDecode.Trim(scope:sub(2, #scope - 1))
-			local value = StringRead.StrToValue(value_str, key_link, {})
+			local value = StringRead.StrToValue(value_str, key_dic, {})
 			TableFunc.Push(temp, value)
 		end
 

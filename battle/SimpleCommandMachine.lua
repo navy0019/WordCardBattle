@@ -54,7 +54,7 @@ local function analysis(str, machine)
 			TableFunc.Push(complete, v)
 		end
 		if other:find('%.') then
-			print('find .', other)
+			--print('find .', other)
 			local StringRead = require('lib.StringRead')
 			other = other:gsub('%.', ' ,get ')
 			local act = { StringDecode.Split_by(other, ',') }
@@ -101,7 +101,7 @@ function Simple_Command_Machine.NewMachine()
 
 		command, arg = analysis(command, machine)
 		command = StringDecode.Trim_head_tail(command)
-		--print('SCM command',command)
+		--print('SCM command', command)
 		--TableFunc.Dump(arg)
 
 		if tonumber(command) then
@@ -136,12 +136,12 @@ function Simple_Command_Machine.NewMachine()
 
 	Normal.DoOnEnter = function(self, command, battle, arg, ...)
 		local key, arg = command, arg
-		--print('Normal command',command)
+		--print('Normal command', command)
 		--TableFunc.Dump(arg)
-		if key:find('input_target') then
+		--[[if key:find('input_target') then
 			local num = key:match('%d+')
 			TableFunc.Push(arg, num)
-		end
+		end]]
 		--print('key',key)
 		assert(Basic_act[key], 'act[' .. key .. '] is nil')
 		--print('SCM Normal ',key)
@@ -153,11 +153,13 @@ function Simple_Command_Machine.NewMachine()
 		machine:TransitionTo('Wait')
 	end
 
-	function machine:ReadEffect(battle, command, key_link, print_log)
+	function machine:ReadEffect(battle, command, key_dic, print_log)
+		--print('SCM ReadEffect', command)
 		local commands = type(command) == 'table' and command or { command }
-		self.key_link = key_link
+		self.key_dic = key_dic
 		self.commands = TableFunc.DeepCopy(commands)
 		self.index = 0
+		machine:TransitionTo('Wait')
 		while self.index < #self.commands do
 			self:Update(battle)
 			if print_log then

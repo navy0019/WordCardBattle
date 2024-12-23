@@ -1,6 +1,33 @@
 local TableFunc = require('lib.TableFunc')
 local StringDecode = {}
---做初步的轉換(轉換成table 數字轉乘number type 複數項目放入table)
+
+local function DataType(v)
+	if tonumber(v) then
+		return tonumber(v)
+	elseif v == 'true' then
+		return true
+	elseif v == 'false' then
+		return false
+	elseif type(v) == 'string' then
+		return v
+	end
+	return v
+end
+function StringDecode.TransDataType(t)
+	--print('TransDataType')
+	for key, value in pairs(t) do
+		--print(key, value)
+		if type(value) == 'table' then
+			StringDecode.TransDataType(t[key])
+			--print('is table', t[key])
+			--TableFunc.Dump(t[key])
+		elseif type(value) == 'string' then
+			t[key] = DataType(t[key])
+			--print('not table', t[key], type(t[key]))
+		end
+	end
+end
+
 function StringDecode.Split_math_symbol(str)
 	local parts = {}
 	local stack = {}
@@ -300,7 +327,7 @@ function StringDecode.Gsub_by_index(str1, str2, p1, p2) --str1 p1~p2範圍內的
 	string_to_table(str1, tab)
 	--print('string_to_table')
 	--TableFunc.Dump(tab)
-	--print('#',#tab ,p1 ,p2)
+	--print('#', #tab, p1, p2, str2)
 	for i = 1, #str1 do
 		if i >= p1 and i <= p2 then
 			table.remove(tab, p1)
@@ -309,35 +336,23 @@ function StringDecode.Gsub_by_index(str1, str2, p1, p2) --str1 p1~p2範圍內的
 	if #tab < p1 then
 		TableFunc.Push(tab, '')
 	end
+	local space = ''
+	local spcae_num = math.abs((p2 - p1 + 1) - #tostring(str2))
+	--print('spcae num', spcae_num)
+	for i = 1, spcae_num, 1 do
+		space = space .. ' '
+	end
 	local s = ''
 	for k, v in pairs(tab) do
 		if k == p1 then
-			s = s .. str2 .. v
+			s = s .. str2 .. space .. v
 		else
 			s = s .. v
 		end
 	end
+	--print('s', s)
 	return s
 end
-
---[[function StringDecode.Replace_copy_scope(tab,copy_scope)
-	local new_tab={}
-	local copy = TableFunc.DeepCopy(copy_scope)
-
-	for i,str in pairs(tab) do
-		local index =1
-		while tab[i]:find('\"copy_scope\"') do
-			--print('tab[i]',tab[i])
-			local a,b = tab[i]:find('\"copy_scope\"')
-			local key = TableFunc.Shift(copy)
-			--print('key!',key)
-			tab[i] =StringDecode.Gsub_by_index(tab[i] ,key,a , b)
-		end
-
-	end
-	new_tab=tab
-	return new_tab	
-end]]
 
 function StringDecode.Replace_symbol_for_find(str)
 	local t = {}
@@ -379,6 +394,9 @@ function StringDecode.Trim_Command(str)
 			TableFunc.Push(complete, s)
 		end
 	end
+	--[[for key, value in pairs(complete) do
+		complete[key] = StringDecode.Trim(complete[key])
+	end]]
 	return complete, copy_split
 end
 
@@ -392,7 +410,19 @@ function StringDecode.Split_Command_Arg(s) --將command & arg 分開
 		--print('right ',s:sub(left+1,left+1) ,right)
 		command = s:sub(1, left - 1)
 		--print('Split_Command_Arg', command)
-		arg = { StringDecode.Split_by(s:sub(left + 1, right - 1), ',') }
+
+		temp = { StringDecode.Split_by(s:sub(left + 1, right - 1), ',') }
+		TableFunc.Push(arg, TableFunc.Shift(temp))
+		for key, v in pairs(temp) do
+			if merge_detect(v, arg, '%(', '%)') then
+				local len = #arg
+				arg[len] = arg[len] .. ' , ' .. v
+			end
+		end
+
+		--print('Split_Command_Arg')
+		--TableFunc.Dump(arg)
+
 		local other = s:sub(right + 1, #s)
 		if other and #other > 0 then
 			TableFunc.Push(arg, other)
@@ -402,7 +432,10 @@ function StringDecode.Split_Command_Arg(s) --將command & arg 分開
 	else
 		command = s
 	end
-
+	--[[for key, value in pairs(arg) do
+		arg[key] = StringDecode.Trim(arg[key])
+	end
+	command = StringDecode.Trim(command)]]
 
 	return command, arg
 end

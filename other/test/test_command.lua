@@ -31,29 +31,29 @@ local command                = {
 
 	--{'1','> 0'},
 	--'target',
-	--'enemy.data.hp',
+	--{ 'enemy.data.hp' },
 	--'enemy',
 	--'enemy(hp >2)',
 	--'enemy (hp : max)',
-	--{ 'enemy(team_index >= 2).data.team_index', '>=3' },
-	--'enemy(hp >=3).data.team_index',
-	'enemy( hp:max ,hp > 10)',
+	{ 'enemy(team_index >= 2).data.team_index', '>=3' },
+	--'enemy(hp >=3).data.atk',
+	--'enemy( hp:max )',
 	--'enemy(state :spell)',
 	--'random (10)',
 	--'random (5~10) ',
-	--'random(1 ,enemy (hp > 2))',
+	--'random(1 ,enemy (hp > 4))',
 	--'random(1~2 , enemy)',
 	--nc,
 }
 
-local key_link               = {} --target_table = monsterData
+local key_dic                = {} --target_table = monsterData
 local machine                = Simple_Command_Machine.NewMachine()
 --TableFunc.Dump(machine)
 
 for k, v in pairs(command) do
 	local effect = type(v) == 'string' and { v } or v
 	print('\n\teffect ' .. k)
-	machine:ReadEffect(testData, effect, key_link, 'p')
+	machine:ReadEffect(testData, effect, key_dic, 'p')
 	--print(type(machine.stack[#machine.stack]),'\n')
 	--print('Dump')
 	TableFunc.Dump(machine.stack)
