@@ -144,8 +144,13 @@ local function merge_state(t1, t2)
 end
 local function Test()
 	local machine = ComplexCommandMachine.NewMachine()
-
-	Add_State_Buff()
+	for key, value in pairs(testData.characterData.heroData) do
+		value.serial = TableFunc.GetSerial(value)
+	end
+	for key, value in pairs(testData.characterData.monsterData) do
+		value.serial = TableFunc.GetSerial(value)
+	end
+	--Add_State_Buff()
 	--Add_Protect()
 	--Add_Power_up()
 	--Add_Fragile()
@@ -173,11 +178,11 @@ local function Test()
 			--print('result', TableFunc.IsDictionary(v))
 			--TableFunc.Dump(v)
 			for i, t in pairs(v) do
-				local key = t.key
+				--[[local key = t.key
 				--print('result final_process ',key ,final_process[key])
 				if final_process[key] then
 					final_process[key](testData, machine, t)
-				end
+				end]]
 
 				if i >= 2 then
 					local main = v[1].state_update

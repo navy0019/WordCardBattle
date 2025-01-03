@@ -117,13 +117,12 @@ function StateHandler.AddBuff(battle, target, key, caster, key_dic) --targets
 	if TableFunc.MatchSerial(heroData, target_serial) then
 		target_serial = 'hero ' .. target_serial
 	else
-		target_serial =
-			'monster ' .. target_serial
+		target_serial = 'monster ' .. target_serial
 	end
 
 	local state = StateAssets.instance(key, target_serial, caster, key_dic, battle)
-	print('AddBuff')
-	TableFunc.Dump(state)
+	--print('AddBuff')
+	--TableFunc.Dump(state)
 	local res = Resource.state[state.name]
 	local state_location, name = res.location, state.name
 

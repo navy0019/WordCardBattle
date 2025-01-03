@@ -28,6 +28,7 @@ Character.default = { ResetState = ResetState }
 Character.metatable = {}
 function Character.new(o)
 	o.data.shield = 0
+
 	ResetState(o)
 	setmetatable(o, Character.metatable)
 	return o

@@ -35,7 +35,7 @@ local command                = {
 	--'enemy',
 	--'enemy(hp >2)',
 	--'enemy (hp : max)',
-	{ 'enemy(team_index >= 2).data.team_index', '>=3' },
+	{ 'enemy(team_index:max).data.team_index', '<=enemy(team_index:min).data.team_index' },
 	--'enemy(hp >=3).data.atk',
 	--'enemy( hp:max )',
 	--'enemy(state :spell)',

@@ -76,7 +76,8 @@ local function get_group(data, stack, t)
 end
 
 local function transArgToCommand(arg) --key
-	--print('transArgToCommand ',key)
+	--print('transArgToCommand ')
+	--TableFunc.Dump(arg)
 	local t = {}
 	for k, v in pairs(arg) do
 		if not tonumber(v) then
@@ -136,7 +137,7 @@ simple_command.get = function(battle, machine, ...)
 	local t              = {}
 
 	if key:find('%.') then
-		nextkey = key:sub(key:find('%.') + 1, #key)
+		local nextkey = key:sub(key:find('%.') + 1, #key)
 		key = key:sub(1, key:find('%.') - 1)
 		for k, v in pairs(target) do
 			TableFunc.Push(t, v[key])
@@ -196,8 +197,10 @@ simple_command.target = function(battle, machine, ...)
 	if key_dic.target_table then
 		data = TableFunc.ShallowCopy(key_dic.target_table)
 		local t = transArgToCommand(arg)
-
+		--print('SCM target')
+		--TableFunc.Dump(data)
 		if #t <= 0 then
+			--print('SCM target')
 			TableFunc.Push(stack, data)
 			return
 		else
@@ -221,6 +224,8 @@ simple_command.compare = function(battle, machine, ...)
 		function(a, b) return a < b end
 	}
 	local arg = { ... }
+	--print('compare arg')
+	--TableFunc.Dump(arg)
 	local key_dic = machine.key_dic
 	local stack = machine.stack
 	local key = arg[1]
@@ -228,17 +233,27 @@ simple_command.compare = function(battle, machine, ...)
 
 	local a = tonumber(value) and tonumber(value) or value
 	local b = tonumber(arg[2]) and tonumber(arg[2]) or arg[2]
-	--print('compare',a,b)
+
+
+	if type(b) == 'string' then
+		b = excute_arg(battle, b, key_dic)
+	end
+	--print('compare', a, b)
+	--TableFunc.Dump(a)
+	--TableFunc.Dump(b)
 
 	local index = findSymbol(key, 'compare')
 	local t = {}
 
 	if type(a) == 'table' and type(b) == 'table' then
 		local max = #a > #b and a or b
-		local other = #a < (#b) and a or b
+		local other = #a < #b and a or b
 		for k, v in pairs(max) do
 			if other[k] then
-				local value = func[index](a[k], b[k])
+				local value = func[index](max[k], other[k])
+				TableFunc.Push(t, value)
+			else
+				local value = func[index](max[k], other[#other])
 				TableFunc.Push(t, value)
 			end
 		end

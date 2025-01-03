@@ -9,9 +9,8 @@ local SCMachine              = Simple_Command_Machine.NewMachine()
 
 local final_process = {}
 
-local function state_trigger_update(battle, targets, holder, info)
+local function state_trigger_update(battle, info)
 	local StateHandler = require('battle.StateHandler')
-	local map = { target = targets, holder = holder }
 
 	for k, v in pairs(info.state_update) do
 		local state_table = v.target.state[v.state_key]
@@ -36,9 +35,9 @@ final_process.set_value = function(battle, machine, ...)
 	--print('set_value targets ',targets ,#targets)
 	if not TableFunc.IsArray(targets) then targets = { targets } end
 
-	SCMachine:ReadEffect(battle, 'holder', machine.key_dic)
-	local holder = TableFunc.Pop(SCMachine.stack)
-	state_trigger_update(battle, targets, holder, info)
+	--SCMachine:ReadEffect(battle, 'holder', machine.key_dic)
+	--local holder = TableFunc.Pop(SCMachine.stack)
+	state_trigger_update(battle, info)
 
 	for k, target in pairs(targets) do
 		local current_value = value[k] and value[k] or value[#value]
@@ -88,7 +87,7 @@ final_process.set_hp_value = function(battle, machine, ...)
 	local holder = TableFunc.Pop(SCMachine.stack)
 
 	--print('targets',targets ,holder)
-	state_trigger_update(battle, targets, holder, info)
+	state_trigger_update(battle, info)
 
 	for k, target in pairs(targets) do
 		local current_value = value[k] and value[k] or value[#value]
@@ -138,7 +137,7 @@ final_process.add_buff = function(battle, machine, ...)
 	--TableFunc.Dump(info.value)
 	SCMachine:ReadEffect(battle, 'holder', machine.key_dic)
 	local holder = TableFunc.Pop(SCMachine.stack)
-	state_trigger_update(battle, targets, holder, info)
+	state_trigger_update(battle, info)
 	--TableFunc.Dump(holder)
 
 

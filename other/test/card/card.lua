@@ -5,8 +5,11 @@ local cards = {
         drop_to       = 'grave',
         use_condition = { 'select 2 enemy' },
         data          = { atk = 'holder.data.atk', def = 3 },
-        condition     = 'target.data.team_index >= 1', --
-        effect        = { 'add_buff( bless) to holder', 'add_buff( power_up (round:card.data.atk)) to holder' }
+        condition     = 'target.data.team_index > target(team_index:min).data.team_index',
+        --'random(1~5) > 3'
+        --'target.data.team_index > 1'
+        --'target.data.team_index > target(team_index:min).data.team_index'
+        effect        = { 'condition (true:atk(card.data.atk * 2) to target ,false:atk(card.data.atk ) to target)' }
         --'add_buff( power_up (round:card.data.atk)) to holder'
         --'atk(card.data.atk) to target'
         --'assign_value(holder.data.atk+1 ,atk) to holder', 'atk(card.data.atk) to target'

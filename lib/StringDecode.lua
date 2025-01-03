@@ -264,7 +264,8 @@ local compare_map = { '>=', '<=', '==', '>', '<' }
 function StringDecode.Find_compare_symbol(str)
 	for k, v in pairs(compare_map) do
 		if str:find(v) then
-			return k
+			local a, b = str:find(v)
+			return a, b
 		end
 	end
 end
@@ -272,7 +273,8 @@ end
 function StringDecode.Find_calculate_symbol(str)
 	for k, v in pairs(calculate_map) do
 		if str:find(v) then
-			return k
+			local a, b = str:find(v)
+			return a, b
 		end
 	end
 end
@@ -379,6 +381,11 @@ function StringDecode.Replace_symbol_for_find(str)
 end
 
 function StringDecode.Trim_Command(str)
+	if StringDecode.Find_compare_symbol(str) then
+		local head, tail = StringDecode.Find_compare_symbol(str)
+		local s = str:sub(head, tail) .. ' '
+		str = StringDecode.Gsub_by_index(str, s, head, tail)
+	end
 	local split = { StringDecode.Split_by(str, '%s') }
 	local copy_split = TableFunc.DeepCopy(split)
 	local complete = {}
@@ -404,19 +411,21 @@ function StringDecode.Split_Command_Arg(s) --將command & arg 分開
 	local command
 	local arg = {}
 	local left = s:find('%(')
-	--print('Split_Command_Arg ' ,s ,left)
+	--print('Split_Command_Arg ', s, left)
 	if left then
 		local right = StringDecode.Find_symbol_scope(left, s, '(', ')')
 		--print('right ',s:sub(left+1,left+1) ,right)
 		command = s:sub(1, left - 1)
 		--print('Split_Command_Arg', command)
 
-		temp = { StringDecode.Split_by(s:sub(left + 1, right - 1), ',') }
+		local temp = { StringDecode.Split_by(s:sub(left + 1, right - 1), ',') }
 		TableFunc.Push(arg, TableFunc.Shift(temp))
 		for key, v in pairs(temp) do
 			if merge_detect(v, arg, '%(', '%)') then
 				local len = #arg
 				arg[len] = arg[len] .. ' , ' .. v
+			else
+				TableFunc.Push(arg, v)
 			end
 		end
 

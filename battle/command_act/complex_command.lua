@@ -131,6 +131,9 @@ complex_command.preview = function(battle, machine, ...)
 		if TableFunc.IsDictionary(targets) then targets = { targets } end
 		t.target = targets
 
+		--[[for key, value in pairs(targets) do
+			print('serial', value.serial)
+		end]]
 		if #targets > #value then --讓value 根據 target數量 保持一至
 			--print('#targets ~= #value')
 			for index, target in pairs(targets) do
@@ -175,12 +178,15 @@ complex_command.preview = function(battle, machine, ...)
 		t.value_state = nil
 		t.value = value
 
-		print('preview value', t.value)
-		TableFunc.Dump(t.value)
+		--print('preview value')
+		--TableFunc.Dump(t)
 
 		--t.state_update=state_update
+		local final_process = require('battle.command_act.final_process')
+		if final_process[t.key] then
+			final_process[t.key](battle, machine, t)
+		end
 	end
-	--t.key_dic = key_dic
 	return t
 end
 complex_command.protect = function(battle, machine, ...)
@@ -190,7 +196,7 @@ complex_command.protect = function(battle, machine, ...)
 	SCMachine.stack = TableFunc.DeepCopy(machine.stack)
 	local target, value = ...
 	SCMachine:ReadEffect(battle, target, machine.key_dic)
-	targets = TableFunc.Pop(SCMachine.stack)
+	local targets = TableFunc.Pop(SCMachine.stack)
 	machine.key_dic.target_table = targets
 
 	for k, target in pairs(targets) do

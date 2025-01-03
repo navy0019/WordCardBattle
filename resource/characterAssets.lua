@@ -23,6 +23,7 @@ end
 function CharacterAssets.instance(key, index)
 	local o = TableFunc.DeepCopy(_G.Resource.character[key])
 	o.key = key
+	o.serial = TableFunc.GetSerial(o)
 	--[[o.getAsset=function(o,index)
 				assert(Resource.character[o.key][index],'don\'t have key '..index)
 				return Resource.character[o.key][index]

@@ -164,8 +164,8 @@ function Complex_Command_Machine.NewMachine()
 			--print('command',v.command)
 
 			local key, arg = StringDecode.Split_Command_Arg(v.command)
-			print('CCM Excute arg', arg)
-			TableFunc.Dump(arg)
+			--print('CCM Excute arg', key)
+			--TableFunc.Dump(arg)
 			key = StringDecode.Trim_head_tail(key)
 			print('\n\nExcute: ', key, v.command)
 			--TableFunc.Dump(machine.stack)
@@ -187,12 +187,43 @@ function Complex_Command_Machine.NewMachine()
 		machine:TransitionTo('Wait')
 	end
 
+	function machine:MakeDataCopy(battle)
+		local copy = { heroData = {}, monsterData = {} }
+		for key, hero in pairs(battle.characterData.heroData) do
+			TableFunc.Push(TableFunc.DeepCopy(hero))
+		end
+		for key, mon in pairs(battle.characterData.monsterData) do
+			TableFunc.Push(TableFunc.DeepCopy(mon))
+		end
+		return copy
+	end
+
+	function machine:UndoEffect(battle)
+		for index, origin_hero in pairs(self.copy.heroData) do
+			for i, hero in pairs(battle.characterData.heroData) do
+				local serial = TableFunc.GetSerial(hero)
+				if serial == origin_hero.serial then
+					hero.data = origin_hero.data
+					hero.state = origin_hero.state
+					if i ~= index then
+						hero.data.team_index = index
+						TableFunc.Swap(battle.characterData.heroData, i, index)
+					end
+					break
+				end
+			end
+		end
+		for key, mon in pairs(battle.characterData.monsterData) do
+			TableFunc.Push(TableFunc.DeepCopy(mon))
+		end
+	end
 
 	function machine:ReadEffect(battle, command, key_dic, print_log)
 		--print('card.effect' , card.effect)
 		local commands = type(command) == 'table' and command or { command }
 		self.key_dic = key_dic
 		self.result = {}
+		self.copy = machine:MakeDataCopy(battle)
 		--print('ReadEffect key_dic', key_dic)
 		self.commands = TableFunc.DeepCopy(commands)
 		--print('commands ',#self.commands)

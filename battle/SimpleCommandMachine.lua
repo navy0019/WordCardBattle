@@ -35,7 +35,7 @@ function Simple_Command_Machine.Trim_To_Simple_Command(str)
 end
 
 local function analysis(str, machine)
-	--print('str ',str)
+	--print('SCM analysis str ', str)
 	local complete, split = StringDecode.Trim_Command(str)
 	local command = TableFunc.Shift(complete)
 	local arg, left, right, other
@@ -63,7 +63,7 @@ local function analysis(str, machine)
 			end
 		end
 	end
-	--print('SCM analysis ',command ,other)
+	--print('SCM analysis ', str, command, other)
 	--TableFunc.Dump(complete)
 	--TableFunc.Dump(machine.commands)	
 
@@ -78,7 +78,7 @@ function Simple_Command_Machine.NewMachine()
 	local machine = Machine.new({
 		initial = Wait,
 		states = {
-			Wait, Compare, Calculate, Normal
+			Wait, Compare, Normal
 		},
 		events = {
 
@@ -96,19 +96,24 @@ function Simple_Command_Machine.NewMachine()
 		local command = machine.commands[machine.index]
 		local arg
 
-		--print('SCM current',command)
+		--print('SCM current', command)
 		--TableFunc.Dump(machine.stack)
 
 		command, arg = analysis(command, machine)
 		command = StringDecode.Trim_head_tail(command)
-		--print('SCM command', command)
+
+		--print('have compare', StringDecode.Find_compare_symbol(command))
 		--TableFunc.Dump(arg)
+
+		--print('SCM command', command)
 
 		if tonumber(command) then
 			TableFunc.Push(machine.stack, tonumber(command))
 		elseif type(command) == 'table' then
 			TableFunc.Push(machine.stack, command)
 			--elseif find_calculate_symbol(command) then
+		elseif StringDecode.Find_compare_symbol(command) then
+			machine:TransitionTo('Compare', command, battle, arg)
 		elseif command:find('%.') then
 			--print('find .')
 			local StringRead = require('lib.StringRead')
@@ -117,8 +122,6 @@ function Simple_Command_Machine.NewMachine()
 			for i = #act, 1, -1 do
 				table.insert(machine.commands, machine.index + 1, act[i])
 			end
-		elseif StringDecode.Find_compare_symbol(command) then
-			machine:TransitionTo('Compare', command, battle, arg)
 		else
 			--print('SCM transTo normal')
 			machine:TransitionTo('Normal', command, battle, arg)
@@ -126,8 +129,9 @@ function Simple_Command_Machine.NewMachine()
 	end
 
 	Compare.DoOnEnter = function(self, command, battle, arg, ...)
-		--print('Compare command',command )
+		--print('SCM Compare command', command)
 		local num = tonumber(command:match('%d')) and tonumber(command:match('%d')) or table.unpack(arg)
+		--print('SCM Compare', num)
 		local symbol = StringDecode.Trim_head_tail(command:gsub(num, ''))
 		--local arg = {s,num}--StringDecode.Split_by(command,'%s')
 		local value = Basic_act['compare'](battle, machine, symbol, num)
@@ -143,8 +147,8 @@ function Simple_Command_Machine.NewMachine()
 			TableFunc.Push(arg, num)
 		end]]
 		--print('key',key)
-		assert(Basic_act[key], 'act[' .. key .. '] is nil')
-		--print('SCM Normal ',key)
+		assert(Basic_act[key], 'basic act[' .. key .. '] is nil')
+		--print('SCM Normal ', key)
 		--TableFunc.Dump(arg)
 		local value = Basic_act[key](battle, machine, table.unpack(arg))
 		if value == 'stop' then

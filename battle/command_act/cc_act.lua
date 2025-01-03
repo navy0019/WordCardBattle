@@ -12,14 +12,19 @@ local cc_act                 = {
 		local Complex_Command_Machine = require('battle.ComplexCommandMachine')
 		local CCMachine = Complex_Command_Machine.NewMachine()
 		local con_arg = ...
+		--print('con_arg')
+		--TableFunc.Dump(con_arg)
 		local arg = StringDecode.TransToDic(con_arg)
 		local bool_target, t = {}, {}
 
 		local stack, key_dic = machine.stack, machine.key_dic
 		local condition = Simple_Command_Machine.Trim_To_Simple_Command(key_dic.card.condition)
-		--print('condition',TableFunc.Dump(condition))
+		print('condition', TableFunc.Dump(condition))
 		SCMachine:ReadEffect(battle, condition, key_dic)
 		local result = TableFunc.Pop(SCMachine.stack)
+		if type(result) ~= 'table' then result = { result } end
+		--print('condition', TableFunc.Dump(result))
+
 		for k, v in pairs(result) do
 			if type(v) ~= 'boolean' then
 				result[k] = tonumber(result[k]) > 0 and true or false
